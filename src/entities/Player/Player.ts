@@ -17,5 +17,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     );
     this.name = ENTITIES.PLAYER;
     scene.add.existing(this);
+
+    this.setIgnoreGravity(true);
   }
 }

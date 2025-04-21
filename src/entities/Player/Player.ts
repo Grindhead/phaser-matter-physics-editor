@@ -1,5 +1,4 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
-import { KEYS } from "../../lib/keys";
 import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 
 const JUMP_VELOCITY = -5;
@@ -32,7 +31,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     const isDesktop = this.scene.sys.game.device.os.desktop;
     if (isDesktop) {
       this.cursors = this.scene.input.keyboard?.createCursorKeys();
-      this.wasd = this.scene.input.keyboard?.addKeys("W,A,S,D") as Record<
+      this.wasd = this.scene.input.keyboard?.addKeys("W,A,D") as Record<
         string,
         Phaser.Input.Keyboard.Key
       >;

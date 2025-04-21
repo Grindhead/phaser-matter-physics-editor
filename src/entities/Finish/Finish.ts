@@ -9,14 +9,14 @@ export class Finish extends Phaser.Physics.Matter.Sprite {
       x,
       y,
       TEXTURE_ATLAS,
-      FINISH_ANIMATIONS[FINISH_ANIMATION_KEYS.IDLE].prefix + "0001.png",
+      FINISH_ANIMATIONS[FINISH_ANIMATION_KEYS.IDLE].prefix,
       {
-        shape: shapes[ENTITIES.COIN],
+        shape: shapes[ENTITIES.FINISH],
         isStatic: true,
         isSensor: true,
       }
     );
-    this.name = ENTITIES.COIN;
+    this.name = ENTITIES.FINISH;
     scene.add.existing(this);
   }
 }

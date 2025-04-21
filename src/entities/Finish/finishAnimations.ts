@@ -18,6 +18,7 @@ export const FINISH_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
     prefix: "finish/finish-activated/finish-activated-",
     frames: 19,
     loop: false,
+    nextAnimation: FINISH_ANIMATION_KEYS.COLLECT,
   },
   COLLECT: {
     prefix: "finish/finish-collect/finish-collect-",

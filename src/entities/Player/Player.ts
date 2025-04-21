@@ -124,10 +124,13 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     const up = this.cursors.up?.isDown || this.wasd.W?.isDown;
 
     if (left) {
+      this.playRunAnimation();
       this.setVelocityX(-WALK_VELOCITY);
     } else if (right) {
+      this.playRunAnimation();
       this.setVelocityX(WALK_VELOCITY);
     } else {
+      this.playIdleAnimation();
       this.setVelocityX(0);
     }
 
@@ -138,6 +141,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       this.setVelocityY(JUMP_VELOCITY);
       this.playJumpAnimation();
     }
+  }
+
+  private isMovingOnPlatform(): boolean {
+    return this.isGrounded && Math.abs(this.getVelocity().x) > 0;
   }
 
   /**
@@ -152,22 +159,28 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       const { bodyA, bodyB } = pair;
 
       if (this.isPlayerBody(bodyA) && this.isGroundBody(bodyB)) {
-        if (!this.isGrounded) {
-          this.playIdleAnimation();
-        }
-
+        this.playIdleAnimation();
         this.isGrounded = true;
       } else if (this.isPlayerBody(bodyB) && this.isGroundBody(bodyA)) {
-        if (!this.isGrounded) {
-          this.playIdleAnimation();
-        }
-
+        this.playIdleAnimation();
         this.isGrounded = true;
       }
     }
   }
 
   private playIdleAnimation() {
+    if (!this.isGrounded) {
+      return;
+    }
+
+    if (this.isMovingOnPlatform()) {
+      return;
+    }
+
+    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.IDLE) {
+      return;
+    }
+
     this.play(PLAYER_ANIMATION_KEYS.IDLE);
   }
 
@@ -180,7 +193,27 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   }
 
   private playFallAnimation() {
+    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.FALL) {
+      return;
+    }
+
     this.play(PLAYER_ANIMATION_KEYS.FALL);
+  }
+
+  private playRunAnimation() {
+    if (!this.isGrounded) {
+      return;
+    }
+
+    if (!this.isMovingOnPlatform()) {
+      return;
+    }
+
+    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.RUN) {
+      return;
+    }
+
+    this.play(PLAYER_ANIMATION_KEYS.RUN);
   }
 
   /**

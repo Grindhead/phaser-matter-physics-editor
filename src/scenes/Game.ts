@@ -1,9 +1,12 @@
 import { Scene } from "phaser";
-import { PHYSICS, SCENES } from "../lib/constants";
+import { SCENES } from "../lib/constants";
 import { Player } from "../entities/Player/Player";
 import { Enemy } from "../entities/Enemy/Enemy";
 import { Coin } from "../entities/Coin/Coin";
 import { Platform } from "../entities/Platforms/Platform";
+import { CrateBig } from "../entities/CrateBig/CrateBig";
+import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
+import { Finish } from "../entities/Finish/Finish";
 
 export class Game extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
@@ -29,26 +32,10 @@ export class Game extends Scene {
    */
 
   createMatterWorld() {
-    const shapes = this.cache.json.get(PHYSICS);
-    this.matter.add.sprite(200, 200, "assets", "crate/crate-big.png", {
-      shape: shapes["crate-large"],
-    });
-
-    this.matter.add.sprite(220, 200, "assets", "crate/crate-small.png", {
-      shape: shapes["crate-small"],
-    });
-
-    this.matter.add.sprite(
-      220,
-      200,
-      "assets",
-      "finish/finish-idle/finish-idle.png",
-      {
-        shape: shapes["finish"],
-      }
-    );
-
     new Platform(this, 450, 300);
+    new Finish(this, 450, 300);
+    new CrateBig(this, 250, 300);
+    new CrateSmall(this, 350, 300);
     new Coin(this, 150, 300);
     new Player(this, 100, 200);
     new Enemy(this, 300, 200);

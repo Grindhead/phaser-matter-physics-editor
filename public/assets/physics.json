@@ -42,7 +42,7 @@
 		},
 		"fixtures": [
 			{
-				"label": "",
+				"label": "duck",
 				"isSensor": false,
 				"vertices": [
 					[ { "x":13, "y":65 }, { "x":52, "y":63 }, { "x":43, "y":19 }, { "x":15, "y":22 } ]
@@ -106,7 +106,7 @@
 		"isStatic": false,
 		"density": 0.1,
 		"restitution": 0,
-		"friction": 0.10000000149011612,
+		"friction": 0.1,
 		"frictionAir": 0.01,
 		"frictionStatic": 0.5,
 		"collisionFilter": {
@@ -129,10 +129,10 @@
 		"type": "fromPhysicsEditor",
 		"label": "enemy",
 		"isStatic": false,
-		"density": 0.1,
+		"density": 0.3,
 		"restitution": 0,
-		"friction": 0.1,
-		"frictionAir": 0.01,
+		"friction": 0.01,
+		"frictionAir": 0,
 		"frictionStatic": 0.5,
 		"collisionFilter": {
 			"group": 0,
@@ -231,10 +231,10 @@
 		"type": "fromPhysicsEditor",
 		"label": "platform",
 		"isStatic": true,
-		"density": 0.10000000149011612,
+		"density": 0.1,
 		"restitution": 0,
 		"friction": 0,
-		"frictionAir": 0.009999999776482582,
+		"frictionAir": 0.01,
 		"frictionStatic": 0.5,
 		"collisionFilter": {
 			"group": 0,

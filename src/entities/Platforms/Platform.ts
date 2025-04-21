@@ -11,19 +11,24 @@ export class Platform extends Phaser.Physics.Matter.Sprite {
   ) {
     buildPlatform(scene, width, id);
 
-    super(scene.matter.world, x, y, id);
-
-    // rip the platform data from the physics json
+    // Retrieve platform data from the physics JSON
     const platformData =
       scene.cache.json.get(PHYSICS)[PHYSICS_ENTITIES.PLATFORM];
-    // get the collision filter from the platform data
     const { collisionFilter } = platformData;
 
-    // set the properties of the platform to match the physics json
-    this.setStatic(platformData.isStatic);
-    this.setCollisionCategory(collisionFilter.category);
-    this.setCollisionGroup(collisionFilter.group);
-    this.setCollidesWith(collisionFilter.mask);
+    // Define body configuration with the desired label
+    const bodyConfig = {
+      label: "platform",
+      isStatic: platformData.isStatic,
+      collisionFilter: {
+        category: collisionFilter.category,
+        group: collisionFilter.group,
+        mask: collisionFilter.mask,
+      },
+    };
+
+    // Create the Matter Sprite with the specified body configuration
+    super(scene.matter.world, x, y, id, undefined, bodyConfig);
 
     scene.add.existing(this);
   }

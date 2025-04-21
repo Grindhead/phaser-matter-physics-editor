@@ -4,11 +4,32 @@ import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 const JUMP_VELOCITY = -8;
 const WALK_VELOCITY = 3;
 
+/**
+ * Represents the player entity in the game.
+ * Handles physics, movement, animations, and input (keyboard or mobile).
+ */
 export class Player extends Phaser.Physics.Matter.Sprite {
+  /**
+   * Keyboard cursor controls (arrow keys).
+   */
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+
+  /**
+   * WASD keys for movement.
+   */
   private wasd?: Record<string, Phaser.Input.Keyboard.Key>;
+
+  /**
+   * Whether the player is currently touching the ground.
+   */
   private isGrounded = false;
 
+  /**
+   * Creates a new player instance.
+   * @param scene - The current Phaser scene.
+   * @param x - The x coordinate to spawn the player at.
+   * @param y - The y coordinate to spawn the player at.
+   */
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
 
@@ -33,12 +54,14 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.setFixedRotation();
     this.setupControls();
     this.createAnimations();
-
     this.playIdleAnimation();
 
     scene.add.existing(this);
   }
 
+  /**
+   * Defines and creates all player-related animations.
+   */
   private createAnimations() {
     this.anims.create({
       key: PLAYER_ANIMATION_KEYS.IDLE,
@@ -101,6 +124,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     });
   }
 
+  /**
+   * Sets up player input controls (desktop or mobile).
+   */
   private setupControls() {
     const isDesktop = this.scene.sys.game.device.os.desktop;
     if (isDesktop) {
@@ -114,8 +140,14 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
   }
 
+  /**
+   * Placeholder for mobile control initialization.
+   */
   private createMobileControls() {}
 
+  /**
+   * Main update loop. Handles movement and jumping.
+   */
   update(): void {
     if (!this.cursors || !this.wasd) return;
 
@@ -143,15 +175,19 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
   }
 
+  /**
+   * Checks if the player is grounded and moving horizontally.
+   * @returns True if moving on the platform.
+   */
   private isMovingOnPlatform(): boolean {
     return this.isGrounded && Math.abs(this.getVelocity().x) > 0;
   }
 
   /**
-   * Handles the collision start event
-   * @param event
+   * Handles collision start event.
+   * Used to detect ground contact.
+   * @param event - Matter collision event.
    */
-
   private handleCollisionStart(
     event: Phaser.Physics.Matter.Events.CollisionStartEvent
   ) {
@@ -168,22 +204,20 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
   }
 
+  /**
+   * Plays the idle animation if the player is grounded and not moving.
+   */
   private playIdleAnimation() {
-    if (!this.isGrounded) {
-      return;
-    }
-
-    if (this.isMovingOnPlatform()) {
-      return;
-    }
-
-    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.IDLE) {
-      return;
-    }
+    if (!this.isGrounded) return;
+    if (this.isMovingOnPlatform()) return;
+    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.IDLE) return;
 
     this.play(PLAYER_ANIMATION_KEYS.IDLE);
   }
 
+  /**
+   * Plays the jump animation, then triggers the fall animation when complete.
+   */
   private playJumpAnimation() {
     this.play(PLAYER_ANIMATION_KEYS.JUMP);
 
@@ -192,35 +226,30 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     });
   }
 
+  /**
+   * Plays the falling animation.
+   */
   private playFallAnimation() {
-    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.FALL) {
-      return;
-    }
-
+    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.FALL) return;
     this.play(PLAYER_ANIMATION_KEYS.FALL);
   }
 
+  /**
+   * Plays the run animation if grounded and moving.
+   */
   private playRunAnimation() {
-    if (!this.isGrounded) {
-      return;
-    }
-
-    if (!this.isMovingOnPlatform()) {
-      return;
-    }
-
-    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.RUN) {
-      return;
-    }
+    if (!this.isGrounded) return;
+    if (!this.isMovingOnPlatform()) return;
+    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.RUN) return;
 
     this.play(PLAYER_ANIMATION_KEYS.RUN);
   }
 
   /**
-   * Handles the collision end event
-   * @param event
+   * Handles collision end event.
+   * Used to detect when the player is no longer grounded.
+   * @param event - Matter collision event.
    */
-
   private handleCollisionEnd(
     event: Phaser.Physics.Matter.Events.CollisionEndEvent
   ) {
@@ -236,21 +265,19 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   }
 
   /**
-   * Checks if the body is the player's body
-   * @param body
-   * @returns
+   * Checks if the body is the player's physics body.
+   * @param body - Matter body to check.
+   * @returns True if it's the player body.
    */
-
   private isPlayerBody(body: MatterJS.BodyType): boolean {
     return body.label === "duck"; // Assumes duck-body is the root body
   }
 
   /**
-   * Checks if the body is a ground body
-   * @param body
-   * @returns
+   * Checks if the body is a valid ground type (platform or crate).
+   * @param body - Matter body to check.
+   * @returns True if it's a ground body.
    */
-
   private isGroundBody(body: MatterJS.BodyType): boolean {
     const label = body.label?.toLowerCase() ?? "";
 

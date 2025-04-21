@@ -62,7 +62,7 @@
 		"collisionFilter": {
 			"group": 0,
 			"category": 1,
-			"mask": 31
+			"mask": 62
 		},
 		"fixtures": [
 			{
@@ -88,7 +88,7 @@
 		"collisionFilter": {
 			"group": 0,
 			"category": 2,
-			"mask": 21
+			"mask": 23
 		},
 		"fixtures": [
 			{
@@ -112,7 +112,7 @@
 		"collisionFilter": {
 			"group": 0,
 			"category": 2,
-			"mask": 19
+			"mask": 23
 		},
 		"fixtures": [
 			{
@@ -132,8 +132,8 @@
 		"density": 0.10000000149011612,
 		"restitution": 0,
 		"friction": 0.10000000149011612,
-		"frictionAir": 1,
-		"frictionStatic": 1,
+		"frictionAir": 10,
+		"frictionStatic": 0.5,
 		"collisionFilter": {
 			"group": 0,
 			"category": 4,

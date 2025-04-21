@@ -1,8 +1,9 @@
 import { Scene } from "phaser";
-import { PHYSICS, SCENES } from "../lib/constants";
+import { SCENES } from "../lib/constants";
 import { Player } from "../entities/Player/Player";
 import { Enemy } from "../entities/Enemy/Enemy";
 import { Coin } from "../entities/Coin/Coin";
+import { Platform } from "../entities/Platforms/Platform";
 import { CrateBig } from "../entities/CrateBig/CrateBig";
 import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
 import { Finish } from "../entities/Finish/Finish";
@@ -31,12 +32,16 @@ export class Game extends Scene {
    */
 
   createMatterWorld() {
-    new Finish(this, 450, 300);
-    new CrateBig(this, 250, 300);
-    new CrateSmall(this, 350, 300);
-    new Coin(this, 150, 300);
+    new Platform(this, 70, 300, 5, "1");
+    new Platform(this, 350, 300, 6, "2");
+    new Platform(this, 650, 300, 10, "3");
+    new Platform(this, 950, 300, 10, "4");
+    new Finish(this, 750, 230);
+    new CrateBig(this, 400, 250);
+    new CrateSmall(this, 650, 250);
+    new Coin(this, 550, 250);
     new Player(this, 100, 200);
-    new Enemy(this, 300, 200);
+    new Enemy(this, 880, 250);
   }
 
   /**

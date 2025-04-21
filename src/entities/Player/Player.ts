@@ -50,6 +50,50 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       }),
       repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].loop,
     });
+
+    this.anims.create({
+      key: PLAYER_ANIMATION_KEYS.JUMP,
+      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
+        prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.JUMP].prefix,
+        end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.JUMP].frames,
+        zeroPad: 4,
+        suffix: ".png",
+      }),
+      repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.JUMP].loop,
+    });
+
+    this.anims.create({
+      key: PLAYER_ANIMATION_KEYS.RUN,
+      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
+        prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.RUN].prefix,
+        end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.RUN].frames,
+        zeroPad: 4,
+        suffix: ".png",
+      }),
+      repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.RUN].loop,
+    });
+
+    this.anims.create({
+      key: PLAYER_ANIMATION_KEYS.FALL,
+      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
+        prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.FALL].prefix,
+        end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.FALL].frames,
+        zeroPad: 4,
+        suffix: ".png",
+      }),
+      repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.FALL].loop,
+    });
+
+    this.anims.create({
+      key: PLAYER_ANIMATION_KEYS.DEAD,
+      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
+        prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.DEAD].prefix,
+        end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.DEAD].frames,
+        zeroPad: 4,
+        suffix: ".png",
+      }),
+      repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.DEAD].loop,
+    });
   }
 
   private setupControls() {

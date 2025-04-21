@@ -47,6 +47,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].frames,
         zeroPad: 4,
         suffix: ".png",
+        start: 1,
       }),
       repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].loop,
     });
@@ -58,6 +59,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.JUMP].frames,
         zeroPad: 4,
         suffix: ".png",
+        start: 1,
       }),
       repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.JUMP].loop,
     });
@@ -69,6 +71,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.RUN].frames,
         zeroPad: 4,
         suffix: ".png",
+        start: 1,
       }),
       repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.RUN].loop,
     });
@@ -78,6 +81,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
         prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.FALL].prefix,
         end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.FALL].frames,
+        start: 1,
         zeroPad: 4,
         suffix: ".png",
       }),
@@ -91,6 +95,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.DEAD].frames,
         zeroPad: 4,
         suffix: ".png",
+        start: 1,
       }),
       repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.DEAD].loop,
     });
@@ -131,6 +136,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       (up && Math.abs(this.getVelocity().y) < 0.001)
     ) {
       this.setVelocityY(JUMP_VELOCITY);
+      this.playJumpAnimation();
     }
   }
 
@@ -167,6 +173,14 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
   private playJumpAnimation() {
     this.play(PLAYER_ANIMATION_KEYS.JUMP);
+
+    this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.playFallAnimation();
+    });
+  }
+
+  private playFallAnimation() {
+    this.play(PLAYER_ANIMATION_KEYS.FALL);
   }
 
   /**

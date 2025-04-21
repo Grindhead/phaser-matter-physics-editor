@@ -12,7 +12,7 @@ type AnimationKey = keyof typeof PLAYER_ANIMATION_KEYS;
 
 export const PLAYER_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
   FALL: {
-    prefix: "player/idle/duck-fall-",
+    prefix: "player/fall/duck-fall-",
     frames: 10,
     loop: 0,
   },

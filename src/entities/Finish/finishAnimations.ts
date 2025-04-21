@@ -12,17 +12,17 @@ export const FINISH_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
   IDLE: {
     prefix: "finish/finish-idle/finish-idle.png",
     frames: 0,
-    loop: false,
+    loop: 0,
   },
   ACTIVATED: {
     prefix: "finish/finish-activated/finish-activated-",
     frames: 19,
-    loop: false,
+    loop: 0,
     nextAnimation: FINISH_ANIMATION_KEYS.COLLECT,
   },
   COLLECT: {
     prefix: "finish/finish-collect/finish-collect-",
     frames: 8,
-    loop: true,
+    loop: -1,
   },
 };

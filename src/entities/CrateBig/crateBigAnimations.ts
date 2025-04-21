@@ -10,6 +10,6 @@ export const CRATE_BIG_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
   IDLE: {
     prefix: "crate/crate-big.png",
     frames: 1,
-    loop: false,
+    loop: 0,
   },
 };

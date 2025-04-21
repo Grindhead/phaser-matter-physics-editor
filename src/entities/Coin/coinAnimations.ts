@@ -11,11 +11,11 @@ export const COIN_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
   IDLE: {
     prefix: "coin/coin-idle/coin-idle-",
     frames: 23,
-    loop: true,
+    loop: -1,
   },
   COLLECT: {
     prefix: "coin/coin-collect/coin-collect-",
     frames: 8,
-    loop: false,
+    loop: 0,
   },
 };

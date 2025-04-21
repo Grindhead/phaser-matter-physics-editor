@@ -10,7 +10,7 @@ const TILE_HEIGHT = 24;
 export const buildPlatform = (
   scene: Phaser.Scene,
   tileCount: number,
-  id: string
+  key: string
 ): Phaser.GameObjects.RenderTexture => {
   const totalWidth = TILE_WIDTH * tileCount;
 
@@ -44,7 +44,7 @@ export const buildPlatform = (
 
   container.add([leftPlatform, middlePlatform, rightPlatform]);
 
-  const texture = createTextureFromContainer(scene, container, id);
+  const texture = createTextureFromContainer(scene, container, key);
 
   leftPlatform.destroy(true);
   middlePlatform.destroy(true);

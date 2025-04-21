@@ -28,7 +28,7 @@
 	},
 	"duck-idle": {
 		"type": "fromPhysicsEditor",
-		"label": "player-idle",
+		"label": "duck",
 		"isStatic": false,
 		"density": 0.1,
 		"restitution": 0,
@@ -42,7 +42,7 @@
 		},
 		"fixtures": [
 			{
-				"label": "player-idle",
+				"label": "duck",
 				"isSensor": false,
 				"vertices": [
 					[ { "x":18, "y":19 }, { "x":15.918695449829102, "y":52.92392921447754 }, { "x":17, "y":61 }, { "x":23.30951690673828, "y":63.15737581253052 }, { "x":37.80690002441406, "y":63.441638231277466 }, { "x":44, "y":61 }, { "x":44.34493637084961, "y":55.76655292510986 }, { "x":42, "y":19 } ]
@@ -52,7 +52,7 @@
 	},
 	"duck-fall": {
 		"type": "fromPhysicsEditor",
-		"label": "player",
+		"label": "duck",
 		"isStatic": false,
 		"density": 0.1,
 		"restitution": 0,
@@ -104,7 +104,7 @@
 		"type": "fromPhysicsEditor",
 		"label": "crate-big",
 		"isStatic": false,
-		"density": 0.10000000149011612,
+		"density": 0.1,
 		"restitution": 0,
 		"friction": 0.10000000149011612,
 		"frictionAir": 0.009999999776482582,
@@ -129,9 +129,9 @@
 		"type": "fromPhysicsEditor",
 		"label": "enemy",
 		"isStatic": false,
-		"density": 0.10000000149011612,
+		"density": 0.1,
 		"restitution": 0,
-		"friction": 0.10000000149011612,
+		"friction": 0.1,
 		"frictionAir": 10,
 		"frictionStatic": 0.5,
 		"collisionFilter": {
@@ -178,7 +178,7 @@
 	},
 	"duck-jump": {
 		"type": "fromPhysicsEditor",
-		"label": "player-jump",
+		"label": "duck",
 		"isStatic": false,
 		"density": 0.10000000149011612,
 		"restitution": 0,
@@ -192,7 +192,7 @@
 		},
 		"fixtures": [
 			{
-				"label": "",
+				"label": "duck",
 				"isSensor": false,
 				"circle": {
 					"x": 30.416078088295592,
@@ -201,5 +201,46 @@
 				}
 			}
 		]
+	},
+	"duck-run": {
+		"type": "fromPhysicsEditor",
+		"label": "duck",
+		"isStatic": false,
+		"density": 0.10000000149011612,
+		"restitution": 0,
+		"friction": 0.10000000149011612,
+		"frictionAir": 0.01,
+		"frictionStatic": 0.5,
+		"collisionFilter": {
+			"group": 0,
+			"category": 1,
+			"mask": 255
+		},
+		"fixtures": [
+			{
+				"label": "duck",
+				"isSensor": false,
+				"vertices": [
+					[ { "x":31, "y":0 }, { "x":14, "y":15 }, { "x":14, "y":39 }, { "x":23, "y":56 }, { "x":47, "y":61 }, { "x":45, "y":16 } ],
+					[ { "x":11, "y":65 }, { "x":23, "y":56 }, { "x":14, "y":39 } ]
+				]
+			}
+		]
+	},
+	"platform": {
+		"type": "fromPhysicsEditor",
+		"label": "platform",
+		"isStatic": true,
+		"density": 0.10000000149011612,
+		"restitution": 0,
+		"friction": 0.10000000149011612,
+		"frictionAir": 0.009999999776482582,
+		"frictionStatic": 0.5,
+		"collisionFilter": {
+			"group": 0,
+			"category": 16,
+			"mask": 23
+		},
+		"fixtures": []
 	}
 }

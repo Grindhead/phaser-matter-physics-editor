@@ -1,4 +1,4 @@
-import { ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
+import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
 import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 
 export class Player extends Phaser.Physics.Matter.Sprite {
@@ -12,10 +12,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       TEXTURE_ATLAS,
       PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].prefix + "0001.png",
       {
-        shape: shapes[ENTITIES.PLAYER],
+        shape: shapes[PHYSICS_ENTITIES.DUCK_IDLE],
       }
     );
-    this.name = ENTITIES.PLAYER;
+
     scene.add.existing(this);
   }
 }

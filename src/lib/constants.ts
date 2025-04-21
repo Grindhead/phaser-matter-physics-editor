@@ -12,7 +12,7 @@ export const ENTITIES = {
   COIN: "Coin",
   FINISH: "Finish",
   CRATE_SMALL: "CrateSmall",
-  CRATE_LARGE: "CrateLarge",
+  CRATE_BIG: "CrateBig",
   PLATFORM: "Platform",
 } as const;
 

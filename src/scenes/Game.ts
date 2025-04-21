@@ -3,6 +3,7 @@ import { PHYSICS, SCENES } from "../lib/constants";
 import { Player } from "../entities/Player/Player";
 import { Enemy } from "../entities/Enemy/Enemy";
 import { Coin } from "../entities/Coin/Coin";
+import { Platform } from "../entities/Platforms/Platform";
 
 export class Game extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
@@ -47,6 +48,7 @@ export class Game extends Scene {
       }
     );
 
+    new Platform(this, 450, 300);
     new Coin(this, 150, 300);
     new Player(this, 100, 200);
     new Enemy(this, 300, 200);

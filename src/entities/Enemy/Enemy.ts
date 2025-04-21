@@ -12,7 +12,6 @@ export class Enemy extends Phaser.Physics.Matter.Sprite {
       ENEMY_ANIMATIONS[ENEMY_ANIMATION_KEYS.IDLE].prefix,
       {
         shape: shapes[PHYSICS_ENTITIES.ENEMY],
-        ignoreGravity: true,
       }
     );
 

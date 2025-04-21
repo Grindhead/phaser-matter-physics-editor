@@ -24,6 +24,7 @@ export class Coin extends Phaser.Physics.Matter.Sprite {
         end: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.IDLE].frames,
         zeroPad: 4,
         suffix: ".png",
+        start: 1,
       }),
       repeat: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.IDLE].loop,
     });

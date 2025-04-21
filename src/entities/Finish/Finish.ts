@@ -1,4 +1,4 @@
-import { ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
+import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
 import { FINISH_ANIMATION_KEYS, FINISH_ANIMATIONS } from "./finishAnimations";
 
 export class Finish extends Phaser.Physics.Matter.Sprite {
@@ -11,12 +11,12 @@ export class Finish extends Phaser.Physics.Matter.Sprite {
       TEXTURE_ATLAS,
       FINISH_ANIMATIONS[FINISH_ANIMATION_KEYS.IDLE].prefix,
       {
-        shape: shapes[ENTITIES.FINISH],
+        shape: shapes[PHYSICS_ENTITIES.FINISH],
         isStatic: true,
         isSensor: true,
       }
     );
-    this.name = ENTITIES.FINISH;
+
     scene.add.existing(this);
   }
 }

@@ -1,4 +1,4 @@
-import { ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
+import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
 import {
   CRATE_BIG_ANIMATION_KEYS,
   CRATE_BIG_ANIMATIONS,
@@ -14,10 +14,10 @@ export class CrateBig extends Phaser.Physics.Matter.Sprite {
       TEXTURE_ATLAS,
       CRATE_BIG_ANIMATIONS[CRATE_BIG_ANIMATION_KEYS.IDLE].prefix,
       {
-        shape: shapes[ENTITIES.CRATE_BIG],
+        shape: shapes[PHYSICS_ENTITIES.CRATE_BIG],
       }
     );
-    this.name = ENTITIES.CRATE_BIG;
+
     scene.add.existing(this);
   }
 }

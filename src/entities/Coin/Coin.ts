@@ -1,4 +1,4 @@
-import { ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
+import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
 import { COIN_ANIMATION_KEYS, COIN_ANIMATIONS } from "./coinAnimations";
 
 export class Coin extends Phaser.Physics.Matter.Sprite {
@@ -11,12 +11,12 @@ export class Coin extends Phaser.Physics.Matter.Sprite {
       TEXTURE_ATLAS,
       COIN_ANIMATIONS[COIN_ANIMATION_KEYS.IDLE].prefix + "0001.png",
       {
-        shape: shapes[ENTITIES.COIN],
+        shape: shapes[PHYSICS_ENTITIES.COIN],
         isStatic: true,
         isSensor: true,
       }
     );
-    this.name = ENTITIES.COIN;
+
     scene.add.existing(this);
   }
 }

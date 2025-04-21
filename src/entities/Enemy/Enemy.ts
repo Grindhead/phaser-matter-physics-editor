@@ -1,4 +1,4 @@
-import { ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
+import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
 import { ENEMY_ANIMATION_KEYS, ENEMY_ANIMATIONS } from "./enemyAnimations";
 
 export class Enemy extends Phaser.Physics.Matter.Sprite {
@@ -11,11 +11,11 @@ export class Enemy extends Phaser.Physics.Matter.Sprite {
       TEXTURE_ATLAS,
       ENEMY_ANIMATIONS[ENEMY_ANIMATION_KEYS.IDLE].prefix,
       {
-        shape: shapes[ENTITIES.ENEMY],
+        shape: shapes[PHYSICS_ENTITIES.ENEMY],
         ignoreGravity: true,
       }
     );
-    this.name = ENTITIES.ENEMY;
+
     scene.add.existing(this);
   }
 }

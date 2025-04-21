@@ -158,9 +158,11 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     if (left) {
       this.playRunAnimation();
       this.setVelocityX(-WALK_VELOCITY);
+      this.flipX = true;
     } else if (right) {
       this.playRunAnimation();
       this.setVelocityX(WALK_VELOCITY);
+      this.flipX = false;
     } else {
       this.playIdleAnimation();
       this.setVelocityX(0);

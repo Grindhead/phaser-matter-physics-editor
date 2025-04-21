@@ -23,7 +23,7 @@ const config: Types.Core.GameConfig = {
     matter: {
       gravity: {
         x: 0,
-        y: 0.5,
+        y: 1,
       },
       debug: true,
     },

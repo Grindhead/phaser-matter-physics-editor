@@ -9,8 +9,8 @@ import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
 import { Finish } from "../entities/Finish/Finish";
 
 export class Game extends Scene {
-  camera: Phaser.Cameras.Scene2D.Camera;
-  background: Phaser.GameObjects.Image;
+  private background: Phaser.GameObjects.Image;
+  private player: Player;
 
   constructor() {
     super(SCENES.GAME);
@@ -40,10 +40,14 @@ export class Game extends Scene {
     new CrateBig(this, 400, 250);
     new CrateSmall(this, 650, 250);
     new Coin(this, 550, 250);
-    new Player(this, 100, 200);
     new Enemy(this, 880, 250);
+
+    this.player = new Player(this, 100, 200);
   }
 
+  update(_time: number, _delta: number): void {
+    this.player.update();
+  }
   /**
    *  Handle game over
    */

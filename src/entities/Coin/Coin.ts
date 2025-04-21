@@ -17,6 +17,19 @@ export class Coin extends Phaser.Physics.Matter.Sprite {
       }
     );
 
+    this.anims.create({
+      key: COIN_ANIMATION_KEYS.IDLE,
+      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
+        prefix: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.IDLE].prefix,
+        end: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.IDLE].frames,
+        zeroPad: 4,
+        suffix: ".png",
+      }),
+      repeat: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.IDLE].loop,
+    });
+
+    this.play(COIN_ANIMATION_KEYS.IDLE);
+
     scene.add.existing(this);
   }
 }

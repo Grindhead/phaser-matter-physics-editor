@@ -54,8 +54,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   update(): void {
     if (!this.cursors || !this.wasd) return;
 
-    console.log(this.getVelocity().y);
-
     const left = this.cursors.left?.isDown || this.wasd.A?.isDown;
     const right = this.cursors.right?.isDown || this.wasd.D?.isDown;
     const up = this.cursors.up?.isDown || this.wasd.W?.isDown;

@@ -1,7 +1,7 @@
 export type AnimationDefinition = {
   prefix: string;
   frames: number;
-  loop: boolean;
+  loop: number;
   nextAnimation?: string;
 };
 

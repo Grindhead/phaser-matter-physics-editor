@@ -10,6 +10,6 @@ export const ENEMY_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
   IDLE: {
     prefix: "enemy/enemy.png",
     frames: 10,
-    loop: false,
+    loop: 0,
   },
 };

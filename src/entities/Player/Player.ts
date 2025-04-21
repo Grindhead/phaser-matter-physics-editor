@@ -32,8 +32,24 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     this.setFixedRotation();
     this.setupControls();
+    this.createAnimations();
+
+    this.playIdleAnimation();
 
     scene.add.existing(this);
+  }
+
+  private createAnimations() {
+    this.anims.create({
+      key: PLAYER_ANIMATION_KEYS.IDLE,
+      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
+        prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].prefix,
+        end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].frames,
+        zeroPad: 4,
+        suffix: ".png",
+      }),
+      repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].loop,
+    });
   }
 
   private setupControls() {
@@ -86,11 +102,27 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       const { bodyA, bodyB } = pair;
 
       if (this.isPlayerBody(bodyA) && this.isGroundBody(bodyB)) {
+        if (!this.isGrounded) {
+          this.playIdleAnimation();
+        }
+
         this.isGrounded = true;
       } else if (this.isPlayerBody(bodyB) && this.isGroundBody(bodyA)) {
+        if (!this.isGrounded) {
+          this.playIdleAnimation();
+        }
+
         this.isGrounded = true;
       }
     }
+  }
+
+  private playIdleAnimation() {
+    this.play(PLAYER_ANIMATION_KEYS.IDLE);
+  }
+
+  private playJumpAnimation() {
+    this.play(PLAYER_ANIMATION_KEYS.JUMP);
   }
 
   /**

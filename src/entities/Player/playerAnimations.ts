@@ -30,6 +30,7 @@ export const PLAYER_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
     prefix: "player/jump/duck-jump-",
     frames: 12,
     loop: false,
+    nextAnimation: PLAYER_ANIMATION_KEYS.FALL,
   },
   RUN: {
     prefix: "player/run/duck-run-",

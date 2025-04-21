@@ -58,7 +58,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       this.setVelocityX(0);
     }
 
-    if (up) {
+    if (up && this.getVelocity().y === 0) {
       this.setVelocityY(JUMP_VELOCITY);
     }
   }

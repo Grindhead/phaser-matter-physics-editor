@@ -42,6 +42,8 @@ export class Game extends Scene {
     this.input.keyboard?.on("keydown-ENTER", () => {
       if (this.gameOverButton && !this.restartTriggered) this.restartLevel();
     });
+
+    this.restartTriggered = false;
   }
 
   checkCollisions = ({
@@ -157,7 +159,7 @@ export class Game extends Scene {
       ease: "Power2",
     });
 
-    this.gameOverButton.once("pointerup", () => {
+    this.gameOverButton.on("pointerup", () => {
       if (!this.restartTriggered) this.restartLevel();
     });
   }

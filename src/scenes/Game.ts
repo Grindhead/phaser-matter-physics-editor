@@ -10,7 +10,7 @@ import { Finish } from "../entities/Finish/Finish";
 import { isCoinBody } from "../lib/helpers/isCoinBody";
 import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
-
+import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 export class Game extends Scene {
   private background: Phaser.GameObjects.Image;
   private player: Player;
@@ -43,13 +43,30 @@ export class Game extends Scene {
     for (const { bodyA, bodyB } of pairs) {
       if (
         this.checkCoinCollision(bodyA, bodyB) ||
-        this.checkFinishCollision(bodyA, bodyB)
+        this.checkFinishCollision(bodyA, bodyB) ||
+        this.checkEnemyCollision(bodyA, bodyB)
       ) {
         return;
       }
     }
   };
 
+  checkEnemyCollision(
+    bodyA: MatterJS.BodyType,
+    bodyB: MatterJS.BodyType
+  ): boolean {
+    if (isEnemyBody(bodyA) && isPlayerBody(bodyB)) {
+      this.handleGameOver();
+      return true;
+    }
+
+    if (isEnemyBody(bodyB) && isPlayerBody(bodyA)) {
+      this.handleGameOver();
+      return true;
+    }
+
+    return false;
+  }
   checkFinishCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
@@ -122,6 +139,7 @@ export class Game extends Scene {
    */
 
   handleGameOver() {
-    this.scene.start(SCENES.GAME_OVER);
+    this.player.kill();
+    //this.scene.start(SCENES.GAME_OVER);
   }
 }

@@ -1,35 +1,21 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
+import { isGroundBody } from "../../lib/helpers/isGroundBody";
+import { isPlayerBody } from "../../lib/helpers/isPlayerBody";
 import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 
 const JUMP_VELOCITY = -8;
 const WALK_VELOCITY = 3;
+const FALL_DELAY_MS = 150;
 
-/**
- * Represents the player entity in the game.
- * Handles physics, movement, animations, and input (keyboard or mobile).
- */
 export class Player extends Phaser.Physics.Matter.Sprite {
-  /**
-   * Keyboard cursor controls (arrow keys).
-   */
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
-
-  /**
-   * WASD keys for movement.
-   */
   private wasd?: Record<string, Phaser.Input.Keyboard.Key>;
-
-  /**
-   * Whether the player is currently touching the ground.
-   */
   private isGrounded = false;
+  private groundContacts = new Set<MatterJS.BodyType>();
+  private currentAnimKey = "";
+  private jumpInProgress = false;
+  private lastJumpTime = 0;
 
-  /**
-   * Creates a new player instance.
-   * @param scene - The current Phaser scene.
-   * @param x - The x coordinate to spawn the player at.
-   * @param y - The y coordinate to spawn the player at.
-   */
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
 
@@ -44,89 +30,36 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       }
     );
 
-    this.scene.matter.world.on(
-      "collisionstart",
-      this.handleCollisionStart,
-      this
-    );
-    this.scene.matter.world.on("collisionend", this.handleCollisionEnd, this);
+    scene.matter.world.on("collisionstart", this.handleCollisionStart, this);
+    scene.matter.world.on("collisionend", this.handleCollisionEnd, this);
 
     this.setFixedRotation();
     this.setupControls();
     this.createAnimations();
-    this.playIdleAnimation();
+    this.playAnimation(PLAYER_ANIMATION_KEYS.IDLE, true);
 
     scene.add.existing(this);
   }
 
-  /**
-   * Defines and creates all player-related animations.
-   */
   private createAnimations() {
-    this.anims.create({
-      key: PLAYER_ANIMATION_KEYS.IDLE,
-      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
-        prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].prefix,
-        end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].frames,
-        zeroPad: 4,
-        suffix: ".png",
-        start: 1,
-      }),
-      repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].loop,
-    });
+    const create = <K extends keyof typeof PLAYER_ANIMATIONS>(key: K) =>
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
+          prefix: PLAYER_ANIMATIONS[key].prefix,
+          end: PLAYER_ANIMATIONS[key].frames,
+          zeroPad: 4,
+          suffix: ".png",
+          start: 1,
+        }),
+        repeat: PLAYER_ANIMATIONS[key].loop,
+      });
 
-    this.anims.create({
-      key: PLAYER_ANIMATION_KEYS.JUMP,
-      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
-        prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.JUMP].prefix,
-        end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.JUMP].frames,
-        zeroPad: 4,
-        suffix: ".png",
-        start: 1,
-      }),
-      repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.JUMP].loop,
-    });
-
-    this.anims.create({
-      key: PLAYER_ANIMATION_KEYS.RUN,
-      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
-        prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.RUN].prefix,
-        end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.RUN].frames,
-        zeroPad: 4,
-        suffix: ".png",
-        start: 1,
-      }),
-      repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.RUN].loop,
-    });
-
-    this.anims.create({
-      key: PLAYER_ANIMATION_KEYS.FALL,
-      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
-        prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.FALL].prefix,
-        end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.FALL].frames,
-        start: 1,
-        zeroPad: 4,
-        suffix: ".png",
-      }),
-      repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.FALL].loop,
-    });
-
-    this.anims.create({
-      key: PLAYER_ANIMATION_KEYS.DEAD,
-      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
-        prefix: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.DEAD].prefix,
-        end: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.DEAD].frames,
-        zeroPad: 4,
-        suffix: ".png",
-        start: 1,
-      }),
-      repeat: PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.DEAD].loop,
-    });
+    Object.keys(PLAYER_ANIMATION_KEYS).forEach((key) =>
+      create(key as keyof typeof PLAYER_ANIMATION_KEYS)
+    );
   }
 
-  /**
-   * Sets up player input controls (desktop or mobile).
-   */
   private setupControls() {
     const isDesktop = this.scene.sys.game.device.os.desktop;
     if (isDesktop) {
@@ -140,149 +73,99 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
   }
 
-  /**
-   * Placeholder for mobile control initialization.
-   */
   private createMobileControls() {}
 
-  /**
-   * Main update loop. Handles movement and jumping.
-   */
-  update(): void {
+  update(_time: number, delta: number): void {
     if (!this.cursors || !this.wasd) return;
 
     const left = this.cursors.left?.isDown || this.wasd.A?.isDown;
     const right = this.cursors.right?.isDown || this.wasd.D?.isDown;
     const up = this.cursors.up?.isDown || this.wasd.W?.isDown;
 
+    let targetVelocityX = 0;
     if (left) {
-      this.playRunAnimation();
-      this.setVelocityX(-WALK_VELOCITY);
+      targetVelocityX = -WALK_VELOCITY;
       this.flipX = true;
     } else if (right) {
-      this.playRunAnimation();
-      this.setVelocityX(WALK_VELOCITY);
+      targetVelocityX = WALK_VELOCITY;
       this.flipX = false;
-    } else {
-      this.playIdleAnimation();
-      this.setVelocityX(0);
     }
+    this.setVelocityX(targetVelocityX);
 
-    if (
-      (up && this.isGrounded) ||
-      (up && Math.abs(this.getVelocity().y) < 0.001)
-    ) {
+    // Jump
+    if (up && this.isGrounded && !this.jumpInProgress) {
       this.setVelocityY(JUMP_VELOCITY);
-      this.playJumpAnimation();
+      this.jumpInProgress = true;
+      this.lastJumpTime = this.scene.time.now;
+      this.playAnimation(PLAYER_ANIMATION_KEYS.JUMP, true);
+      this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+        if (!this.isGrounded) {
+          this.playAnimation(PLAYER_ANIMATION_KEYS.FALL, true);
+        }
+      });
+      return;
+    }
+
+    // In air
+    if (!this.isGrounded && !this.jumpInProgress) {
+      if (
+        this.currentAnimKey !== PLAYER_ANIMATION_KEYS.FALL &&
+        this.scene.time.now - this.lastJumpTime > FALL_DELAY_MS
+      ) {
+        this.playAnimation(PLAYER_ANIMATION_KEYS.FALL);
+      }
+      return;
+    }
+
+    // On ground
+    if (this.isGrounded && !this.jumpInProgress) {
+      if (left || right) {
+        this.playAnimation(PLAYER_ANIMATION_KEYS.RUN);
+      } else {
+        this.playAnimation(PLAYER_ANIMATION_KEYS.IDLE);
+      }
     }
   }
 
-  /**
-   * Checks if the player is grounded and moving horizontally.
-   * @returns True if moving on the platform.
-   */
-  private isMovingOnPlatform(): boolean {
-    return this.isGrounded && Math.abs(this.getVelocity().x) > 0;
+  private playAnimation(key: string, force = false) {
+    if (this.currentAnimKey === key) {
+      if (force) this.anims.stop();
+      else return;
+    }
+    this.play(key);
+    this.currentAnimKey = key;
   }
 
-  /**
-   * Handles collision start event.
-   * Used to detect ground contact.
-   * @param event - Matter collision event.
-   */
   private handleCollisionStart(
     event: Phaser.Physics.Matter.Events.CollisionStartEvent
   ) {
-    for (const pair of event.pairs) {
-      const { bodyA, bodyB } = pair;
-
-      if (this.isPlayerBody(bodyA) && this.isGroundBody(bodyB)) {
-        this.playIdleAnimation();
-        this.isGrounded = true;
-      } else if (this.isPlayerBody(bodyB) && this.isGroundBody(bodyA)) {
-        this.playIdleAnimation();
-        this.isGrounded = true;
+    for (const { bodyA, bodyB } of event.pairs) {
+      if (isPlayerBody(bodyA) && isGroundBody(bodyB)) {
+        this.groundContacts.add(bodyB);
+      } else if (isPlayerBody(bodyB) && isGroundBody(bodyA)) {
+        this.groundContacts.add(bodyA);
       }
+    }
+
+    const wasGrounded = this.isGrounded;
+    this.isGrounded = this.groundContacts.size > 0;
+
+    if (this.isGrounded && !wasGrounded) {
+      this.jumpInProgress = false;
     }
   }
 
-  /**
-   * Plays the idle animation if the player is grounded and not moving.
-   */
-  private playIdleAnimation() {
-    if (!this.isGrounded) return;
-    if (this.isMovingOnPlatform()) return;
-    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.IDLE) return;
-
-    this.play(PLAYER_ANIMATION_KEYS.IDLE);
-  }
-
-  /**
-   * Plays the jump animation, then triggers the fall animation when complete.
-   */
-  private playJumpAnimation() {
-    this.play(PLAYER_ANIMATION_KEYS.JUMP);
-
-    this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      this.playFallAnimation();
-    });
-  }
-
-  /**
-   * Plays the falling animation.
-   */
-  private playFallAnimation() {
-    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.FALL) return;
-    this.play(PLAYER_ANIMATION_KEYS.FALL);
-  }
-
-  /**
-   * Plays the run animation if grounded and moving.
-   */
-  private playRunAnimation() {
-    if (!this.isGrounded) return;
-    if (!this.isMovingOnPlatform()) return;
-    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.RUN) return;
-
-    this.play(PLAYER_ANIMATION_KEYS.RUN);
-  }
-
-  /**
-   * Handles collision end event.
-   * Used to detect when the player is no longer grounded.
-   * @param event - Matter collision event.
-   */
   private handleCollisionEnd(
     event: Phaser.Physics.Matter.Events.CollisionEndEvent
   ) {
-    for (const pair of event.pairs) {
-      const { bodyA, bodyB } = pair;
-
-      if (this.isPlayerBody(bodyA) && this.isGroundBody(bodyB)) {
-        this.isGrounded = false;
-      } else if (this.isPlayerBody(bodyB) && this.isGroundBody(bodyA)) {
-        this.isGrounded = false;
+    for (const { bodyA, bodyB } of event.pairs) {
+      if (isPlayerBody(bodyA) && isGroundBody(bodyB)) {
+        this.groundContacts.delete(bodyB);
+      } else if (isPlayerBody(bodyB) && isGroundBody(bodyA)) {
+        this.groundContacts.delete(bodyA);
       }
     }
-  }
 
-  /**
-   * Checks if the body is the player's physics body.
-   * @param body - Matter body to check.
-   * @returns True if it's the player body.
-   */
-  private isPlayerBody(body: MatterJS.BodyType): boolean {
-    return body.label === "duck"; // Assumes duck-body is the root body
-  }
-
-  /**
-   * Checks if the body is a valid ground type (platform or crate).
-   * @param body - Matter body to check.
-   * @returns True if it's a ground body.
-   */
-  private isGroundBody(body: MatterJS.BodyType): boolean {
-    const label = body.label?.toLowerCase() ?? "";
-
-    return ["platform", "crate-big", "crate-small"].includes(label);
+    this.isGrounded = this.groundContacts.size > 0;
   }
 }

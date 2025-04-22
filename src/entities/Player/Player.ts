@@ -16,6 +16,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private currentAnimKey = "";
   private jumpInProgress = false;
   private lastJumpTime = 0;
+  private isAlive = true;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -44,6 +45,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     );
     this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, true);
 
+    this.isAlive = true;
+
     scene.add.existing(this);
   }
 
@@ -63,6 +66,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private createMobileControls() {}
 
   update(_time: number, _delta: number): void {
+    if (!this.isAlive) {
+      return;
+    }
+
     if (!this.cursors || !this.wasd) return;
 
     const left = this.cursors.left?.isDown || this.wasd.A?.isDown;
@@ -154,5 +161,13 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
 
     this.isGrounded = this.groundContacts.size > 0;
+  }
+
+  public kill() {
+    this.isAlive = false;
+    this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_DEAD);
+    this.setVelocityX(0);
+    this.setVelocityY(0);
+    this.setStatic(true);
   }
 }

@@ -11,6 +11,7 @@ import { isCoinBody } from "../lib/helpers/isCoinBody";
 import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
+import { CoinUI } from "../entities/ui/CoinUI";
 
 const WORLD_WIDTH = 10000;
 const WORLD_HEIGHT = 4000;
@@ -26,6 +27,7 @@ export class Game extends Scene {
   private startButton?: Phaser.GameObjects.Image;
   private restartTriggered = false;
   private physicsEnabled = false;
+  private coinUI: CoinUI;
 
   constructor() {
     super(SCENES.GAME);
@@ -88,6 +90,8 @@ export class Game extends Scene {
       this.startButton?.destroy();
       this.startGame();
     });
+
+    this.coinUI = new CoinUI(this);
   }
 
   /**
@@ -233,6 +237,7 @@ export class Game extends Scene {
     const coinSprite = body.gameObject as Coin;
     coinSprite?.collect();
     this.coins++;
+    this.coinUI.update(this.coins);
     console.log(this.coins);
   }
 

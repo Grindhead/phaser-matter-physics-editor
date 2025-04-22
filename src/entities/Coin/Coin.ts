@@ -1,5 +1,4 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
-import { createAnimations } from "../../lib/helpers/createAnimations";
 import { COIN_ANIMATION_KEYS, COIN_ANIMATIONS } from "./coinAnimations";
 
 export class Coin extends Phaser.Physics.Matter.Sprite {

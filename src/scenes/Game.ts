@@ -7,10 +7,13 @@ import { Platform } from "../entities/Platforms/Platform";
 import { CrateBig } from "../entities/CrateBig/CrateBig";
 import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
 import { Finish } from "../entities/Finish/Finish";
+import { isCoinBody } from "../lib/helpers/isCoinBody";
+import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 
 export class Game extends Scene {
   private background: Phaser.GameObjects.Image;
   private player: Player;
+  private coins: number = 0;
 
   constructor() {
     super(SCENES.GAME);
@@ -25,6 +28,43 @@ export class Game extends Scene {
     this.background.setOrigin(0.5, 0.5);
 
     this.createMatterWorld();
+    this.matter.world.on(
+      "collisionstart",
+      (event: Phaser.Physics.Matter.Events.CollisionStartEvent) => {
+        this.checkCollisions(event);
+      }
+    );
+  }
+
+  checkCollisions(event: Phaser.Physics.Matter.Events.CollisionEndEvent) {
+    for (const pair of event.pairs) {
+      const { bodyA, bodyB } = pair;
+      this.checkCoinCollision(bodyA, bodyB);
+    }
+  }
+
+  checkCoinCollision(bodyA: MatterJS.BodyType, bodyB: MatterJS.BodyType) {
+    if (isCoinBody(bodyA) && isPlayerBody(bodyB)) {
+      this.collectCoin(bodyA);
+      return;
+    }
+
+    if (isCoinBody(bodyB) && isPlayerBody(bodyA)) {
+      this.collectCoin(bodyB);
+      return;
+    }
+  }
+
+  collectCoin(body: MatterJS.BodyType) {
+    const coinSprite = body.gameObject as Coin;
+
+    // Now you can call methods on the coin sprite
+    if (coinSprite) {
+      coinSprite.collect();
+    }
+
+    this.coins++;
+    console.log(this.coins);
   }
 
   /**
@@ -45,8 +85,8 @@ export class Game extends Scene {
     this.player = new Player(this, 100, 200);
   }
 
-  update(_time: number, _delta: number): void {
-    this.player.update();
+  update(time: number, delta: number): void {
+    this.player.update(time, delta);
   }
   /**
    *  Handle game over

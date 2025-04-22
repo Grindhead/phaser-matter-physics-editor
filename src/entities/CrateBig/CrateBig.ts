@@ -12,7 +12,7 @@ export class CrateBig extends Phaser.Physics.Matter.Sprite {
       x,
       y,
       TEXTURE_ATLAS,
-      CRATE_BIG_ANIMATIONS[CRATE_BIG_ANIMATION_KEYS.IDLE].prefix,
+      CRATE_BIG_ANIMATIONS[CRATE_BIG_ANIMATION_KEYS.CRATE_BIG_IDLE].prefix,
       {
         shape: shapes[PHYSICS_ENTITIES.CRATE_BIG],
       }

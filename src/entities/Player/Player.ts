@@ -1,4 +1,5 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
+import { createAnimations } from "../../lib/helpers/createAnimations";
 import { isGroundBody } from "../../lib/helpers/isGroundBody";
 import { isPlayerBody } from "../../lib/helpers/isPlayerBody";
 import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
@@ -24,7 +25,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       x,
       y,
       TEXTURE_ATLAS,
-      PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.IDLE].prefix + "0001.png",
+      PLAYER_ANIMATIONS[PLAYER_ANIMATION_KEYS.DUCK_IDLE].prefix + "0001.png",
       {
         shape: shapes[PHYSICS_ENTITIES.DUCK_IDLE],
       }
@@ -35,29 +36,15 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     this.setFixedRotation();
     this.setupControls();
-    this.createAnimations();
-    this.playAnimation(PLAYER_ANIMATION_KEYS.IDLE, true);
+    createAnimations(
+      this,
+      this.anims.animationManager,
+      TEXTURE_ATLAS,
+      PLAYER_ANIMATIONS
+    );
+    this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, true);
 
     scene.add.existing(this);
-  }
-
-  private createAnimations() {
-    const create = <K extends keyof typeof PLAYER_ANIMATIONS>(key: K) =>
-      this.anims.create({
-        key,
-        frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
-          prefix: PLAYER_ANIMATIONS[key].prefix,
-          end: PLAYER_ANIMATIONS[key].frames,
-          zeroPad: 4,
-          suffix: ".png",
-          start: 1,
-        }),
-        repeat: PLAYER_ANIMATIONS[key].loop,
-      });
-
-    Object.keys(PLAYER_ANIMATION_KEYS).forEach((key) =>
-      create(key as keyof typeof PLAYER_ANIMATION_KEYS)
-    );
   }
 
   private setupControls() {
@@ -75,7 +62,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
   private createMobileControls() {}
 
-  update(_time: number, delta: number): void {
+  update(_time: number, _delta: number): void {
     if (!this.cursors || !this.wasd) return;
 
     const left = this.cursors.left?.isDown || this.wasd.A?.isDown;
@@ -97,10 +84,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       this.setVelocityY(JUMP_VELOCITY);
       this.jumpInProgress = true;
       this.lastJumpTime = this.scene.time.now;
-      this.playAnimation(PLAYER_ANIMATION_KEYS.JUMP, true);
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_JUMP, true);
       this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
         if (!this.isGrounded) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.FALL, true);
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
         }
       });
       return;
@@ -109,10 +96,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     // In air
     if (!this.isGrounded && !this.jumpInProgress) {
       if (
-        this.currentAnimKey !== PLAYER_ANIMATION_KEYS.FALL &&
+        this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_FALL &&
         this.scene.time.now - this.lastJumpTime > FALL_DELAY_MS
       ) {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.FALL);
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
       }
       return;
     }
@@ -120,9 +107,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     // On ground
     if (this.isGrounded && !this.jumpInProgress) {
       if (left || right) {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.RUN);
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
       } else {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.IDLE);
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE);
       }
     }
   }

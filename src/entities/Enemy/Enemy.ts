@@ -9,7 +9,7 @@ export class Enemy extends Phaser.Physics.Matter.Sprite {
       x,
       y,
       TEXTURE_ATLAS,
-      ENEMY_ANIMATIONS[ENEMY_ANIMATION_KEYS.IDLE].prefix,
+      ENEMY_ANIMATIONS[ENEMY_ANIMATION_KEYS.ENEMY_IDLE].prefix,
       {
         shape: shapes[PHYSICS_ENTITIES.ENEMY],
       }

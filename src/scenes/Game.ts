@@ -1,5 +1,5 @@
 import { Scene } from "phaser";
-import { SCENES } from "../lib/constants";
+import { SCENES, TEXTURE_ATLAS } from "../lib/constants";
 import { Player } from "../entities/Player/Player";
 import { Enemy } from "../entities/Enemy/Enemy";
 import { Coin } from "../entities/Coin/Coin";
@@ -11,10 +11,13 @@ import { isCoinBody } from "../lib/helpers/isCoinBody";
 import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
+
 export class Game extends Scene {
   private background: Phaser.GameObjects.Image;
   private player: Player;
   private coins: number = 0;
+  private gameOverButton?: Phaser.GameObjects.Image;
+  private restartTriggered = false;
 
   constructor() {
     super(SCENES.GAME);
@@ -35,6 +38,10 @@ export class Game extends Scene {
         this.checkCollisions(event);
       }
     );
+
+    this.input.keyboard?.on("keydown-ENTER", () => {
+      if (this.gameOverButton && !this.restartTriggered) this.restartLevel();
+    });
   }
 
   checkCollisions = ({
@@ -55,18 +62,17 @@ export class Game extends Scene {
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
-    if (isEnemyBody(bodyA) && isPlayerBody(bodyB)) {
-      this.handleGameOver();
-      return true;
-    }
-
-    if (isEnemyBody(bodyB) && isPlayerBody(bodyA)) {
+    if (
+      (isEnemyBody(bodyA) && isPlayerBody(bodyB)) ||
+      (isEnemyBody(bodyB) && isPlayerBody(bodyA))
+    ) {
       this.handleGameOver();
       return true;
     }
 
     return false;
   }
+
   checkFinishCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
@@ -104,7 +110,6 @@ export class Game extends Scene {
   collectCoin(body: MatterJS.BodyType) {
     const coinSprite = body.gameObject as Coin;
 
-    // Now you can call methods on the coin sprite
     if (coinSprite) {
       coinSprite.collect();
     }
@@ -112,10 +117,6 @@ export class Game extends Scene {
     this.coins++;
     console.log(this.coins);
   }
-
-  /**
-   * Create the matter world
-   */
 
   createMatterWorld() {
     new Platform(this, 70, 300, 5, "1");
@@ -134,12 +135,35 @@ export class Game extends Scene {
   update(time: number, delta: number): void {
     this.player.update(time, delta);
   }
-  /**
-   *  Handle game over
-   */
 
   handleGameOver() {
     this.player.kill();
-    //this.scene.start(SCENES.GAME_OVER);
+
+    this.gameOverButton = this.add
+      .image(
+        this.game.canvas.width / 2,
+        this.game.canvas.height / 2,
+        TEXTURE_ATLAS,
+        "ui/game-over.png"
+      )
+      .setOrigin(0.5)
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
+
+    this.tweens.add({
+      targets: this.gameOverButton,
+      alpha: 1,
+      duration: 400,
+      ease: "Power2",
+    });
+
+    this.gameOverButton.once("pointerup", () => {
+      if (!this.restartTriggered) this.restartLevel();
+    });
+  }
+
+  restartLevel() {
+    this.restartTriggered = true;
+    this.scene.restart();
   }
 }

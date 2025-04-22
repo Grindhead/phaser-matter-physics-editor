@@ -18,13 +18,6 @@ export class Coin extends Phaser.Physics.Matter.Sprite {
       }
     );
 
-    createAnimations(
-      this,
-      this.anims.animationManager,
-      TEXTURE_ATLAS,
-      COIN_ANIMATIONS
-    );
-
     this.play(COIN_ANIMATION_KEYS.COIN_IDLE);
 
     scene.add.existing(this);

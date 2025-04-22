@@ -13,7 +13,7 @@ export class CoinUI {
     this.text = this.scene.add
       .text(16, 16, "Coins: 0", {
         fontFamily: "Roboto",
-        fontSize: "32px",
+        fontSize: "18px",
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 3,

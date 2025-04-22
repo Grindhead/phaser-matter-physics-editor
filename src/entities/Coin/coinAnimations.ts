@@ -12,10 +12,12 @@ export const COIN_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
     prefix: "coin/coin-idle/coin-idle-",
     frames: 23,
     loop: -1,
+    frameRate: 30,
   },
   COIN_COLLECT: {
     prefix: "coin/coin-collect/coin-collect-",
     frames: 8,
     loop: 0,
+    frameRate: 30,
   },
 };

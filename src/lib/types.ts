@@ -3,6 +3,7 @@ export type AnimationDefinition = {
   frames: number;
   loop: number;
   nextAnimation?: string;
+  frameRate: number;
 };
 
 export type EntityAnimations<T extends string> = Record<T, AnimationDefinition>;

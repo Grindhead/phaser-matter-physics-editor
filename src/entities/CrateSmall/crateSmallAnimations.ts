@@ -12,5 +12,6 @@ export const CRATE_SMALL_ANIMATIONS: Record<AnimationKey, AnimationDefinition> =
       prefix: "crate/crate-small.png",
       frames: 1,
       loop: 0,
+      frameRate: 0,
     },
   };

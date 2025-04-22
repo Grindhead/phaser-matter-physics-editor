@@ -11,5 +11,6 @@ export const ENEMY_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
     prefix: "enemy/enemy.png",
     frames: 10,
     loop: 0,
+    frameRate: 0,
   },
 };

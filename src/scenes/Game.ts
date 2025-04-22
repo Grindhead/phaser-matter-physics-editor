@@ -12,6 +12,13 @@ import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 
+const WORLD_WIDTH = 10000;
+const WORLD_HEIGHT = 4000;
+
+/**
+ * The main game scene. Handles gameplay logic, world setup,
+ * collisions, camera follow, and UI for restarting the level.
+ */
 export class Game extends Scene {
   private background: Phaser.GameObjects.Image;
   private player: Player;
@@ -23,6 +30,9 @@ export class Game extends Scene {
     super(SCENES.GAME);
   }
 
+  /**
+   * Called once when the scene is created. Sets up the world, physics, camera, and entities.
+   */
   create() {
     this.background = this.add.image(
       this.game.canvas.width / 2,
@@ -31,7 +41,11 @@ export class Game extends Scene {
     );
     this.background.setOrigin(0.5, 0.5);
 
+    this.matter.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
     this.createMatterWorld();
+
     this.matter.world.on(
       "collisionstart",
       (event: Phaser.Physics.Matter.Events.CollisionStartEvent) => {
@@ -39,13 +53,16 @@ export class Game extends Scene {
       }
     );
 
-    this.input.keyboard?.on("keydown-ENTER", () => {
-      if (this.gameOverButton && !this.restartTriggered) this.restartLevel();
-    });
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+    this.cameras.main.setLerp(0.08, 0.08);
 
     this.restartTriggered = false;
   }
 
+  /**
+   * Handles all collision start events.
+   * @param pairs Matter.js collision pairs
+   */
   checkCollisions = ({
     pairs,
   }: Phaser.Physics.Matter.Events.CollisionEndEvent): void => {
@@ -60,6 +77,10 @@ export class Game extends Scene {
     }
   };
 
+  /**
+   * Handles player-enemy collisions.
+   * @returns True if a collision was handled
+   */
   checkEnemyCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
@@ -75,6 +96,10 @@ export class Game extends Scene {
     return false;
   }
 
+  /**
+   * Handles player-finish collisions.
+   * @returns True if a collision was handled
+   */
   checkFinishCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
@@ -92,6 +117,10 @@ export class Game extends Scene {
     return false;
   }
 
+  /**
+   * Handles player-coin collisions.
+   * @returns True if a coin was collected
+   */
   checkCoinCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
@@ -109,6 +138,10 @@ export class Game extends Scene {
     return false;
   }
 
+  /**
+   * Increments coin count and plays collection logic.
+   * @param body The Matter body associated with the coin
+   */
   collectCoin(body: MatterJS.BodyType) {
     const coinSprite = body.gameObject as Coin;
 
@@ -120,6 +153,9 @@ export class Game extends Scene {
     console.log(this.coins);
   }
 
+  /**
+   * Spawns all physics-based objects and the player in the scene.
+   */
   createMatterWorld() {
     new Platform(this, 70, 300, 5, "1");
     new Platform(this, 350, 300, 6, "2");
@@ -134,20 +170,28 @@ export class Game extends Scene {
     this.player = new Player(this, 100, 200);
   }
 
+  /**
+   * Called every game tick. Updates the player.
+   */
   update(time: number, delta: number): void {
     this.player.update(time, delta);
   }
 
+  /**
+   * Triggers game over logic and shows the restart UI centered on the camera.
+   */
+  /**
+   * Triggers game over logic and shows the restart UI centered on the camera's current view.
+   */
   handleGameOver() {
     this.player.kill();
 
+    const cam = this.cameras.main;
+    const x = cam.scrollX + cam.width / 2;
+    const y = cam.scrollY + cam.height / 2;
+
     this.gameOverButton = this.add
-      .image(
-        this.game.canvas.width / 2,
-        this.game.canvas.height / 2,
-        TEXTURE_ATLAS,
-        "ui/game-over.png"
-      )
+      .image(x, y, TEXTURE_ATLAS, "ui/game-over.png")
       .setOrigin(0.5)
       .setAlpha(0)
       .setInteractive({ useHandCursor: true });
@@ -164,6 +208,9 @@ export class Game extends Scene {
     });
   }
 
+  /**
+   * Restarts the level by reloading the current scene.
+   */
   restartLevel() {
     this.restartTriggered = true;
     this.scene.restart();

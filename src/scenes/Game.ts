@@ -215,6 +215,8 @@ export class Game extends Scene {
   private handleGameOver() {
     this.player.kill();
 
+    this.physicsEnabled = false;
+
     const cam = this.cameras.main;
     const x = cam.scrollX + cam.width / 2;
     const y = cam.scrollY + cam.height / 2;

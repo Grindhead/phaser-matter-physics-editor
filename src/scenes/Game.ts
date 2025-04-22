@@ -16,56 +16,130 @@ const WORLD_WIDTH = 10000;
 const WORLD_HEIGHT = 4000;
 
 /**
- * The main game scene. Handles gameplay logic, world setup,
- * collisions, camera follow, and UI for restarting the level.
+ * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
  */
 export class Game extends Scene {
   private background: Phaser.GameObjects.Image;
   private player: Player;
   private coins: number = 0;
   private gameOverButton?: Phaser.GameObjects.Image;
+  private startButton?: Phaser.GameObjects.Image;
   private restartTriggered = false;
+  private physicsEnabled = false;
 
   constructor() {
     super(SCENES.GAME);
   }
 
   /**
-   * Called once when the scene is created. Sets up the world, physics, camera, and entities.
+   * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
   create() {
+    this.setupBackground();
+    this.setupWorldBounds();
+    this.initGame(); // preload world + entities
+    this.setupStartUI(); // overlay comes after setup
+  }
+
+  /**
+   * Adds static background image centered on screen.
+   */
+  private setupBackground() {
     this.background = this.add.image(
       this.game.canvas.width / 2,
       this.game.canvas.height / 2,
       "background"
     );
     this.background.setOrigin(0.5, 0.5);
-
-    this.matter.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-
-    this.createMatterWorld();
-
-    this.matter.world.on(
-      "collisionstart",
-      (event: Phaser.Physics.Matter.Events.CollisionStartEvent) => {
-        this.checkCollisions(event);
-      }
-    );
-
-    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
-    this.cameras.main.setLerp(0.08, 0.08);
-
-    this.restartTriggered = false;
   }
 
   /**
-   * Handles all collision start events.
-   * @param pairs Matter.js collision pairs
+   * Sets Matter world and camera bounds.
    */
-  checkCollisions = ({
+  private setupWorldBounds() {
+    this.matter.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    this.matter.world.enabled = false; // Disable physics until start
+  }
+
+  /**
+   * Initializes all game objects.
+   */
+  private initGame() {
+    this.spawnEntities();
+    this.setupCollisions();
+  }
+
+  /**
+   * Displays the start button and enables game logic on interaction.
+   */
+  private setupStartUI() {
+    const cam = this.cameras.main;
+    const x = cam.width / 2;
+    const y = cam.height / 2;
+
+    this.startButton = this.add
+      .image(x, y, TEXTURE_ATLAS, "ui/start.png")
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true });
+
+    this.startButton.once("pointerup", () => {
+      this.startButton?.destroy();
+      this.startGame();
+    });
+  }
+
+  /**
+   * Starts game logic, enables physics and camera tracking.
+   */
+  private startGame() {
+    this.matter.world.enabled = true;
+    this.setupCamera();
+    this.restartTriggered = false;
+    this.physicsEnabled = true;
+  }
+
+  /**
+   * Creates static and interactive objects in the scene.
+   */
+  private spawnEntities() {
+    new Platform(this, 70, 300, 5, "1");
+    new Platform(this, 350, 300, 6, "2");
+    new Platform(this, 650, 300, 10, "3");
+    new Platform(this, 950, 300, 10, "4");
+    new Finish(this, 750, 230);
+    new CrateBig(this, 400, 250);
+    new CrateSmall(this, 650, 250);
+    new Coin(this, 550, 250);
+    new Enemy(this, 880, 250);
+
+    this.player = new Player(this, 100, 200);
+  }
+
+  /**
+   * Enables camera to follow the player.
+   */
+  private setupCamera() {
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+    this.cameras.main.setLerp(0.08, 0.08);
+  }
+
+  /**
+   * Registers physics collision handlers.
+   */
+  private setupCollisions() {
+    this.matter.world.on(
+      "collisionstart",
+      (event: Phaser.Physics.Matter.Events.CollisionStartEvent) => {
+        if (this.physicsEnabled) this.checkCollisions(event);
+      }
+    );
+  }
+
+  private checkCollisions = ({
     pairs,
-  }: Phaser.Physics.Matter.Events.CollisionEndEvent): void => {
+  }: Phaser.Physics.Matter.Events.CollisionStartEvent): void => {
     for (const { bodyA, bodyB } of pairs) {
       if (
         this.checkCoinCollision(bodyA, bodyB) ||
@@ -77,11 +151,7 @@ export class Game extends Scene {
     }
   };
 
-  /**
-   * Handles player-enemy collisions.
-   * @returns True if a collision was handled
-   */
-  checkEnemyCollision(
+  private checkEnemyCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
@@ -92,15 +162,10 @@ export class Game extends Scene {
       this.handleGameOver();
       return true;
     }
-
     return false;
   }
 
-  /**
-   * Handles player-finish collisions.
-   * @returns True if a collision was handled
-   */
-  checkFinishCollision(
+  private checkFinishCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
@@ -117,11 +182,7 @@ export class Game extends Scene {
     return false;
   }
 
-  /**
-   * Handles player-coin collisions.
-   * @returns True if a coin was collected
-   */
-  checkCoinCollision(
+  private checkCoinCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
@@ -138,52 +199,20 @@ export class Game extends Scene {
     return false;
   }
 
-  /**
-   * Increments coin count and plays collection logic.
-   * @param body The Matter body associated with the coin
-   */
-  collectCoin(body: MatterJS.BodyType) {
+  private collectCoin(body: MatterJS.BodyType) {
     const coinSprite = body.gameObject as Coin;
-
-    if (coinSprite) {
-      coinSprite.collect();
-    }
-
+    coinSprite?.collect();
     this.coins++;
     console.log(this.coins);
   }
 
-  /**
-   * Spawns all physics-based objects and the player in the scene.
-   */
-  createMatterWorld() {
-    new Platform(this, 70, 300, 5, "1");
-    new Platform(this, 350, 300, 6, "2");
-    new Platform(this, 650, 300, 10, "3");
-    new Platform(this, 950, 300, 10, "4");
-    new Finish(this, 750, 230);
-    new CrateBig(this, 400, 250);
-    new CrateSmall(this, 650, 250);
-    new Coin(this, 550, 250);
-    new Enemy(this, 880, 250);
-
-    this.player = new Player(this, 100, 200);
-  }
-
-  /**
-   * Called every game tick. Updates the player.
-   */
   update(time: number, delta: number): void {
-    this.player.update(time, delta);
+    if (this.physicsEnabled && this.player) {
+      this.player.update(time, delta);
+    }
   }
 
-  /**
-   * Triggers game over logic and shows the restart UI centered on the camera.
-   */
-  /**
-   * Triggers game over logic and shows the restart UI centered on the camera's current view.
-   */
-  handleGameOver() {
+  private handleGameOver() {
     this.player.kill();
 
     const cam = this.cameras.main;
@@ -208,10 +237,7 @@ export class Game extends Scene {
     });
   }
 
-  /**
-   * Restarts the level by reloading the current scene.
-   */
-  restartLevel() {
+  private restartLevel() {
     this.restartTriggered = true;
     this.scene.restart();
   }

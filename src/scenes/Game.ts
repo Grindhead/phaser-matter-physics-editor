@@ -34,17 +34,17 @@ export class Game extends Scene {
   /**
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
-  create() {
+  create(): void {
     this.setupBackground();
     this.setupWorldBounds();
-    this.initGame(); // preload world + entities
-    this.setupStartUI(); // overlay comes after setup
+    this.initGame();
+    this.setupStartUI();
   }
 
   /**
-   * Adds static background image centered on screen.
+   * Adds a static background image centered on the screen.
    */
-  private setupBackground() {
+  private setupBackground(): void {
     this.background = this.add.image(
       this.game.canvas.width / 2,
       this.game.canvas.height / 2,
@@ -54,26 +54,26 @@ export class Game extends Scene {
   }
 
   /**
-   * Sets Matter world and camera bounds.
+   * Configures world and camera bounds, disables physics initially.
    */
-  private setupWorldBounds() {
+  private setupWorldBounds(): void {
     this.matter.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-    this.matter.world.enabled = false; // Disable physics until start
+    this.matter.world.enabled = false;
   }
 
   /**
-   * Initializes all game objects.
+   * Initializes game objects and collision handlers.
    */
-  private initGame() {
+  private initGame(): void {
     this.spawnEntities();
     this.setupCollisions();
   }
 
   /**
-   * Displays the start button and enables game logic on interaction.
+   * Creates and displays the start button. Begins the game on interaction.
    */
-  private setupStartUI() {
+  private setupStartUI(): void {
     const cam = this.cameras.main;
     const x = cam.width / 2;
     const y = cam.height / 2;
@@ -91,9 +91,9 @@ export class Game extends Scene {
   }
 
   /**
-   * Starts game logic, enables physics and camera tracking.
+   * Enables physics, sets camera follow, and marks the game as running.
    */
-  private startGame() {
+  private startGame(): void {
     this.matter.world.enabled = true;
     this.setupCamera();
     this.restartTriggered = false;
@@ -101,9 +101,9 @@ export class Game extends Scene {
   }
 
   /**
-   * Creates static and interactive objects in the scene.
+   * Spawns all required static and interactive game entities.
    */
-  private spawnEntities() {
+  private spawnEntities(): void {
     new Platform(this, 70, 300, 5, "1");
     new Platform(this, 350, 300, 6, "2");
     new Platform(this, 650, 300, 10, "3");
@@ -113,22 +113,21 @@ export class Game extends Scene {
     new CrateSmall(this, 650, 250);
     new Coin(this, 550, 250);
     new Enemy(this, 880, 250);
-
     this.player = new Player(this, 100, 200);
   }
 
   /**
-   * Enables camera to follow the player.
+   * Sets up the camera to follow the player smoothly.
    */
-  private setupCamera() {
+  private setupCamera(): void {
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
     this.cameras.main.setLerp(0.08, 0.08);
   }
 
   /**
-   * Registers physics collision handlers.
+   * Configures Matter.js collision handlers for key entities.
    */
-  private setupCollisions() {
+  private setupCollisions(): void {
     this.matter.world.on(
       "collisionstart",
       (event: Phaser.Physics.Matter.Events.CollisionStartEvent) => {
@@ -137,6 +136,11 @@ export class Game extends Scene {
     );
   }
 
+  /**
+   * Checks for coin, finish, or enemy collisions on contact.
+   *
+   * @param event - The collision start event data.
+   */
   private checkCollisions = ({
     pairs,
   }: Phaser.Physics.Matter.Events.CollisionStartEvent): void => {
@@ -151,6 +155,13 @@ export class Game extends Scene {
     }
   };
 
+  /**
+   * Handles logic when the player collides with an enemy.
+   *
+   * @param bodyA - First body in the collision.
+   * @param bodyB - Second body in the collision.
+   * @returns Whether an enemy collision occurred.
+   */
   private checkEnemyCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
@@ -165,6 +176,13 @@ export class Game extends Scene {
     return false;
   }
 
+  /**
+   * Handles logic when the player reaches the finish point.
+   *
+   * @param bodyA - First body in the collision.
+   * @param bodyB - Second body in the collision.
+   * @returns Whether a finish collision occurred.
+   */
   private checkFinishCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
@@ -182,6 +200,13 @@ export class Game extends Scene {
     return false;
   }
 
+  /**
+   * Handles logic when the player collects a coin.
+   *
+   * @param bodyA - First body in the collision.
+   * @param bodyB - Second body in the collision.
+   * @returns Whether a coin collision occurred.
+   */
   private checkCoinCollision(
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
@@ -199,22 +224,35 @@ export class Game extends Scene {
     return false;
   }
 
-  private collectCoin(body: MatterJS.BodyType) {
+  /**
+   * Collects the given coin and updates the coin count.
+   *
+   * @param body - The Matter body of the coin to collect.
+   */
+  private collectCoin(body: MatterJS.BodyType): void {
     const coinSprite = body.gameObject as Coin;
     coinSprite?.collect();
     this.coins++;
     console.log(this.coins);
   }
 
+  /**
+   * Per-frame game update logic.
+   *
+   * @param time - Current game time.
+   * @param delta - Time elapsed since last update.
+   */
   update(time: number, delta: number): void {
     if (this.physicsEnabled && this.player) {
       this.player.update(time, delta);
     }
   }
 
-  private handleGameOver() {
+  /**
+   * Triggers game over state, displays retry UI, and disables physics.
+   */
+  private handleGameOver(): void {
     this.player.kill();
-
     this.physicsEnabled = false;
 
     const cam = this.cameras.main;
@@ -239,7 +277,10 @@ export class Game extends Scene {
     });
   }
 
-  private restartLevel() {
+  /**
+   * Restarts the level by restarting the current scene.
+   */
+  private restartLevel(): void {
     this.restartTriggered = true;
     this.scene.restart();
   }

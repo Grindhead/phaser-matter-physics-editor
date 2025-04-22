@@ -15,26 +15,31 @@ export const PLAYER_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
     prefix: "player/fall/duck-fall-",
     frames: 10,
     loop: 0,
+    frameRate: 30,
   },
   DUCK_DEAD: {
     prefix: "player/dead/duck-dead-",
     frames: 10,
     loop: 0,
+    frameRate: 30,
   },
   DUCK_IDLE: {
     prefix: "player/idle/duck-idle-",
     frames: 10,
     loop: 0,
+    frameRate: 30,
   },
   DUCK_JUMP: {
     prefix: "player/jump/duck-jump-",
     frames: 12,
     loop: 0,
     nextAnimation: PLAYER_ANIMATION_KEYS.DUCK_FALL,
+    frameRate: 30,
   },
   DUCK_RUN: {
     prefix: "player/run/duck-run-",
     frames: 14,
     loop: -1,
+    frameRate: 30,
   },
 };

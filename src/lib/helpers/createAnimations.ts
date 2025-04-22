@@ -37,7 +37,7 @@ export function createAnimations<T extends string>(
             suffix: ".png",
           }),
           repeat: config.loop,
-          frameRate: 30,
+          frameRate: config.frameRate,
         });
       }
     }

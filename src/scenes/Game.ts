@@ -9,6 +9,7 @@ import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
 import { Finish } from "../entities/Finish/Finish";
 import { isCoinBody } from "../lib/helpers/isCoinBody";
 import { isPlayerBody } from "../lib/helpers/isPlayerBody";
+import { isFinishBody } from "../lib/helpers/isFinishBody";
 
 export class Game extends Scene {
   private background: Phaser.GameObjects.Image;
@@ -36,23 +37,51 @@ export class Game extends Scene {
     );
   }
 
-  checkCollisions(event: Phaser.Physics.Matter.Events.CollisionEndEvent) {
-    for (const pair of event.pairs) {
-      const { bodyA, bodyB } = pair;
-      this.checkCoinCollision(bodyA, bodyB);
+  checkCollisions = ({
+    pairs,
+  }: Phaser.Physics.Matter.Events.CollisionEndEvent): void => {
+    for (const { bodyA, bodyB } of pairs) {
+      if (
+        this.checkCoinCollision(bodyA, bodyB) ||
+        this.checkFinishCollision(bodyA, bodyB)
+      ) {
+        return;
+      }
     }
+  };
+
+  checkFinishCollision(
+    bodyA: MatterJS.BodyType,
+    bodyB: MatterJS.BodyType
+  ): boolean {
+    if (isFinishBody(bodyA) && isPlayerBody(bodyB)) {
+      const finishSprite = bodyA.gameObject as Finish;
+      finishSprite.activate();
+      return true;
+    }
+
+    if (isFinishBody(bodyB) && isPlayerBody(bodyA)) {
+      return true;
+    }
+
+    return false;
   }
 
-  checkCoinCollision(bodyA: MatterJS.BodyType, bodyB: MatterJS.BodyType) {
+  checkCoinCollision(
+    bodyA: MatterJS.BodyType,
+    bodyB: MatterJS.BodyType
+  ): boolean {
     if (isCoinBody(bodyA) && isPlayerBody(bodyB)) {
       this.collectCoin(bodyA);
-      return;
+      return true;
     }
 
     if (isCoinBody(bodyB) && isPlayerBody(bodyA)) {
       this.collectCoin(bodyB);
-      return;
+      return true;
     }
+
+    return false;
   }
 
   collectCoin(body: MatterJS.BodyType) {

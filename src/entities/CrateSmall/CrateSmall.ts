@@ -12,7 +12,8 @@ export class CrateSmall extends Phaser.Physics.Matter.Sprite {
       x,
       y,
       TEXTURE_ATLAS,
-      CRATE_SMALL_ANIMATIONS[CRATE_SMALL_ANIMATION_KEYS.IDLE].prefix,
+      CRATE_SMALL_ANIMATIONS[CRATE_SMALL_ANIMATION_KEYS.CRATE_SMALL_IDLE]
+        .prefix,
       {
         shape: shapes[PHYSICS_ENTITIES.CRATE_SMALL],
       }

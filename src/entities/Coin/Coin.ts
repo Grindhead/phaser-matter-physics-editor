@@ -1,4 +1,5 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
+import { createAnimations } from "../../lib/helpers/createAnimations";
 import { COIN_ANIMATION_KEYS, COIN_ANIMATIONS } from "./coinAnimations";
 
 export class Coin extends Phaser.Physics.Matter.Sprite {
@@ -9,7 +10,7 @@ export class Coin extends Phaser.Physics.Matter.Sprite {
       x,
       y,
       TEXTURE_ATLAS,
-      COIN_ANIMATIONS[COIN_ANIMATION_KEYS.IDLE].prefix + "0001.png",
+      COIN_ANIMATIONS[COIN_ANIMATION_KEYS.COIN_IDLE].prefix + "0001.png",
       {
         shape: shapes[PHYSICS_ENTITIES.COIN],
         isStatic: true,
@@ -17,40 +18,23 @@ export class Coin extends Phaser.Physics.Matter.Sprite {
       }
     );
 
-    this.anims.create({
-      key: COIN_ANIMATION_KEYS.IDLE,
-      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
-        prefix: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.IDLE].prefix,
-        end: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.IDLE].frames,
-        zeroPad: 4,
-        suffix: ".png",
-        start: 1,
-      }),
-      repeat: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.IDLE].loop,
-    });
+    createAnimations(
+      this,
+      this.anims.animationManager,
+      TEXTURE_ATLAS,
+      COIN_ANIMATIONS
+    );
 
-    this.anims.create({
-      key: COIN_ANIMATION_KEYS.COLLECT,
-      frames: this.anims.generateFrameNames(TEXTURE_ATLAS, {
-        prefix: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.COLLECT].prefix,
-        end: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.COLLECT].frames,
-        zeroPad: 4,
-        suffix: ".png",
-        start: 1,
-      }),
-      repeat: COIN_ANIMATIONS[COIN_ANIMATION_KEYS.COLLECT].loop,
-    });
-
-    this.play(COIN_ANIMATION_KEYS.IDLE);
+    this.play(COIN_ANIMATION_KEYS.COIN_IDLE);
 
     scene.add.existing(this);
   }
 
   public collect() {
-    this.play(COIN_ANIMATION_KEYS.COLLECT);
+    this.play(COIN_ANIMATION_KEYS.COIN_COLLECT);
     this.scene.matter.world.remove(this);
     this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      if (this.anims.currentAnim?.key === COIN_ANIMATION_KEYS.COLLECT) {
+      if (this.anims.currentAnim?.key === COIN_ANIMATION_KEYS.COIN_COLLECT) {
         this.destroy(true);
       }
     });

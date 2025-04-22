@@ -1,27 +1,70 @@
+import { TEXTURE_ATLAS } from "../constants"; // Assuming this is where TEXTURE_ATLAS is defined
 import {
   PLATFORM_ANIMATION_KEYS,
   PLATFORM_ANIMATIONS,
 } from "../../entities/Platforms/platformAnimations";
-import { TEXTURE_ATLAS } from "../constants";
 
+// Tile dimensions
 const TILE_WIDTH = 26;
 const TILE_HEIGHT = 24;
 
+/**
+ * Builds a platform with the given parameters and reuses existing textures if available.
+ * @param scene The Phaser.Scene to use for creating the platform.
+ * @param tileCount The number of tiles to build the platform.
+ * @param key The key used to reference the texture in the cache.
+ * @returns The RenderTexture representing the platform.
+ */
 export const buildPlatform = (
   scene: Phaser.Scene,
   tileCount: number,
   key: string
 ): Phaser.GameObjects.RenderTexture => {
-  const totalWidth = TILE_WIDTH * tileCount;
+  // Check if the texture already exists in the texture manager
+  if (scene.textures.exists(key)) {
+    // If it exists, create a new RenderTexture using the cached texture
+    const renderTexture = scene.make.renderTexture(
+      {
+        width: TILE_WIDTH * tileCount,
+        height: TILE_HEIGHT,
+      },
+      false
+    );
 
+    // Draw the existing texture onto the new RenderTexture
+    renderTexture.draw(key, 0, 0);
+
+    return renderTexture;
+  } else {
+    // If it doesn't exist, create it and return the texture
+    return createTextureFromContainer(scene, tileCount, key);
+  }
+};
+
+/**
+ * Creates a RenderTexture from a container of platform elements.
+ * @param scene The Phaser.Scene to use for creating the platform texture.
+ * @param tileCount The number of tiles to build the platform.
+ * @param key The key used to store the texture.
+ * @returns The created RenderTexture.
+ */
+function createTextureFromContainer(
+  scene: Phaser.Scene,
+  tileCount: number,
+  key: string
+): Phaser.GameObjects.RenderTexture {
+  // Using scene.make instead of adding to the scene
   const container = scene.make.container({ x: 0, y: 0, add: false });
 
+  const totalWidth = TILE_WIDTH * tileCount;
+
+  // Create platform parts as before
   const leftPlatform = scene.make.image({
     key: TEXTURE_ATLAS,
     frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.LEFT].prefix,
     x: TILE_WIDTH / 2,
     y: TILE_HEIGHT / 2,
-    add: false,
+    add: false, // Don't add it to the scene
   });
 
   const middlePlatform = scene.make.tileSprite({
@@ -31,7 +74,7 @@ export const buildPlatform = (
     y: TILE_HEIGHT / 2 + 1.5,
     width: TILE_WIDTH * (tileCount - 2),
     height: TILE_HEIGHT,
-    add: false,
+    add: false, // Don't add it to the scene
   });
 
   const rightPlatform = scene.make.image({
@@ -39,40 +82,28 @@ export const buildPlatform = (
     frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.RIGHT].prefix,
     x: totalWidth - TILE_WIDTH / 2,
     y: TILE_HEIGHT / 2,
-    add: false,
+    add: false, // Don't add it to the scene
   });
 
+  // Add parts to the container
   container.add([leftPlatform, middlePlatform, rightPlatform]);
 
-  const texture = createTextureFromContainer(scene, container, key);
-
-  leftPlatform.destroy(true);
-  middlePlatform.destroy(true);
-  rightPlatform.destroy(true);
-  container.destroy(true);
-
-  return texture;
-};
-
-function createTextureFromContainer(
-  scene: Phaser.Scene,
-  container: Phaser.GameObjects.Container,
-  key: string
-): Phaser.GameObjects.RenderTexture {
-  // Create a texture from the container
-  const texture = scene.make.renderTexture(
+  // Create RenderTexture from the container
+  const renderTexture = scene.make.renderTexture(
     {
-      width: container.getBounds().width,
-      height: container.getBounds().height,
+      width: totalWidth,
+      height: TILE_HEIGHT,
     },
     false
   );
 
-  // Draw the container into the texture
-  texture.draw(container);
+  renderTexture.draw(container);
 
-  // Generate a texture that can be used by other game objects
-  texture.saveTexture(key);
+  // Save the RenderTexture as a texture in the scene cache
+  renderTexture.saveTexture(key);
 
-  return texture;
+  // Destroy the container after saving the texture
+  container.destroy();
+
+  return renderTexture;
 }

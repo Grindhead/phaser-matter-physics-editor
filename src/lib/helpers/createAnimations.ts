@@ -10,7 +10,6 @@ import type { AnimationDefinition, EntityAnimations } from "../../lib/types";
  * @param {EntityAnimations<T>} animations - The animations configuration for the entity.
  */
 export function createAnimations<T extends string>(
-  entity: Phaser.GameObjects.Sprite,
   anims: Phaser.Animations.AnimationManager,
   atlasKey: string,
   animations: EntityAnimations<T>
@@ -41,7 +40,16 @@ export function createAnimations<T extends string>(
           frameRate: 30,
         });
       }
+    }
+  );
+}
 
+export const createAnimationChain = <T extends string>(
+  entity: Phaser.GameObjects.Sprite,
+  animations: EntityAnimations<T>
+) => {
+  (Object.entries(animations) as [T, AnimationDefinition][]).forEach(
+    ([key, config]) => {
       if (config.nextAnimation) {
         const nextAnim = config.nextAnimation;
 
@@ -56,4 +64,4 @@ export function createAnimations<T extends string>(
       }
     }
   );
-}
+};

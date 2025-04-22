@@ -1,5 +1,5 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
-import { createAnimations } from "../../lib/helpers/createAnimations";
+import { createAnimationChain } from "../../lib/helpers/createAnimations";
 import { FINISH_ANIMATION_KEYS, FINISH_ANIMATIONS } from "./finishAnimations";
 
 export class Finish extends Phaser.Physics.Matter.Sprite {
@@ -20,12 +20,7 @@ export class Finish extends Phaser.Physics.Matter.Sprite {
       }
     );
 
-    createAnimations(
-      this,
-      this.anims.animationManager,
-      TEXTURE_ATLAS,
-      FINISH_ANIMATIONS
-    );
+    createAnimationChain(this, FINISH_ANIMATIONS);
 
     scene.add.existing(this);
   }

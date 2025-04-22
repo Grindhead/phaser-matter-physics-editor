@@ -1,5 +1,8 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
-import { createAnimations } from "../../lib/helpers/createAnimations";
+import {
+  createAnimationChain,
+  createAnimations,
+} from "../../lib/helpers/createAnimations";
 import { isGroundBody } from "../../lib/helpers/isGroundBody";
 import { isPlayerBody } from "../../lib/helpers/isPlayerBody";
 import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
@@ -37,15 +40,11 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     this.setFixedRotation();
     this.setupControls();
-    createAnimations(
-      this,
-      this.anims.animationManager,
-      TEXTURE_ATLAS,
-      PLAYER_ANIMATIONS
-    );
     this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, true);
 
     this.isAlive = true;
+
+    createAnimationChain(this, PLAYER_ANIMATIONS);
 
     scene.add.existing(this);
   }

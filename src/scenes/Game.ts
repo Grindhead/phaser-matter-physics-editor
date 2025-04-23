@@ -203,15 +203,10 @@ export class Game extends Scene {
    * Spawns all required static and interactive game entities.
    */
   private spawnEntities(): void {
-    for (var i: number = 0; i < 1000; i++) {
-      new Platform(
-        this,
-        70 + i * 200,
-        300,
-        Phaser.Math.Between(5, 15),
-        i.toString()
-      );
-    }
+    new Platform(this, 150, 300, 6, "1");
+    new Platform(this, 350, 300, 6, "2");
+    new Platform(this, 650, 300, 10, "3");
+    new Platform(this, 950, 300, 10, "4");
 
     new Finish(this, 750, -230);
     new CrateBig(this, 400, 250);

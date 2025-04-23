@@ -17,6 +17,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private jumpInProgress = false;
   private lastJumpTime = 0;
   private isAlive = true;
+  private isLevelComplete = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -73,20 +74,25 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     const up = this.cursors.up?.isDown || this.wasd.W?.isDown;
 
     let targetVelocityX = 0;
-    if (left) {
-      targetVelocityX = -WALK_VELOCITY;
-      this.flipX = true;
-    } else if (right) {
-      targetVelocityX = WALK_VELOCITY;
-      this.flipX = false;
+
+    if (!this.isLevelComplete) {
+      if (left) {
+        targetVelocityX = -WALK_VELOCITY;
+        this.flipX = true;
+      } else if (right) {
+        targetVelocityX = WALK_VELOCITY;
+        this.flipX = false;
+      }
+      this.setVelocityX(targetVelocityX);
     }
-    this.setVelocityX(targetVelocityX);
 
     // Jump
-    if (up && this.isGrounded && !this.jumpInProgress) {
+    if (up && this.isGrounded && !this.isLevelComplete) {
       this.setVelocityY(JUMP_VELOCITY);
+
       this.jumpInProgress = true;
       this.lastJumpTime = this.scene.time.now;
+
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_JUMP, true);
       this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
         if (!this.isGrounded) {
@@ -109,8 +115,12 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     // On ground
     if (this.isGrounded && !this.jumpInProgress) {
-      if (left || right) {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
+      if (!this.isLevelComplete) {
+        if (left || right) {
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
+        } else {
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE);
+        }
       } else {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE);
       }
@@ -160,9 +170,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   }
 
   public finishLevel() {
+    this.isLevelComplete = true;
     this.setVelocityX(0);
-    this.setVelocityY(0);
-    this.setStatic(true);
   }
 
   public kill() {

@@ -1,4 +1,3 @@
-import { level } from "./../lib/helpers/playerProgress";
 import { Scene } from "phaser";
 import { SCENES, TEXTURE_ATLAS } from "../lib/constants";
 import { Player } from "../entities/Player/Player";
@@ -372,11 +371,7 @@ export class Game extends Scene {
    * @param delta - Time elapsed since last update.
    */
   update(time: number, delta: number): void {
-    if (
-      this.physicsEnabled &&
-      this.player &&
-      this.gameState === GameState.PLAYING
-    ) {
+    if (this.physicsEnabled && this.player) {
       this.player.update(time, delta);
     }
   }

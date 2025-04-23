@@ -32,7 +32,7 @@ export class Enemy extends Phaser.Physics.Matter.Sprite {
     this.setFixedRotation();
   }
 
-  update(): void {
+  update(delta: number): void {
     if (!this.platformBounds) return;
 
     this.setVelocity(this.speed * this.direction, 0);

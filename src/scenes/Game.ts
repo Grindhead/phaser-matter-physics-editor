@@ -15,6 +15,7 @@ import { CoinUI } from "../entities/ui/CoinUI";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
 import { getCoins, setCoins } from "../lib/helpers/coinManager";
 import { addLevel, setLevel } from "../lib/helpers/levelManager";
+import { ParallaxBackground } from "../entities/ParallaxBackground";
 
 const WORLD_WIDTH = 10000;
 const WORLD_HEIGHT = 4000;
@@ -33,7 +34,7 @@ enum GameState {
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
  */
 export class Game extends Scene {
-  private background: Phaser.GameObjects.Image;
+  private background: ParallaxBackground;
   private player: Player;
   private overlayButton?: Phaser.GameObjects.Image;
   private restartTriggered = false;
@@ -50,22 +51,18 @@ export class Game extends Scene {
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
   create(): void {
-    this.setupBackground();
+    this.background = new ParallaxBackground(
+      this,
+      0,
+      0,
+      this.game.canvas.width,
+      this.game.canvas.height,
+      "background",
+      0.5 // Example scroll factor
+    );
     this.setupWorldBounds();
     this.initGame();
     this.showUIOverlay(GameState.WAITING_TO_START);
-  }
-
-  /**
-   * Adds a static background image centered on the screen.
-   */
-  private setupBackground(): void {
-    this.background = this.add.image(
-      this.game.canvas.width / 2,
-      this.game.canvas.height / 2,
-      "background"
-    );
-    this.background.setOrigin(0.5, 0.5);
   }
 
   /**
@@ -206,12 +203,17 @@ export class Game extends Scene {
    * Spawns all required static and interactive game entities.
    */
   private spawnEntities(): void {
-    new Platform(this, 70, 300, 5, "1");
-    new Platform(this, 350, 300, 6, "2");
-    new Platform(this, 650, 300, 10, "3");
-    new Platform(this, 950, 300, 10, "4");
+    for (var i: number = 0; i < 1000; i++) {
+      new Platform(
+        this,
+        70 + i * 200,
+        300,
+        Phaser.Math.Between(5, 15),
+        i.toString()
+      );
+    }
 
-    new Finish(this, 750, 230);
+    new Finish(this, 750, -230);
     new CrateBig(this, 400, 250);
     new CrateSmall(this, 650, 250);
     new Coin(this, 550, 250);
@@ -378,9 +380,10 @@ export class Game extends Scene {
    * @param delta - Time elapsed since last update.
    */
   update(time: number, delta: number): void {
+    this.background.update();
     this.player.update(time, delta);
 
-    this.enemies.forEach((enemy) => enemy.update());
+    this.enemies.forEach((enemy) => enemy.update(delta));
   }
 
   /**

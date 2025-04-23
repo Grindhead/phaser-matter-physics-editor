@@ -14,7 +14,7 @@ import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 import { CoinUI } from "../entities/ui/CoinUI";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
 import { getCoins, setCoins } from "../lib/helpers/coinManager";
-import { setLevel } from "../lib/helpers/levelManager";
+import { addLevel, setLevel } from "../lib/helpers/levelManager";
 
 const WORLD_WIDTH = 10000;
 const WORLD_HEIGHT = 4000;
@@ -95,11 +95,20 @@ export class Game extends Scene {
    */
   private showUIOverlay(state: GameState, fadeIn: boolean = true): void {
     // Clean up any existing overlay
-    this.overlayButton?.destroy();
+    if (this.overlayButton) {
+      this.overlayButton.destroy();
+      this.overlayButton = undefined;
+    }
 
-    const cam = this.cameras.main;
-    const x = cam.scrollX + cam.width / 2;
-    const y = cam.scrollY + cam.height / 2;
+    // If we're transitioning to PLAYING state, don't show an overlay
+    if (state === GameState.PLAYING) {
+      this.gameState = state;
+      return;
+    }
+
+    // Use fixed screen coordinates instead of camera-relative coordinates
+    const centerX = this.game.canvas.width / 2;
+    const centerY = this.game.canvas.height / 2;
 
     let texture: string;
     let callback: () => void;
@@ -107,7 +116,12 @@ export class Game extends Scene {
     switch (state) {
       case GameState.WAITING_TO_START:
         texture = "ui/start.png";
-        callback = () => this.startGame();
+        callback = () => {
+          // Hide the overlay and start the game
+          this.overlayButton?.destroy();
+          this.overlayButton = undefined;
+          this.startGame();
+        };
         break;
       case GameState.GAME_OVER:
         texture = "ui/game-over.png";
@@ -125,10 +139,12 @@ export class Game extends Scene {
         return;
     }
 
+    // Create the overlay at fixed screen coordinates
     this.overlayButton = this.add
-      .image(x, y, TEXTURE_ATLAS, texture)
+      .image(centerX, centerY, TEXTURE_ATLAS, texture)
       .setOrigin(0.5)
       .setScrollFactor(0)
+      .setDepth(1000) // Ensure it's on top of everything
       .setInteractive({ useHandCursor: true });
 
     if (fadeIn) {
@@ -153,8 +169,8 @@ export class Game extends Scene {
     this.setupCamera();
     this.restartTriggered = false;
     this.physicsEnabled = true;
-    this.gameState = GameState.PLAYING;
 
+    this.showUIOverlay(GameState.PLAYING);
     this.createFallSensor();
   }
 
@@ -355,13 +371,7 @@ export class Game extends Scene {
    * @param delta - Time elapsed since last update.
    */
   update(time: number, delta: number): void {
-    if (
-      this.physicsEnabled &&
-      this.player &&
-      this.gameState === GameState.PLAYING
-    ) {
-      this.player.update(time, delta);
-    }
+    this.player.update(time, delta);
   }
 
   /**
@@ -381,16 +391,13 @@ export class Game extends Scene {
   private handleLevelComplete(): void {
     if (this.gameState !== GameState.PLAYING) return;
 
-    this.physicsEnabled = false;
-    this.gameState = GameState.LEVEL_COMPLETE;
-
-    // Optional: Add celebration effects or player victory animation here
-    // this.player.celebrate();
+    this.player.finishLevel();
+    addLevel();
 
     // Short delay before showing the level complete UI
-    this.time.delayedCall(500, () => {
-      this.showUIOverlay(GameState.LEVEL_COMPLETE);
-    });
+
+    this.physicsEnabled = false;
+    this.showUIOverlay(GameState.LEVEL_COMPLETE);
   }
 
   /**

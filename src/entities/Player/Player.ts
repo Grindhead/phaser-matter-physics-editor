@@ -159,6 +159,12 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isGrounded = this.groundContacts.size > 0;
   }
 
+  public finishLevel() {
+    this.setVelocityX(0);
+    this.setVelocityY(0);
+    this.setStatic(true);
+  }
+
   public kill() {
     this.isAlive = false;
     this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_DEAD);

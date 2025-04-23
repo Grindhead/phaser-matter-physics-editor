@@ -371,9 +371,7 @@ export class Game extends Scene {
    * @param delta - Time elapsed since last update.
    */
   update(time: number, delta: number): void {
-    if (this.physicsEnabled && this.player) {
-      this.player.update(time, delta);
-    }
+    this.player.update(time, delta);
   }
 
   /**

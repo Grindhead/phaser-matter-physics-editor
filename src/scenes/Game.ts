@@ -29,7 +29,6 @@ export class Game extends Scene {
   private restartTriggered = false;
   private physicsEnabled = false;
   private coinUI: CoinUI;
-  private fallDetector?: MatterJS.BodyType;
 
   constructor() {
     super(SCENES.GAME);
@@ -117,7 +116,7 @@ export class Game extends Scene {
 
     // we set the collision filter to match the platform collision filter
     // so that matterjs recognizes the fall sensor as a platform
-    this.fallDetector = this.matter.add.rectangle(
+    this.matter.add.rectangle(
       WORLD_WIDTH / 2,
       yPosition,
       WORLD_WIDTH,

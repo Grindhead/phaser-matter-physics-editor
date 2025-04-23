@@ -40,6 +40,7 @@ export class Game extends Scene {
   private physicsEnabled = false;
   private coinUI: CoinUI;
   private gameState: GameState = GameState.WAITING_TO_START;
+  private enemies: Enemy[] = [];
 
   constructor() {
     super(SCENES.GAME);
@@ -214,8 +215,15 @@ export class Game extends Scene {
     new CrateBig(this, 400, 250);
     new CrateSmall(this, 650, 250);
     new Coin(this, 550, 250);
-    new Enemy(this, 880, 250);
+
+    this.createEnemies();
+
     this.player = new Player(this, 100, 200);
+  }
+
+  private createEnemies(): void {
+    const enemy = new Enemy(this, 880, 230);
+    this.enemies.push(enemy);
   }
 
   /**
@@ -233,6 +241,14 @@ export class Game extends Scene {
     this.matter.world.on(
       "collisionstart",
       (event: Phaser.Physics.Matter.Events.CollisionStartEvent) => {
+        console.log(
+          `Game Scene Collision Start Event. Pairs: ${event.pairs.length}`
+        );
+        for (const pair of event.pairs) {
+          console.log(
+            `  Pair Labels: [${pair.bodyA.label}, ${pair.bodyB.label}] | IDs: [${pair.bodyA.id}, ${pair.bodyB.id}]`
+          );
+        }
         if (this.physicsEnabled) this.checkCollisions(event);
       }
     );
@@ -372,6 +388,8 @@ export class Game extends Scene {
    */
   update(time: number, delta: number): void {
     this.player.update(time, delta);
+
+    this.enemies.forEach((enemy) => enemy.update());
   }
 
   /**

@@ -1,4 +1,5 @@
 import { Scene, GameObjects } from "phaser";
+import { getCoins } from "../../lib/helpers/coinManager";
 
 /**
  * A stateless UI component that displays a coin count using the Roboto font.
@@ -25,8 +26,8 @@ export class CoinUI {
    * Updates the visible coin count.
    * @param count - The current coin count
    */
-  update(count: number): void {
-    this.text.setText(`Coins: ${count}`);
+  update(): void {
+    this.text.setText("Coins: " + getCoins());
   }
 
   /**

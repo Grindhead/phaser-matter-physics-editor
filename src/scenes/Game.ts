@@ -13,9 +13,21 @@ import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 import { CoinUI } from "../entities/ui/CoinUI";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
+import { getCoins, setCoins } from "../lib/helpers/coinManager";
+import { setLevel } from "../lib/helpers/levelManager";
 
 const WORLD_WIDTH = 10000;
 const WORLD_HEIGHT = 4000;
+
+/**
+ * Represents different states the game can be in
+ */
+enum GameState {
+  WAITING_TO_START,
+  PLAYING,
+  GAME_OVER,
+  LEVEL_COMPLETE,
+}
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -23,12 +35,11 @@ const WORLD_HEIGHT = 4000;
 export class Game extends Scene {
   private background: Phaser.GameObjects.Image;
   private player: Player;
-  private coins: number = 0;
-  private gameOverButton?: Phaser.GameObjects.Image;
-  private startButton?: Phaser.GameObjects.Image;
+  private overlayButton?: Phaser.GameObjects.Image;
   private restartTriggered = false;
   private physicsEnabled = false;
   private coinUI: CoinUI;
+  private gameState: GameState = GameState.WAITING_TO_START;
 
   constructor() {
     super(SCENES.GAME);
@@ -41,7 +52,7 @@ export class Game extends Scene {
     this.setupBackground();
     this.setupWorldBounds();
     this.initGame();
-    this.setupStartUI();
+    this.showUIOverlay(GameState.WAITING_TO_START);
   }
 
   /**
@@ -69,30 +80,69 @@ export class Game extends Scene {
    * Initializes game objects and collision handlers.
    */
   private initGame(): void {
+    setCoins(0);
+    setLevel(1);
     this.spawnEntities();
     this.setupCollisions();
+    this.coinUI = new CoinUI(this);
   }
 
   /**
-   * Creates and displays the start button. Begins the game on interaction.
+   * Shows a UI overlay based on the current game state
+   *
+   * @param state - The game state determining which UI to show
+   * @param fadeIn - Whether to fade in the UI (default: true)
    */
-  private setupStartUI(): void {
-    const cam = this.cameras.main;
-    const x = cam.width / 2;
-    const y = cam.height / 2;
+  private showUIOverlay(state: GameState, fadeIn: boolean = true): void {
+    // Clean up any existing overlay
+    this.overlayButton?.destroy();
 
-    this.startButton = this.add
-      .image(x, y, TEXTURE_ATLAS, "ui/start.png")
+    const cam = this.cameras.main;
+    const x = cam.scrollX + cam.width / 2;
+    const y = cam.scrollY + cam.height / 2;
+
+    let texture: string;
+    let callback: () => void;
+
+    switch (state) {
+      case GameState.WAITING_TO_START:
+        texture = "ui/start.png";
+        callback = () => this.startGame();
+        break;
+      case GameState.GAME_OVER:
+        texture = "ui/game-over.png";
+        callback = () => {
+          if (!this.restartTriggered) this.restartLevel();
+        };
+        break;
+      case GameState.LEVEL_COMPLETE:
+        texture = "ui/start.png"; // Using start.png as requested
+        callback = () => {
+          if (!this.restartTriggered) this.restartLevel();
+        };
+        break;
+      default:
+        return;
+    }
+
+    this.overlayButton = this.add
+      .image(x, y, TEXTURE_ATLAS, texture)
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setInteractive({ useHandCursor: true });
 
-    this.startButton.once("pointerup", () => {
-      this.startButton?.destroy();
-      this.startGame();
-    });
+    if (fadeIn) {
+      this.overlayButton.setAlpha(0);
+      this.tweens.add({
+        targets: this.overlayButton,
+        alpha: 1,
+        duration: 400,
+        ease: "Power2",
+      });
+    }
 
-    this.coinUI = new CoinUI(this);
+    this.overlayButton.on("pointerup", callback);
+    this.gameState = state;
   }
 
   /**
@@ -103,6 +153,7 @@ export class Game extends Scene {
     this.setupCamera();
     this.restartTriggered = false;
     this.physicsEnabled = true;
+    this.gameState = GameState.PLAYING;
 
     this.createFallSensor();
   }
@@ -241,13 +292,19 @@ export class Game extends Scene {
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
-    if (isFinishBody(bodyA) && isPlayerBody(bodyB)) {
-      const finishSprite = bodyA.gameObject as Finish;
-      finishSprite.activate();
-      return true;
-    }
+    if (
+      (isFinishBody(bodyA) && isPlayerBody(bodyB)) ||
+      (isFinishBody(bodyB) && isPlayerBody(bodyA))
+    ) {
+      if (isFinishBody(bodyA)) {
+        const finishSprite = bodyA.gameObject as Finish;
+        finishSprite.activate();
+      } else if (isFinishBody(bodyB)) {
+        const finishSprite = bodyB.gameObject as Finish;
+        finishSprite.activate();
+      }
 
-    if (isFinishBody(bodyB) && isPlayerBody(bodyA)) {
+      this.handleLevelComplete();
       return true;
     }
 
@@ -286,9 +343,9 @@ export class Game extends Scene {
   private collectCoin(body: MatterJS.BodyType): void {
     const coinSprite = body.gameObject as Coin;
     coinSprite?.collect();
-    this.coins++;
-    this.coinUI.update(this.coins);
-    console.log(this.coins);
+    setCoins(getCoins() + 1);
+    this.coinUI.update();
+    console.log(getCoins());
   }
 
   /**
@@ -298,7 +355,11 @@ export class Game extends Scene {
    * @param delta - Time elapsed since last update.
    */
   update(time: number, delta: number): void {
-    if (this.physicsEnabled && this.player) {
+    if (
+      this.physicsEnabled &&
+      this.player &&
+      this.gameState === GameState.PLAYING
+    ) {
       this.player.update(time, delta);
     }
   }
@@ -307,28 +368,28 @@ export class Game extends Scene {
    * Triggers game over state, displays retry UI, and disables physics.
    */
   private handleGameOver(): void {
+    if (this.gameState !== GameState.PLAYING) return;
+
     this.player.kill();
     this.physicsEnabled = false;
+    this.showUIOverlay(GameState.GAME_OVER);
+  }
 
-    const cam = this.cameras.main;
-    const x = cam.scrollX + cam.width / 2;
-    const y = cam.scrollY + cam.height / 2;
+  /**
+   * Triggers level complete state, displays UI, and disables physics.
+   */
+  private handleLevelComplete(): void {
+    if (this.gameState !== GameState.PLAYING) return;
 
-    this.gameOverButton = this.add
-      .image(x, y, TEXTURE_ATLAS, "ui/game-over.png")
-      .setOrigin(0.5)
-      .setAlpha(0)
-      .setInteractive({ useHandCursor: true });
+    this.physicsEnabled = false;
+    this.gameState = GameState.LEVEL_COMPLETE;
 
-    this.tweens.add({
-      targets: this.gameOverButton,
-      alpha: 1,
-      duration: 400,
-      ease: "Power2",
-    });
+    // Optional: Add celebration effects or player victory animation here
+    // this.player.celebrate();
 
-    this.gameOverButton.on("pointerup", () => {
-      if (!this.restartTriggered) this.restartLevel();
+    // Short delay before showing the level complete UI
+    this.time.delayedCall(500, () => {
+      this.showUIOverlay(GameState.LEVEL_COMPLETE);
     });
   }
 

@@ -241,14 +241,6 @@ export class Game extends Scene {
     this.matter.world.on(
       "collisionstart",
       (event: Phaser.Physics.Matter.Events.CollisionStartEvent) => {
-        console.log(
-          `Game Scene Collision Start Event. Pairs: ${event.pairs.length}`
-        );
-        for (const pair of event.pairs) {
-          console.log(
-            `  Pair Labels: [${pair.bodyA.label}, ${pair.bodyB.label}] | IDs: [${pair.bodyA.id}, ${pair.bodyB.id}]`
-          );
-        }
         if (this.physicsEnabled) this.checkCollisions(event);
       }
     );
@@ -377,7 +369,6 @@ export class Game extends Scene {
     coinSprite?.collect();
     setCoins(getCoins() + 1);
     this.coinUI.update();
-    console.log(getCoins());
   }
 
   /**

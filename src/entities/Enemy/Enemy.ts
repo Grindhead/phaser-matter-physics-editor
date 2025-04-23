@@ -40,8 +40,6 @@ export class Enemy extends Phaser.Physics.Matter.Sprite {
     const { left, right } = this.getBounds();
     const { left: boundLeft, right: boundRight } = this.platformBounds;
 
-    console.log("updating");
-
     if (right >= boundRight && this.direction === 1) {
       this.direction = -1;
     } else if (left <= boundLeft && this.direction === -1) {
@@ -52,11 +50,6 @@ export class Enemy extends Phaser.Physics.Matter.Sprite {
   private handleCollisionStart(
     event: Phaser.Physics.Matter.Events.CollisionStartEvent
   ): void {
-    console.log(
-      `DEBUG: Enemy handleCollisionStart entered. Body ID: ${
-        (this.body as MatterJS.BodyType)?.id
-      }, Platform Bounds Set: ${!!this.platformBounds}`
-    );
     if (this.platformBounds) return;
 
     const thisBody = this.body as MatterJS.BodyType;
@@ -71,11 +64,6 @@ export class Enemy extends Phaser.Physics.Matter.Sprite {
     if (!enemyBodyIds.includes(thisBodyId)) {
       enemyBodyIds.push(thisBodyId);
     }
-    console.log(
-      `DEBUG: Enemy ${thisBodyId} instance checking IDs: [${enemyBodyIds.join(
-        ", "
-      )}]`
-    );
 
     for (const { bodyA, bodyB } of event.pairs) {
       let potentialEnemyPartOrParent: MatterJS.BodyType | null = null;
@@ -94,10 +82,6 @@ export class Enemy extends Phaser.Physics.Matter.Sprite {
 
       // If we found a valid pair involving *this* enemy instance (parent or part) and a ground body
       if (potentialEnemyPartOrParent && potentialGround) {
-        console.log(
-          `Enemy Instance ${thisBodyId} collision SUCCESS: Colliding Body ID=${potentialEnemyPartOrParent.id} (Label: ${potentialEnemyPartOrParent.label}) hit Ground ID=${potentialGround.id} (Label: ${potentialGround.label})`
-        );
-
         // Platform found - Cache bounds using the Ground Body ID
         const groundBodyId = potentialGround.id;
         const cached = Enemy.platformCache.get(groundBodyId);
@@ -109,12 +93,6 @@ export class Enemy extends Phaser.Physics.Matter.Sprite {
           Enemy.platformCache.set(groundBodyId, bounds);
           this.platformBounds = bounds;
         }
-
-        console.log(
-          `Enemy Instance ${thisBodyId}: Platform bounds set to:`,
-          this.platformBounds
-        );
-
         // Unregister listener and exit loop
         this.scene.matter.world.off(
           "collisionstart",

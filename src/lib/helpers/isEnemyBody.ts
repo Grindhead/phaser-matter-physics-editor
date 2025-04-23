@@ -4,9 +4,5 @@
  * @returns True if it's the enemies body.
  */
 export const isEnemyBody = (body: MatterJS.BodyType): boolean => {
-  const isMatch = body.label === "enemy";
-  console.log(
-    `DEBUG: isEnemyBody check: ID=${body.id}, Label=${body.label}, IsMatch=${isMatch}`
-  );
-  return isMatch;
+  return body.label === "enemy";
 };

@@ -106,9 +106,9 @@ export class Game extends Scene {
       return;
     }
 
-    const cam = this.cameras.main;
-    const x = cam.scrollX + cam.width / 2;
-    const y = cam.scrollY + cam.height / 2;
+    // Use fixed screen coordinates instead of camera-relative coordinates
+    const centerX = this.game.canvas.width / 2;
+    const centerY = this.game.canvas.height / 2;
 
     let texture: string;
     let callback: () => void;
@@ -139,10 +139,12 @@ export class Game extends Scene {
         return;
     }
 
+    // Create the overlay at fixed screen coordinates
     this.overlayButton = this.add
-      .image(x, y, TEXTURE_ATLAS, texture)
+      .image(centerX, centerY, TEXTURE_ATLAS, texture)
       .setOrigin(0.5)
       .setScrollFactor(0)
+      .setDepth(1000) // Ensure it's on top of everything
       .setInteractive({ useHandCursor: true });
 
     if (fadeIn) {
@@ -168,9 +170,7 @@ export class Game extends Scene {
     this.restartTriggered = false;
     this.physicsEnabled = true;
 
-    // Explicitly update game state to PLAYING which will ensure no overlay is shown
     this.showUIOverlay(GameState.PLAYING);
-
     this.createFallSensor();
   }
 
@@ -393,16 +393,13 @@ export class Game extends Scene {
   private handleLevelComplete(): void {
     if (this.gameState !== GameState.PLAYING) return;
 
-    this.gameState = GameState.LEVEL_COMPLETE;
-
     this.player.finishLevel();
-
     addLevel();
 
     // Short delay before showing the level complete UI
-    this.time.delayedCall(500, () => {
-      this.showUIOverlay(GameState.LEVEL_COMPLETE);
-    });
+
+    this.physicsEnabled = false;
+    this.showUIOverlay(GameState.LEVEL_COMPLETE);
   }
 
   /**

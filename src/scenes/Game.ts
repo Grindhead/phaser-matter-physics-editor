@@ -12,6 +12,7 @@ import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 import { CoinUI } from "../entities/ui/CoinUI";
+import { isFallSensorBody } from "../lib/helpers/isFallSensor";
 
 const WORLD_WIDTH = 10000;
 const WORLD_HEIGHT = 4000;
@@ -28,6 +29,7 @@ export class Game extends Scene {
   private restartTriggered = false;
   private physicsEnabled = false;
   private coinUI: CoinUI;
+  private fallDetector?: MatterJS.BodyType;
 
   constructor() {
     super(SCENES.GAME);
@@ -102,6 +104,35 @@ export class Game extends Scene {
     this.setupCamera();
     this.restartTriggered = false;
     this.physicsEnabled = true;
+
+    this.createFallSensor();
+  }
+
+  /**
+   * Creates an invisible Matter.js sensor below the level to detect if the player falls off.
+   */
+  private createFallSensor(): void {
+    const sensorHeight = 50;
+    const yPosition = 500 + sensorHeight;
+
+    // we set the collision filter to match the platform collision filter
+    // so that matterjs recognizes the fall sensor as a platform
+    this.fallDetector = this.matter.add.rectangle(
+      WORLD_WIDTH / 2,
+      yPosition,
+      WORLD_WIDTH,
+      sensorHeight,
+      {
+        isSensor: true,
+        isStatic: true,
+        label: "fallSensor",
+        collisionFilter: {
+          group: 0,
+          category: 16,
+          mask: 23,
+        },
+      }
+    );
   }
 
   /**
@@ -112,6 +143,7 @@ export class Game extends Scene {
     new Platform(this, 350, 300, 6, "2");
     new Platform(this, 650, 300, 10, "3");
     new Platform(this, 950, 300, 10, "4");
+
     new Finish(this, 750, 230);
     new CrateBig(this, 400, 250);
     new CrateSmall(this, 650, 250);
@@ -150,6 +182,7 @@ export class Game extends Scene {
   }: Phaser.Physics.Matter.Events.CollisionStartEvent): void => {
     for (const { bodyA, bodyB } of pairs) {
       if (
+        this.checkFallSensorCollision(bodyA, bodyB) ||
         this.checkCoinCollision(bodyA, bodyB) ||
         this.checkFinishCollision(bodyA, bodyB) ||
         this.checkEnemyCollision(bodyA, bodyB)
@@ -158,6 +191,24 @@ export class Game extends Scene {
       }
     }
   };
+
+  /**
+   * Detects collision with the fall detector sensor to trigger game over.
+   */
+  private checkFallSensorCollision(
+    bodyA: MatterJS.BodyType,
+    bodyB: MatterJS.BodyType
+  ): boolean {
+    if (
+      (isFallSensorBody(bodyA) && isPlayerBody(bodyB)) ||
+      (isFallSensorBody(bodyB) && isPlayerBody(bodyA))
+    ) {
+      console.log("Fall sensor collision");
+      this.handleGameOver();
+      return true;
+    }
+    return false;
+  }
 
   /**
    * Handles logic when the player collides with an enemy.

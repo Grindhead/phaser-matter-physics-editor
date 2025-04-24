@@ -69,6 +69,11 @@ export class LevelGenerator {
   private finish?: Finish;
   private player?: Player;
 
+  // Calculated bounds after generation
+  private levelMinX: number = 0;
+  private levelMaxX: number = 0;
+  private levelLowestY: number = 0;
+
   // --- Configuration (Defaults & Constants) ---
   // Estimated player jump capabilities (tune these based on actual player physics)
   private readonly MAX_JUMP_DISTANCE_X = 200; // Max horizontal pixels player can jump
@@ -96,10 +101,6 @@ export class LevelGenerator {
    * Returns the created Player instance.
    */
   generateLevel(): Player {
-    console.log(
-      `Generating level ${this.levelNumber} with seed ${this.levelNumber}...`
-    );
-
     const params = this.getLevelGenerationParams();
     const numPlatforms = this.prng.nextInt(
       params.minPlatforms,
@@ -109,6 +110,13 @@ export class LevelGenerator {
     let currentPos: PlacementPosition = { x: 150, y: 300 };
     let totalCoins = 0;
     let lastPlatform: Platform | null = null;
+
+    this.platforms = []; // Clear previous generation
+    this.enemies = [];
+    this.coins = [];
+    this.crates = [];
+    this.finish = undefined;
+    this.player = undefined;
 
     this.createPlayerStart(currentPos);
 
@@ -121,9 +129,6 @@ export class LevelGenerator {
       }
       const maxLength = params.maxPlatformLength;
       if (minLength > maxLength) {
-        console.warn(
-          `Level Generator: Min length (${minLength}) with enemy constraint exceeds max length (${maxLength}). Using max length.`
-        );
         minLength = maxLength;
       }
 
@@ -150,7 +155,7 @@ export class LevelGenerator {
     }
 
     this.createFinishPoint(lastPlatform);
-    this.checkCoinCount(totalCoins, params.requiredCoins);
+    this.calculateOverallBounds(); // Calculate bounds after all platforms exist
 
     console.log(
       `Level generated with ${this.platforms.length} platforms, ${this.enemies.length} enemies, ${this.crates.length} crates, ${totalCoins} coins.`
@@ -251,6 +256,14 @@ export class LevelGenerator {
     );
     this.platforms.push(platform);
 
+    // Log platform creation details
+    const bounds = platform.getBounds();
+    console.log(
+      `Created platform ${index}: x=${pos.x.toFixed(2)}, y=${pos.y.toFixed(
+        2
+      )}, length=${length}, bottomY=${bounds.bottom.toFixed(2)}`
+    );
+
     return platform;
   }
 
@@ -261,73 +274,62 @@ export class LevelGenerator {
   private populatePlatform(
     platform: Platform,
     params: PlatformGenerationParams,
-    enemyPlacedOnThisPlatform: boolean, // Receive enemy placement decision
-    isLastPlatform: boolean // Flag for last platform
+    enemyPlacementIntent: boolean, // Renamed for clarity
+    isLastPlatform: boolean
   ): number {
-    const platformBounds = platform.getBounds();
-    const platformSurfaceY = platformBounds.top;
+    const bounds = platform.getBounds();
+    const platformWidth = bounds.width;
+    const platformTopY = bounds.top;
     let coinsPlaced = 0;
-    let enemyPlaced = false; // Note: enemyPlacedOnThisPlatform param is boolean intent, this tracks actual placement
+    let enemyWasActuallyPlaced = false; // Track if enemy spawn succeeded
 
-    // Coins
-    const platformWidth = platformBounds.width;
-    // Calculate max coins based on minimum spacing (at least MIN_COIN_SPACING between centers,
-    // which means segment width W/(N+1) >= MIN_COIN_SPACING -> N <= W/MIN_COIN_SPACING - 1)
-    const maxPossibleCoins = Math.max(
-      0,
-      Math.floor(platformWidth / this.MIN_COIN_SPACING) - 1
-    );
+    // --- Enemy Placement ---
+    // Only place enemies if intent is true AND it's not the last platform
+    if (enemyPlacementIntent && !isLastPlatform) {
+      const enemyX = platform.x; // Center of the platform
+      const enemyY = platformTopY - this.ENEMY_HEIGHT / 2;
+      const enemy = new Enemy(this.scene, enemyX, enemyY);
+      this.enemies.push(enemy);
+      enemyWasActuallyPlaced = true;
+    }
 
-    if (maxPossibleCoins > 0) {
-      // Only proceed if it's possible to place at least one coin
-      const targetNumCoins = this.prng.nextInt(3, 7); // Original target range
-      const numCoins = Math.min(targetNumCoins, maxPossibleCoins); // Cap by what fits
+    // --- Coin Placement (Refined) ---
+    const maxCoinsPossible = Math.floor(platformWidth / this.MIN_COIN_SPACING);
+    if (maxCoinsPossible > 0) {
+      const targetCoins = this.prng.nextInt(1, maxCoinsPossible + 1); // Min 1 coin if space allows
+      const numCoins = Math.max(1, targetCoins); // Ensure at least 1 if possible
+      const evenSpacing = platformWidth / (numCoins + 1);
 
-      if (numCoins > 0) {
-        // Calculate the spacing needed to distribute numCoins evenly across the platform width.
-        // This divides the platform into numCoins + 1 segments.
-        const evenSpacing = platformWidth / (numCoins + 1);
-
-        // Place the coins using the calculated even spacing
-        for (let c = 0; c < numCoins; c++) {
-          // Calculate X position based on the start of the platform + spacing * segment index
-          const coinX = platformBounds.left + evenSpacing * (c + 1);
-          const coinY = platformSurfaceY - this.COIN_HEIGHT / 2;
-          this.coins.push(new Coin(this.scene, coinX, coinY));
-          coinsPlaced++;
-        }
+      for (let j = 0; j < numCoins; j++) {
+        const coinX = bounds.left + evenSpacing * (j + 1);
+        const coinY = platformTopY - this.COIN_HEIGHT / 2;
+        const coin = new Coin(this.scene, coinX, coinY);
+        this.coins.push(coin); // Add to tracked coins
+        coinsPlaced++;
       }
     }
 
-    // Enemy (skip first platform AND last platform)
-    if (enemyPlacedOnThisPlatform && !isLastPlatform) {
-      const enemyX = this.prng.nextInt(
-        platformBounds.left + 40,
-        platformBounds.right - 40
-      );
-      const enemyY = platformSurfaceY - this.ENEMY_HEIGHT / 2;
-      this.enemies.push(new Enemy(this.scene, enemyX, enemyY));
-      enemyPlaced = true; // Set enemyPlaced flag
-    }
-
-    // Crate (skip first platform, only if no enemy)
-    if (
-      this.platforms.length > 1 &&
-      !enemyPlaced &&
-      this.prng.next() < params.crateProbability
-    ) {
-      const crateX = this.prng.nextInt(
-        platformBounds.left + 40,
-        platformBounds.right - 40
-      );
+    // --- Crate Placement ---
+    // Only place crates if NO enemy was placed on this platform
+    if (!enemyWasActuallyPlaced && this.prng.next() < params.crateProbability) {
+      const crateX = this.prng.nextInt(bounds.left + 32, bounds.right - 32);
+      let crate: CrateBig | CrateSmall;
       if (this.prng.next() < 0.5) {
-        const crateY = platformSurfaceY - this.CRATE_BIG_HEIGHT / 2;
-        this.crates.push(new CrateBig(this.scene, crateX, crateY));
+        crate = new CrateSmall(
+          this.scene,
+          crateX,
+          platformTopY - this.CRATE_SMALL_HEIGHT / 2
+        );
       } else {
-        const crateY = platformSurfaceY - this.CRATE_SMALL_HEIGHT / 2;
-        this.crates.push(new CrateSmall(this.scene, crateX, crateY));
+        crate = new CrateBig(
+          this.scene,
+          crateX,
+          platformTopY - this.CRATE_BIG_HEIGHT / 2
+        );
       }
+      this.crates.push(crate); // Add to tracked crates
     }
+
     return coinsPlaced;
   }
 
@@ -345,14 +347,41 @@ export class LevelGenerator {
   }
 
   /**
-   * Logs a warning if the required coin count wasn't met.
+   * Calculates and stores the overall min/max X and lowest Y bounds of all platforms.
+   * Should be called after all platforms have been generated.
    */
-  private checkCoinCount(totalCoins: number, requiredCoins: number): void {
-    if (totalCoins < requiredCoins) {
+  private calculateOverallBounds(): void {
+    if (this.platforms.length === 0) {
+      this.levelMinX = 0;
+      this.levelMaxX = 1000; // Default if no platforms
+      this.levelLowestY = WORLD_HEIGHT - 100; // Default Y
       console.warn(
-        `Level Generator: Placed ${totalCoins} coins, which is less than the target ${requiredCoins}. Consider adjusting coin placement logic or parameters.`
+        "LevelGenerator: No platforms generated, using default bounds."
       );
+      return;
     }
+
+    // Initialize with the first platform's bounds
+    const firstBounds = this.platforms[0].getBounds();
+    this.levelMinX = firstBounds.left;
+    this.levelMaxX = firstBounds.right;
+    this.levelLowestY = firstBounds.bottom;
+
+    // Loop through the rest to find true min/max/lowest
+    for (let i = 1; i < this.platforms.length; i++) {
+      const bounds = this.platforms[i].getBounds();
+      this.levelMinX = Math.min(this.levelMinX, bounds.left);
+      this.levelMaxX = Math.max(this.levelMaxX, bounds.right);
+      this.levelLowestY = Math.max(this.levelLowestY, bounds.bottom); // Max Y is lowest point
+    }
+
+    console.log(
+      `Calculated Overall Bounds: minX=${this.levelMinX.toFixed(
+        2
+      )}, maxX=${this.levelMaxX.toFixed(
+        2
+      )}, lowestY=${this.levelLowestY.toFixed(2)}`
+    );
   }
 
   /**
@@ -367,5 +396,31 @@ export class LevelGenerator {
    */
   getPlatforms(): Platform[] {
     return this.platforms;
+  }
+
+  /**
+   * Returns the array of generated Coin instances.
+   */
+  getCoins(): Coin[] {
+    return this.coins;
+  }
+
+  /**
+   * Returns the array of generated Crate instances.
+   */
+  getCrates(): (CrateBig | CrateSmall)[] {
+    return this.crates;
+  }
+
+  /**
+   * Returns the calculated overall bounds of the generated level.
+   * Call this *after* generateLevel().
+   */
+  getOverallLevelBounds(): { minX: number; maxX: number; lowestY: number } {
+    return {
+      minX: this.levelMinX,
+      maxX: this.levelMaxX,
+      lowestY: this.levelLowestY,
+    };
   }
 }

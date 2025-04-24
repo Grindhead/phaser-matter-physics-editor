@@ -16,19 +16,21 @@
 
 ## Design Patterns in Use
 
-- **Scene Management:** Using Phaser's scene system (e.g., `Boot`, `Preloader`, `Game`).
+- **Scene Management:** Using Phaser's scene system (e.g., `Boot`, `Preloader`, `Game`, `DebugUIScene`). Includes running scenes in parallel (`Game` + `DebugUIScene`).
 - **Entity Class Pattern:** Each game object (Player, Enemy, Coin, Platform, Background, Crate, Finish) is represented by its own class, typically extending a Phaser `GameObject` or `Sprite`.
 - **State Machine (Simple):** The `Game` scene uses a `GAME_STATE` constant object to manage flow (Waiting, Playing, Game Over, Level Complete).
-- **UI Components:** Dedicated classes for UI elements (e.g., `CoinUI`, `CameraManager`).
+- **UI Components:** Dedicated classes for UI elements (e.g., `CoinUI`, `CameraManager`, `DebugPanel`). `DebugPanel` is now managed by `DebugUIScene`.
 - **Procedural Generation:** A dedicated `LevelGenerator` class encapsulates the logic for creating level layouts based on a seed (level number).
+- **Event Emitter:** Used for communication between parallel scenes (`Game` scene emits `updateDebugData`, `DebugUIScene` listens).
 
 ## Component Relationships
 
-- `Game` scene orchestrates level generation (via `LevelGenerator`), updates, and collision detection.
-- `LevelGenerator` creates instances of various entity classes (`Player`, `Platform`, `Enemy`, `Coin`, `Crate`, `Finish`) and places them in the scene.
+- `Game` scene orchestrates level generation (via `LevelGenerator`), updates game entities, handles collisions, manages primary game state, and emits debug data.
+- `DebugUIScene` runs in parallel to `Game`, listens for `updateDebugData` events, and manages the `DebugPanel` UI.
+- `LevelGenerator` creates instances of various entity classes (`Player`, `Platform`, `Enemy`, `Coin`, `Crate`, `Finish`), places them in the scene, and now provides getters (`getPlatforms`, `getEnemies`, `getCoins`, `getCrates`).
 - Entities interact via Matter.js physics collisions detected in `Game.ts`.
-- UI elements (`CoinUI`) subscribe to game state changes or events.
-- `CameraManager` controls camera bounds, follow, and dynamic zoom.
+- UI elements (`CoinUI`) are managed by the `Game` scene. `DebugPanel` is managed by `DebugUIScene`.
+- `CameraManager` controls the `Game` scene's camera bounds, follow, and dynamic zoom.
 
 ## Critical Implementation Paths
 
@@ -37,6 +39,7 @@
 - Scene transitions and state management (`Game.ts`).
 - Asset loading (`Preloader.ts`).
 - Procedural level generation logic (`LevelGenerator.ts`).
+- Scene communication via events (`Game.ts` -> `DebugUIScene.ts`).
 
 ## New Patterns
 
@@ -44,3 +47,4 @@
 - **Parallax Background:** Implemented using `ParallaxBackground` class (`src/entities/ParallaxBackground.ts`) which extends `Phaser.GameObjects.TileSprite` and updates its `tilePositionX` based on camera scroll in its `update` method.
 - **Camera Management:** A dedicated `CameraManager` class (`src/lib/ui/CameraManager.ts`) handles camera setup (bounds, follow, lerp) and effects like death zoom, separating camera logic from the main `Game` scene.
 - **Constants for States:** Using a `const` object (`GAME_STATE`) instead of an `enum` for defining fixed state values, providing string-based values and potentially simpler integration in some contexts.
+- **Conditional Debug UI (Separate Scene):** A `DebugPanel` class (`src/lib/ui/DebugPanel.ts`) displays runtime information. It is managed by a dedicated `DebugUIScene` (`src/scenes/DebugUIScene.ts`) which runs in parallel to the main `Game` scene. `DebugUIScene` is launched conditionally in development builds (`import.meta.env.DEV`) by the `Game` scene. Communication uses Phaser's event emitter (`Game` emits `updateDebugData`, `DebugUIScene` listens and updates the panel). The panel is toggled via 'Q' key handled within `DebugUIScene`.

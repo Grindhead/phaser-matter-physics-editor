@@ -73,9 +73,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     const right = this.cursors.right?.isDown || this.wasd.D?.isDown;
     const up = this.cursors.up?.isDown || this.wasd.W?.isDown;
 
-    let targetVelocityX = 0;
-
+    // --- Control Handling (Movement & Jump - only if level NOT complete) ---
     if (!this.isLevelComplete) {
+      let targetVelocityX = 0;
       if (left) {
         targetVelocityX = -WALK_VELOCITY;
         this.flipX = true;
@@ -84,47 +84,53 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         this.flipX = false;
       }
       this.setVelocityX(targetVelocityX);
-    }
 
-    // Jump
-    if (up && this.isGrounded && !this.isLevelComplete) {
-      this.setVelocityY(JUMP_VELOCITY);
-
-      this.jumpInProgress = true;
-      this.lastJumpTime = this.scene.time.now;
-
-      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_JUMP, true);
-      this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-        if (!this.isGrounded) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
-        }
-      });
-      return;
-    }
-
-    // In air
-    if (!this.isGrounded && !this.jumpInProgress) {
-      if (
-        this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_FALL &&
-        this.scene.time.now - this.lastJumpTime > FALL_DELAY_MS
-      ) {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
+      // Jump
+      if (up && this.isGrounded) {
+        this.setVelocityY(JUMP_VELOCITY);
+        this.jumpInProgress = true;
+        this.lastJumpTime = this.scene.time.now;
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_JUMP, true);
+        this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+          // Transition to fall anim after jump completes if still airborne
+          if (!this.isGrounded) {
+            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
+          }
+        });
+        return; // Exit early if we just jumped
       }
-      return;
     }
 
-    // On ground
-    if (this.isGrounded && !this.jumpInProgress) {
-      if (!this.isLevelComplete) {
-        if (left || right) {
+    // In air logic
+    if (!this.isGrounded) {
+      // If jump is not in progress (i.e., we are falling)
+      if (!this.jumpInProgress) {
+        // Play fall animation if not already playing and enough time has passed since last jump
+        if (
+          this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_FALL &&
+          this.scene.time.now - this.lastJumpTime > FALL_DELAY_MS
+        ) {
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
+        }
+      }
+    }
+    // On ground logic
+    else if (this.isGrounded && !this.jumpInProgress) {
+      // If level is complete, force idle animation
+      if (this.isLevelComplete) {
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, true);
+      }
+      // Otherwise, use velocity to determine run or idle
+      else {
+        if (this.body && Math.abs(this.body.velocity.x) > 0.1) {
           this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
         } else {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE);
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, true);
         }
-      } else {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE);
       }
     }
+
+    // --- End Control Handling ---
   }
 
   private playAnimation(key: string, force = false) {
@@ -140,7 +146,11 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     event: Phaser.Physics.Matter.Events.CollisionStartEvent
   ) {
     for (const { bodyA, bodyB } of event.pairs) {
+      // Log involved bodies
+      console.log(`Collision Start: A=${bodyA.label}, B=${bodyB.label}`);
+
       if (isPlayerBody(bodyA) && isGroundBody(bodyB)) {
+        console.log(`Ground contact added: ${bodyB.label}`);
         this.groundContacts.add(bodyB);
       } else if (isPlayerBody(bodyB) && isGroundBody(bodyA)) {
         this.groundContacts.add(bodyA);
@@ -151,6 +161,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isGrounded = this.groundContacts.size > 0;
 
     if (this.isGrounded && !wasGrounded) {
+      // console.log("Player: Landed! Setting jumpInProgress to false."); // Added log
       this.jumpInProgress = false;
     }
   }
@@ -159,7 +170,11 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     event: Phaser.Physics.Matter.Events.CollisionEndEvent
   ) {
     for (const { bodyA, bodyB } of event.pairs) {
+      // Log involved bodies
+      console.log(`Collision End: A=${bodyA.label}, B=${bodyB.label}`);
+
       if (isPlayerBody(bodyA) && isGroundBody(bodyB)) {
+        console.log(`Ground contact removed: ${bodyB.label}`);
         this.groundContacts.delete(bodyB);
       } else if (isPlayerBody(bodyB) && isGroundBody(bodyA)) {
         this.groundContacts.delete(bodyA);

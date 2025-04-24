@@ -272,13 +272,6 @@ export class Game extends Scene {
     const yPosition =
       lowestPlatformBottomY + offsetBelowPlatform + sensorHeight / 2;
 
-    console.log(
-      `Creating fall sensor at Y: ${yPosition} (based on lowest platform bottom: ${lowestPlatformBottomY})`
-    );
-    console.log(
-      `Fall sensor dimensions: centerX=${centerX}, width=${width}, height=${sensorHeight}`
-    ); // Log dimensions
-
     // we set the collision filter to match the platform collision filter
     // so that matterjs recognizes the fall sensor as a platform
     this.matter.add.rectangle(
@@ -342,7 +335,6 @@ export class Game extends Scene {
       (isFallSensorBody(bodyA) && isPlayerBody(bodyB)) ||
       (isFallSensorBody(bodyB) && isPlayerBody(bodyA))
     ) {
-      console.log("Fall sensor collision");
       this.handleGameOver();
       return true;
     }
@@ -441,7 +433,7 @@ export class Game extends Scene {
    * Also emits debug data if in development mode.
    */
   update(time: number, delta: number): void {
-    if (!this.physicsEnabled || this.gameState !== GAME_STATE.PLAYING) {
+    if (!this.physicsEnabled) {
       return;
     }
 
@@ -495,9 +487,6 @@ export class Game extends Scene {
     addLevel();
     this.enemies.forEach((enemy) => enemy.handleGameOver());
 
-    // Short delay before showing the level complete UI
-
-    this.physicsEnabled = false;
     this.showUIOverlay(GAME_STATE.LEVEL_COMPLETE);
   }
 

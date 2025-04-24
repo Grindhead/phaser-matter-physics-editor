@@ -69,6 +69,11 @@ export class LevelGenerator {
   private finish?: Finish;
   private player?: Player;
 
+  // Calculated bounds after generation
+  private levelMinX: number = 0;
+  private levelMaxX: number = 0;
+  private levelLowestY: number = 0;
+
   // --- Configuration (Defaults & Constants) ---
   // Estimated player jump capabilities (tune these based on actual player physics)
   private readonly MAX_JUMP_DISTANCE_X = 200; // Max horizontal pixels player can jump
@@ -150,6 +155,7 @@ export class LevelGenerator {
     }
 
     this.createFinishPoint(lastPlatform);
+    this.calculateOverallBounds(); // Calculate bounds after all platforms exist
 
     console.log(
       `Level generated with ${this.platforms.length} platforms, ${this.enemies.length} enemies, ${this.crates.length} crates, ${totalCoins} coins.`
@@ -250,6 +256,14 @@ export class LevelGenerator {
     );
     this.platforms.push(platform);
 
+    // Log platform creation details
+    const bounds = platform.getBounds();
+    console.log(
+      `Created platform ${index}: x=${pos.x.toFixed(2)}, y=${pos.y.toFixed(
+        2
+      )}, length=${length}, bottomY=${bounds.bottom.toFixed(2)}`
+    );
+
     return platform;
   }
 
@@ -333,6 +347,44 @@ export class LevelGenerator {
   }
 
   /**
+   * Calculates and stores the overall min/max X and lowest Y bounds of all platforms.
+   * Should be called after all platforms have been generated.
+   */
+  private calculateOverallBounds(): void {
+    if (this.platforms.length === 0) {
+      this.levelMinX = 0;
+      this.levelMaxX = 1000; // Default if no platforms
+      this.levelLowestY = WORLD_HEIGHT - 100; // Default Y
+      console.warn(
+        "LevelGenerator: No platforms generated, using default bounds."
+      );
+      return;
+    }
+
+    // Initialize with the first platform's bounds
+    const firstBounds = this.platforms[0].getBounds();
+    this.levelMinX = firstBounds.left;
+    this.levelMaxX = firstBounds.right;
+    this.levelLowestY = firstBounds.bottom;
+
+    // Loop through the rest to find true min/max/lowest
+    for (let i = 1; i < this.platforms.length; i++) {
+      const bounds = this.platforms[i].getBounds();
+      this.levelMinX = Math.min(this.levelMinX, bounds.left);
+      this.levelMaxX = Math.max(this.levelMaxX, bounds.right);
+      this.levelLowestY = Math.max(this.levelLowestY, bounds.bottom); // Max Y is lowest point
+    }
+
+    console.log(
+      `Calculated Overall Bounds: minX=${this.levelMinX.toFixed(
+        2
+      )}, maxX=${this.levelMaxX.toFixed(
+        2
+      )}, lowestY=${this.levelLowestY.toFixed(2)}`
+    );
+  }
+
+  /**
    * Returns the list of generated enemies.
    */
   getEnemies(): Enemy[] {
@@ -358,5 +410,17 @@ export class LevelGenerator {
    */
   getCrates(): (CrateBig | CrateSmall)[] {
     return this.crates;
+  }
+
+  /**
+   * Returns the calculated overall bounds of the generated level.
+   * Call this *after* generateLevel().
+   */
+  getOverallLevelBounds(): { minX: number; maxX: number; lowestY: number } {
+    return {
+      minX: this.levelMinX,
+      maxX: this.levelMaxX,
+      lowestY: this.levelLowestY,
+    };
   }
 }

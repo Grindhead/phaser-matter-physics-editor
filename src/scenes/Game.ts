@@ -102,22 +102,72 @@ export class Game extends Scene {
     this.player = this.levelGenerator.generateLevel();
     this.enemies = this.levelGenerator.getEnemies();
 
-    // Get all generated platforms
-    const platforms = this.levelGenerator.getPlatforms();
+    // Get all generated platforms -- No longer needed for bounds calc here
+    // const platforms = this.levelGenerator.getPlatforms();
 
-    // Calculate the lowest Y coordinate from the actual platform objects
-    let lowestPlatformY = WORLD_HEIGHT; // Start with a high value (or default)
+    // Get overall bounds directly from the generator
+    const levelBounds = this.levelGenerator.getOverallLevelBounds();
+    const {
+      minX: minPlatformX,
+      maxX: maxPlatformX,
+      lowestY: lowestPlatformY,
+    } = levelBounds;
+
+    // --- Remove bounds calculation loop ---
+    /*
+    // Calculate the lowest Y coordinate (largest Y value) and horizontal bounds
+    let lowestPlatformY = -Infinity; // Initialize to negative Infinity to find max
+    let minPlatformX = Infinity;
+    let maxPlatformX = -Infinity;
+
     if (platforms.length > 0) {
-      lowestPlatformY = platforms[0].getBounds().bottom;
-      for (let i = 1; i < platforms.length; i++) {
-        lowestPlatformY = Math.min(
-          lowestPlatformY,
-          platforms[i].getBounds().bottom
+      console.log(`Starting bounds calculation. Found ${platforms.length} platforms.`); // Log platform count
+      // Loop through ALL platforms, starting from index 0
+      for (let i = 0; i < platforms.length; i++) {
+        const bounds = platforms[i].getBounds();
+        const currentLowestY = lowestPlatformY;
+        // Log the bounds object and type of bounds.bottom
+        // console.log(`  [Iter ${i}] Platform ${i} Bounds:`, bounds);
+        // console.log(`  [Iter ${i}] typeof bounds.bottom: ${typeof bounds.bottom}`);
+
+        lowestPlatformY = Math.max(lowestPlatformY, bounds.bottom); // Use Math.max
+        minPlatformX = Math.min(minPlatformX, bounds.left);
+        maxPlatformX = Math.max(maxPlatformX, bounds.right);
+        // Log each iteration comparison
+        console.log(
+          `  [Iter ${i}] Comparison: Math.max(${currentLowestY.toFixed(
+            2
+          )}, ${bounds.bottom}) -> lowestY after=${lowestPlatformY.toFixed(2)}` // Use Math.max
         );
       }
+    } else {
+      // Handle case with no platforms (e.g., sensor at default position/width?)
+      // For now, let's default to a reasonable width if no platforms exist
+      minPlatformX = 0;
+      maxPlatformX = 1000; // Or WORLD_WIDTH if it wasn't Infinity
+      lowestPlatformY = WORLD_HEIGHT - 100; // Default Y if no platforms
     }
-    // Create the fall sensor *after* generating the level and finding the lowest point
-    this.createFallSensor(lowestPlatformY);
+    */
+    // --- End remove bounds calculation loop ---
+
+    const levelWidth = maxPlatformX - minPlatformX;
+    const sensorWidth = levelWidth + 1000; // Add 500px buffer on each side
+    const sensorCenterX = minPlatformX + levelWidth / 2;
+
+    // Log the final calculated lowest Y (obtained from generator)
+    console.log(`Retrieved lowestPlatformY from generator: ${lowestPlatformY}`);
+    console.log(
+      `Retrieved level bounds from generator: minX=${minPlatformX}, maxX=${maxPlatformX}, width=${levelWidth}`
+    );
+    console.log(
+      `Calculated sensor params: centerX=${sensorCenterX}, width=${sensorWidth}`
+    );
+
+    // --- Comment out temporary debug graphics code ---
+    // --- END TEMPORARY DEBUG VISUALIZATION ---
+
+    // Create the fall sensor using bounds from generator
+    this.createFallSensor(lowestPlatformY, sensorCenterX, sensorWidth);
   }
 
   /**
@@ -208,9 +258,15 @@ export class Game extends Scene {
   /**
    * Creates an invisible Matter.js sensor below the level to detect if the player falls off.
    * @param lowestPlatformBottomY The Y coordinate of the bottom edge of the lowest platform.
+   * @param centerX The calculated center X coordinate for the sensor.
+   * @param width The calculated width for the sensor (level width + padding).
    */
-  private createFallSensor(lowestPlatformBottomY: number): void {
-    const sensorHeight = 50;
+  private createFallSensor(
+    lowestPlatformBottomY: number,
+    centerX: number,
+    width: number
+  ): void {
+    const sensorHeight = 100; // Increased height to 100px
     const offsetBelowPlatform = 500;
     // Calculate the sensor's center Y position
     const yPosition =
@@ -219,14 +275,17 @@ export class Game extends Scene {
     console.log(
       `Creating fall sensor at Y: ${yPosition} (based on lowest platform bottom: ${lowestPlatformBottomY})`
     );
+    console.log(
+      `Fall sensor dimensions: centerX=${centerX}, width=${width}, height=${sensorHeight}`
+    ); // Log dimensions
 
     // we set the collision filter to match the platform collision filter
     // so that matterjs recognizes the fall sensor as a platform
     this.matter.add.rectangle(
-      WORLD_WIDTH / 2,
+      centerX, // Use calculated center X
       yPosition,
-      WORLD_WIDTH,
-      sensorHeight,
+      width, // Use calculated width
+      sensorHeight, // Use updated height
       {
         isSensor: true,
         isStatic: true,

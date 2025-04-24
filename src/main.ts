@@ -26,6 +26,7 @@ const config: Types.Core.GameConfig = {
         x: 0,
         y: 1,
       },
+      debug: true,
     },
   },
   scene: [Boot, Preloader, MainMenu, MainGame, DebugUIScene, GameOver],

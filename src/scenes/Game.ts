@@ -417,7 +417,7 @@ export class Game extends Scene {
     this.physicsEnabled = false;
     this.enemies.forEach((enemy) => enemy.handleGameOver());
 
-    this.cameraManager.handlePlayerDeath();
+    this.cameraManager.handleZoomIn();
     this.showUIOverlay(GAME_STATE.GAME_OVER);
   }
 
@@ -430,7 +430,7 @@ export class Game extends Scene {
     this.player.finishLevel();
     addLevel();
     this.enemies.forEach((enemy) => enemy.handleGameOver());
-
+    this.cameraManager.handleZoomIn();
     this.showUIOverlay(GAME_STATE.LEVEL_COMPLETE);
   }
 

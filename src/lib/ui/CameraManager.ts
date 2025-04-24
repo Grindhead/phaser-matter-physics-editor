@@ -41,7 +41,7 @@ export class CameraManager {
   /**
    * Initiates the zoom-in effect when the player dies.
    */
-  handlePlayerDeath(): void {
+  handleZoomIn(): void {
     this.scene.tweens.add({
       targets: this.camera,
       zoom: DEATH_ZOOM_IN,

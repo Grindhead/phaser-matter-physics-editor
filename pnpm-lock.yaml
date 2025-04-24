@@ -11,6 +11,9 @@ importers:
       phaser:
         specifier: ^3.88.2
         version: 3.88.2
+      typeface-roboto:
+        specifier: ^1.1.13
+        version: 1.1.13
     devDependencies:
       terser:
         specifier: ^5.39.0
@@ -346,6 +349,9 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  typeface-roboto@1.1.13:
+    resolution: {integrity: sha512-YXvbd3a1QTREoD+FJoEkl0VQNJoEjewR2H11IjVv4bp6ahuIcw0yyw/3udC4vJkHw3T3cUh85FTg8eWef3pSaw==}
+
   typescript@5.8.3:
     resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
     engines: {node: '>=14.17'}
@@ -629,6 +635,8 @@ snapshots:
       acorn: 8.14.1
       commander: 2.20.3
       source-map-support: 0.5.21
+
+  typeface-roboto@1.1.13: {}
 
   typescript@5.8.3: {}
 

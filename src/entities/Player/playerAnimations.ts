@@ -1,39 +1,45 @@
 import { AnimationDefinition } from "../../lib/types";
 
 export const PLAYER_ANIMATION_KEYS = {
-  FALL: "FALL",
-  DEAD: "DEAD",
-  IDLE: "IDLE",
-  JUMP: "JUMP",
-  RUN: "RUN",
+  DUCK_FALL: "DUCK_FALL",
+  DUCK_DEAD: "DUCK_DEAD",
+  DUCK_IDLE: "DUCK_IDLE",
+  DUCK_JUMP: "DUCK_JUMP",
+  DUCK_RUN: "DUCK_RUN",
 } as const;
 
 type AnimationKey = keyof typeof PLAYER_ANIMATION_KEYS;
 
 export const PLAYER_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
-  FALL: {
-    prefix: "player/idle/duck-fall-",
+  DUCK_FALL: {
+    prefix: "player/fall/duck-fall-",
     frames: 10,
-    loop: false,
+    loop: 0,
+    frameRate: 30,
   },
-  DEAD: {
+  DUCK_DEAD: {
     prefix: "player/dead/duck-dead-",
     frames: 10,
-    loop: false,
+    loop: 0,
+    frameRate: 30,
   },
-  IDLE: {
+  DUCK_IDLE: {
     prefix: "player/idle/duck-idle-",
     frames: 10,
-    loop: false,
+    loop: 0,
+    frameRate: 30,
   },
-  JUMP: {
+  DUCK_JUMP: {
     prefix: "player/jump/duck-jump-",
     frames: 12,
-    loop: false,
+    loop: 0,
+    nextAnimation: PLAYER_ANIMATION_KEYS.DUCK_FALL,
+    frameRate: 30,
   },
-  RUN: {
+  DUCK_RUN: {
     prefix: "player/run/duck-run-",
     frames: 14,
-    loop: true,
+    loop: -1,
+    frameRate: 30,
   },
 };

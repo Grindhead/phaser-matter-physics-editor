@@ -1,5 +1,9 @@
 import { Scene } from "phaser";
 import { PHYSICS, SCENES, TEXTURE_ATLAS } from "../lib/constants";
+import { createAnimations } from "../lib/helpers/createAnimations";
+import { PLAYER_ANIMATIONS } from "../entities/Player/playerAnimations";
+import { COIN_ANIMATIONS } from "../entities/Coin/coinAnimations";
+import { FINISH_ANIMATIONS } from "../entities/Finish/finishAnimations";
 
 export class Preloader extends Scene {
   constructor() {
@@ -34,8 +38,14 @@ export class Preloader extends Scene {
   create() {
     //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
     //  For example, you can define global animations here, so we can use them in other scenes.
-
+    this.setupAnimations();
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
     this.scene.start(SCENES.MAIN_MENU);
+  }
+
+  setupAnimations() {
+    createAnimations(this.game.anims, TEXTURE_ATLAS, PLAYER_ANIMATIONS);
+    createAnimations(this.game.anims, TEXTURE_ATLAS, COIN_ANIMATIONS);
+    createAnimations(this.game.anims, TEXTURE_ATLAS, FINISH_ANIMATIONS);
   }
 }

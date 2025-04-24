@@ -1,70 +1,531 @@
 import { Scene } from "phaser";
-import { PHYSICS, SCENES } from "../lib/constants";
+import {
+  GAME_STATE,
+  SCENES,
+  TEXTURE_ATLAS,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+} from "../lib/constants";
 import { Player } from "../entities/Player/Player";
 import { Enemy } from "../entities/Enemy/Enemy";
+import { Coin } from "../entities/Coin/Coin";
+import { Finish } from "../entities/Finish/Finish";
+import { isCoinBody } from "../lib/helpers/isCoinBody";
+import { isPlayerBody } from "../lib/helpers/isPlayerBody";
+import { isFinishBody } from "../lib/helpers/isFinishBody";
+import { isEnemyBody } from "../lib/helpers/isEnemyBody";
+import { CoinUI } from "../lib/ui/CoinUI";
+import { isFallSensorBody } from "../lib/helpers/isFallSensor";
+import { getCoins, setCoins } from "../lib/helpers/coinManager";
+import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
+import { ParallaxBackground } from "../entities/ParallaxBackground";
+import { CameraManager } from "../lib/ui/CameraManager";
+import { GameStateType } from "../lib/types";
+import { LevelGenerator } from "../lib/LevelGenerator";
+import { Geom, Physics } from "phaser";
 
+/**
+ * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
+ */
 export class Game extends Scene {
-  camera: Phaser.Cameras.Scene2D.Camera;
-  background: Phaser.GameObjects.Image;
+  private background: ParallaxBackground;
+  private player: Player;
+  private overlayButton?: Phaser.GameObjects.Image;
+  private restartTriggered = false;
+  private physicsEnabled = false;
+  private coinUI: CoinUI;
+  private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
+  private enemies: Enemy[] = [];
+  private cameraManager: CameraManager;
+  private levelGenerator: LevelGenerator;
 
   constructor() {
     super(SCENES.GAME);
   }
 
-  create() {
-    this.background = this.add.image(
-      this.game.canvas.width / 2,
-      this.game.canvas.height / 2,
-      "background"
-    );
-    this.background.setOrigin(0.5, 0.5);
+  /**
+   * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
+   */
+  create(): void {
+    this.createBackground();
+    this.setupWorldBounds();
+    this.initGame();
+    this.showUIOverlay(GAME_STATE.WAITING_TO_START);
 
-    this.createMatterWorld();
+    // Conditionally launch the Debug UI Scene in parallel
+    if (import.meta.env.DEV) {
+      console.log("Launching DebugUIScene...");
+      this.scene.launch(SCENES.DEBUG_UI);
+    }
+  }
+
+  createBackground = () => {
+    this.background = new ParallaxBackground(this, "background", 0.5);
+  };
+
+  /**
+   * Configures world and camera bounds, disables physics initially.
+   */
+  private setupWorldBounds(): void {
+    this.matter.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    this.matter.world.enabled = false;
   }
 
   /**
-   * Create the matter world
+   * Initializes game objects and collision handlers using procedural generation.
    */
+  private initGame(): void {
+    setCoins(0);
+    if (getLevel() === 0) {
+      setLevel(1);
+    }
+    this.enemies = [];
 
-  createMatterWorld() {
-    const shapes = this.cache.json.get(PHYSICS);
-    this.matter.add.sprite(200, 200, "assets", "crate/crate-big.png", {
-      shape: shapes["crate-large"],
-    });
+    this.generateLevelEntities();
 
-    this.matter.add.sprite(220, 200, "assets", "crate/crate-small.png", {
-      shape: shapes["crate-small"],
-    });
-
-    this.matter.add.sprite(
-      220,
-      200,
-      "assets",
-      "finish/finish-idle/finish-idle.png",
-      {
-        shape: shapes["finish"],
-      }
-    );
-
-    this.matter.add.sprite(
-      280,
-      200,
-      "assets",
-      "coin/coin-idle/coin-idle-0001.png",
-      {
-        shape: shapes["coin"],
-      }
-    );
-
-    new Player(this, 100, 200);
-    new Enemy(this, 300, 200);
+    this.setupCollisions();
+    this.coinUI = new CoinUI(this);
+    if (!this.player) {
+      throw new Error("Player not created during level generation!");
+    }
+    this.cameraManager = new CameraManager(this, this.player);
   }
 
   /**
-   *  Handle game over
+   * Uses LevelGenerator to create the entities for the current level.
    */
+  private generateLevelEntities(): void {
+    const currentLevel = getLevel();
+    this.levelGenerator = new LevelGenerator(this, currentLevel);
+    this.player = this.levelGenerator.generateLevel();
+    this.enemies = this.levelGenerator.getEnemies();
 
-  handleGameOver() {
-    this.scene.start(SCENES.GAME_OVER);
+    // Get overall bounds directly from the generator
+    const levelBounds = this.levelGenerator.getOverallLevelBounds();
+    const {
+      minX: minPlatformX,
+      maxX: maxPlatformX,
+      lowestY: lowestPlatformY,
+    } = levelBounds;
+
+    const levelWidth = maxPlatformX - minPlatformX;
+    const sensorWidth = levelWidth + 1000; // Add 500px buffer on each side
+    const sensorCenterX = minPlatformX + levelWidth / 2;
+
+    // Create the fall sensor using bounds from generator
+    this.createFallSensor(lowestPlatformY, sensorCenterX, sensorWidth);
+  }
+
+  /**
+   * Shows a UI overlay based on the current game state
+   *
+   * @param state - The game state determining which UI to show
+   * @param fadeIn - Whether to fade in the UI (default: true)
+   */
+  private showUIOverlay(state: GameStateType, fadeIn: boolean = true): void {
+    // Clean up any existing overlay
+    if (this.overlayButton) {
+      this.overlayButton.destroy();
+      this.overlayButton = undefined;
+    }
+
+    // If we're transitioning to PLAYING state, don't show an overlay
+    if (state === GAME_STATE.PLAYING) {
+      this.gameState = state;
+      return;
+    }
+
+    // Use fixed screen coordinates instead of camera-relative coordinates
+    const centerX = this.game.canvas.width / 2;
+    const centerY = this.game.canvas.height / 2;
+
+    let texture: string;
+    let callback: () => void;
+
+    switch (state) {
+      case GAME_STATE.WAITING_TO_START:
+        texture = "ui/start.png";
+        callback = () => {
+          // Hide the overlay and start the game
+          this.overlayButton?.destroy();
+          this.overlayButton = undefined;
+          this.startGame();
+        };
+        break;
+      case GAME_STATE.GAME_OVER:
+        texture = "ui/game-over.png";
+        callback = () => {
+          if (!this.restartTriggered) this.restartLevel();
+        };
+        break;
+      case GAME_STATE.LEVEL_COMPLETE:
+        texture = "ui/start.png"; // Using start.png as requested
+        callback = () => {
+          if (!this.restartTriggered) this.restartLevel();
+        };
+        break;
+      default:
+        return;
+    }
+
+    // Create the overlay at fixed screen coordinates
+    this.overlayButton = this.add
+      .image(centerX, centerY, TEXTURE_ATLAS, texture)
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(1000) // Ensure it's on top of everything
+      .setInteractive({ useHandCursor: true });
+
+    if (fadeIn) {
+      this.overlayButton.setAlpha(0);
+      this.tweens.add({
+        targets: this.overlayButton,
+        alpha: 1,
+        duration: 400,
+        ease: "Power2",
+      });
+    }
+
+    this.overlayButton.on("pointerup", callback);
+    this.gameState = state;
+  }
+
+  /**
+   * Enables physics, sets camera follow, and marks the game as running.
+   */
+  private startGame(): void {
+    this.matter.world.enabled = true;
+    this.restartTriggered = false;
+    this.physicsEnabled = true;
+
+    this.showUIOverlay(GAME_STATE.PLAYING); // Use constant
+  }
+
+  /**
+   * Creates an invisible Matter.js sensor below the level to detect if the player falls off.
+   * @param lowestPlatformBottomY The Y coordinate of the bottom edge of the lowest platform.
+   * @param centerX The calculated center X coordinate for the sensor.
+   * @param width The calculated width for the sensor (level width + padding).
+   */
+  private createFallSensor(
+    lowestPlatformBottomY: number,
+    centerX: number,
+    width: number
+  ): void {
+    const sensorHeight = 100; // Increased height to 100px
+    const offsetBelowPlatform = 500;
+    // Calculate the sensor's center Y position
+    const yPosition =
+      lowestPlatformBottomY + offsetBelowPlatform + sensorHeight / 2;
+
+    // we set the collision filter to match the platform collision filter
+    // so that matterjs recognizes the fall sensor as a platform
+    this.matter.add.rectangle(
+      centerX, // Use calculated center X
+      yPosition,
+      width, // Use calculated width
+      sensorHeight, // Use updated height
+      {
+        isSensor: true,
+        isStatic: true,
+        label: "fallSensor",
+        collisionFilter: {
+          group: 0,
+          category: 16,
+          mask: 23,
+        },
+      }
+    );
+  }
+
+  /**
+   * Configures Matter.js collision handlers for key entities.
+   */
+  private setupCollisions(): void {
+    this.matter.world.on(
+      "collisionstart",
+      (event: Phaser.Physics.Matter.Events.CollisionStartEvent) => {
+        if (this.physicsEnabled) this.checkCollisions(event);
+      }
+    );
+  }
+
+  /**
+   * Checks for coin, finish, or enemy collisions on contact.
+   *
+   * @param event - The collision start event data.
+   */
+  private checkCollisions = ({
+    pairs,
+  }: Phaser.Physics.Matter.Events.CollisionStartEvent): void => {
+    for (const { bodyA, bodyB } of pairs) {
+      if (
+        this.checkFallSensorCollision(bodyA, bodyB) ||
+        this.checkCoinCollision(bodyA, bodyB) ||
+        this.checkFinishCollision(bodyA, bodyB) ||
+        this.checkEnemyCollision(bodyA, bodyB)
+      ) {
+        return;
+      }
+    }
+  };
+
+  /**
+   * Detects collision with the fall detector sensor to trigger game over.
+   */
+  private checkFallSensorCollision(
+    bodyA: MatterJS.BodyType,
+    bodyB: MatterJS.BodyType
+  ): boolean {
+    if (
+      (isFallSensorBody(bodyA) && isPlayerBody(bodyB)) ||
+      (isFallSensorBody(bodyB) && isPlayerBody(bodyA))
+    ) {
+      this.handleGameOver();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Handles logic when the player collides with an enemy.
+   *
+   * @param bodyA - First body in the collision.
+   * @param bodyB - Second body in the collision.
+   * @returns Whether an enemy collision occurred.
+   */
+  private checkEnemyCollision(
+    bodyA: MatterJS.BodyType,
+    bodyB: MatterJS.BodyType
+  ): boolean {
+    if (
+      (isEnemyBody(bodyA) && isPlayerBody(bodyB)) ||
+      (isEnemyBody(bodyB) && isPlayerBody(bodyA))
+    ) {
+      this.handleGameOver();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Handles logic when the player reaches the finish point.
+   *
+   * @param bodyA - First body in the collision.
+   * @param bodyB - Second body in the collision.
+   * @returns Whether a finish collision occurred.
+   */
+  private checkFinishCollision(
+    bodyA: MatterJS.BodyType,
+    bodyB: MatterJS.BodyType
+  ): boolean {
+    if (
+      (isFinishBody(bodyA) && isPlayerBody(bodyB)) ||
+      (isFinishBody(bodyB) && isPlayerBody(bodyA))
+    ) {
+      if (isFinishBody(bodyA)) {
+        const finishSprite = bodyA.gameObject as Finish;
+        finishSprite.activate();
+      } else if (isFinishBody(bodyB)) {
+        const finishSprite = bodyB.gameObject as Finish;
+        finishSprite.activate();
+      }
+
+      this.handleLevelComplete();
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Handles logic when the player collects a coin.
+   *
+   * @param bodyA - First body in the collision.
+   * @param bodyB - Second body in the collision.
+   * @returns Whether a coin collision occurred.
+   */
+  private checkCoinCollision(
+    bodyA: MatterJS.BodyType,
+    bodyB: MatterJS.BodyType
+  ): boolean {
+    if (isCoinBody(bodyA) && isPlayerBody(bodyB)) {
+      this.collectCoin(bodyA);
+      return true;
+    }
+
+    if (isCoinBody(bodyB) && isPlayerBody(bodyA)) {
+      this.collectCoin(bodyB);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Collects the given coin and updates the coin count.
+   *
+   * @param body - The Matter body of the coin to collect.
+   */
+  private collectCoin(body: MatterJS.BodyType): void {
+    const coinSprite = body.gameObject as Coin;
+    coinSprite?.collect();
+    setCoins(getCoins() + 1);
+    this.coinUI.update();
+  }
+
+  /**
+   * Scene lifecycle hook. Called every frame, updates entities and checks game state.
+   * @param time - The current time in milliseconds.
+   * @param delta - The time elapsed since the last frame in milliseconds.
+   */
+  update(time: number, delta: number): void {
+    if (!this.physicsEnabled) return;
+
+    // Update main game elements - Reverted to previous signatures based on linter errors
+    this.player?.update(time, delta);
+    this.enemies.forEach((enemy) => enemy.update());
+    this.background?.update();
+
+    // Initialize culling counters
+    let culledCoinsCount = 0;
+    let culledEnemiesCount = 0;
+
+    // Update debug panel data if in dev mode
+    if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
+      this.events.emit("updateDebugData", {
+        playerX: this.player.x,
+        playerY: this.player.y,
+        platformCount: this.levelGenerator.getPlatforms().length,
+        enemyCount: this.enemies.length,
+        coinCount: this.levelGenerator.getCoins().length,
+        crateCount: this.levelGenerator.getCrates().length,
+      });
+    }
+
+    // Camera updates
+    // this.cameraManager.update(this.player.body.velocity.y); // Still commented out
+
+    // --- Culling Logic ---
+    const cameraView = this.cameras.main.worldView;
+    // Add a buffer around the camera view to prevent entities popping in/out too abruptly
+    const cullBuffer = 100;
+    // Use Phaser's Geom.Rectangle
+    const cullRect = new Geom.Rectangle(
+      cameraView.x - cullBuffer,
+      cameraView.y - cullBuffer,
+      cameraView.width + cullBuffer * 2,
+      cameraView.height + cullBuffer * 2
+    );
+
+    // Cull Coins
+    this.levelGenerator.getCoins().forEach((coin) => {
+      if (!coin.body) return; // Ensure coin and body exist
+      const isVisible = Geom.Rectangle.Contains(
+        cullRect,
+        coin.body.position.x,
+        coin.body.position.y
+      );
+      coin.setVisible(isVisible);
+      const body = coin.body as MatterJS.BodyType;
+
+      // Increment count FIRST if not visible
+      if (!isVisible) {
+        culledCoinsCount++;
+      }
+
+      // Now check if static and return if so (no sleep logic needed)
+      if (body && "isStatic" in body && body.isStatic) return;
+
+      // Try using Phaser's GameObject sleep/awake methods
+      if (isVisible) {
+        coin.setAwake(); // Wake up if it fell asleep automatically
+      } else {
+        coin.setToSleep();
+      }
+    });
+
+    // Cull Enemies
+    this.enemies.forEach((enemy) => {
+      if (!enemy.body) return; // Ensure enemy and body exist
+      const isVisible = Geom.Rectangle.Contains(
+        cullRect,
+        enemy.body.position.x,
+        enemy.body.position.y
+      );
+      enemy.setVisible(isVisible);
+      const body = enemy.body as MatterJS.BodyType;
+      if (body && "isStatic" in body && body.isStatic) return;
+
+      // Try using Phaser's GameObject sleep/awake methods
+      if (isVisible) {
+        enemy.setAwake(); // Wake up if it fell asleep automatically
+      } else {
+        enemy.setToSleep();
+      }
+
+      if (!isVisible) {
+        culledEnemiesCount++;
+      }
+    });
+
+    // Emit updated debug data including culling counts
+    if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
+      this.events.emit("updateDebugData", {
+        playerX: Math.round(this.player.x),
+        playerY: Math.round(this.player.y),
+        platformCount: this.levelGenerator.getPlatforms().length,
+        enemyCount: this.enemies.length,
+        coinCount: this.levelGenerator.getCoins().length,
+        crateCount: this.levelGenerator.getCrates().length,
+        culledCoins: culledCoinsCount,
+        culledEnemies: culledEnemiesCount,
+      });
+    }
+  }
+
+  /**
+   * Triggers game over state, displays retry UI, and disables physics.
+   */
+  private handleGameOver(): void {
+    if (this.gameState !== GAME_STATE.PLAYING) return;
+
+    this.player.kill();
+    this.physicsEnabled = false;
+    this.enemies.forEach((enemy) => enemy.handleGameOver());
+
+    this.cameraManager.handleZoomIn();
+    this.showUIOverlay(GAME_STATE.GAME_OVER);
+  }
+
+  /**
+   * Triggers level complete state, displays UI, and disables physics.
+   */
+  private handleLevelComplete(): void {
+    if (this.gameState !== GAME_STATE.PLAYING) return;
+
+    this.player.finishLevel();
+    addLevel();
+    this.enemies.forEach((enemy) => enemy.handleGameOver());
+    this.cameraManager.handleZoomIn();
+    this.showUIOverlay(GAME_STATE.LEVEL_COMPLETE);
+  }
+
+  /**
+   * Restarts the current level by shutting down and starting the scene again.
+   * Also restarts the DebugUIScene if it's running.
+   */
+  private restartLevel(): void {
+    if (this.restartTriggered) return;
+    this.restartTriggered = true;
+    this.physicsEnabled = false;
+    this.matter.world.enabled = false;
+
+    // Stop the debug UI scene if it's active
+    if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
+      this.scene.stop(SCENES.DEBUG_UI);
+    }
+
+    this.scene.restart();
   }
 }

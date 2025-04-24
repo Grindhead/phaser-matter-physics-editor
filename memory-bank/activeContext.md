@@ -2,6 +2,102 @@
 
 ## Current Focus
 
+Refactoring the Debug Panel into a separate Phaser Scene.
+
+## Recent Changes
+
+- **Increased Debug Font Size:** Updated `DebugPanel.ts` to use `24px` font size and adjusted padding/width.
+- **Created `DebugUIScene.ts`:**
+  - New scene extending `Phaser.Scene` (key `SCENES.DEBUG_UI`).
+  - Instantiates `DebugPanel`.
+  - Listens for `updateDebugData` events from the `Game` scene via `gameScene.events.on()`.
+  - Handles the 'Q' key press to toggle the `DebugPanel` visibility.
+  - Includes cleanup logic to remove the event listener on scene shutdown.
+- **Added `SCENES.DEBUG_UI` Constant:** Updated `src/lib/constants.ts`.
+- **Modified `Game.ts`:**
+  - Removed all `DebugPanel` related code (import, member, instantiation, update, toggle, destroy).
+  - Added logic in `create()` to conditionally launch `DebugUIScene` in parallel (`this.scene.launch()`) if `import.meta.env.DEV` is true.
+  - Added logic in `update()` to conditionally emit the `updateDebugData` event (`this.events.emit()`) with entity counts and player position if `import.meta.env.DEV` is true.
+  - Added logic in `restartLevel()` to stop the `DebugUIScene` (`this.scene.stop()`) if it is active before restarting the `Game` scene.
+- **Updated `main.ts`:** Imported `DebugUIScene` and added it to the scene array in the main `Phaser.Game` configuration.
+- **Updated Memory Bank:** Updated `systemPatterns.md` and `progress.md` to reflect the new two-scene structure for the debug UI, the use of parallel scenes, and event-based communication.
+
+## Next Steps
+
+- Test the refactored debug panel functionality (launching, toggling, data updates, restart behavior).
+- Investigate the issue with the `CameraManager.update()` call (currently commented out in `Game.ts`).
+- Implement the display of culling information in the debug panel.
+- Continue with tasks listed in `progress.md` (tuning generation, level progression etc.).
+
+## Active Decisions & Considerations
+
+- Moving UI to a separate scene is the standard Phaser approach for overlays independent of the main game camera.
+- Using Phaser's built-in event emitter (`scene.events` or `game.events`) is suitable for communication between parallel scenes.
+- Ensuring cleanup (stopping parallel scenes, removing listeners) during restarts or transitions is important to prevent memory leaks or unexpected behavior.
+- The debug scene is only launched and data is only emitted in development builds, minimizing production overhead.
+
+## Important Patterns & Preferences
+
+- **Parallel Scenes:** Utilizing Phaser's ability to run multiple scenes concurrently, often for separating UI layers from the main game logic.
+- **Scene Communication (Events):** Employing the event emitter pattern for decoupled communication between scenes.
+
+## Learnings & Project Insights
+
+- Refactoring UI into separate scenes improves modularity and solves issues related to conflicting camera manipulations between game layers and UI layers.
+- Event-based communication provides a clean decoupling mechanism between different parts of the application (in this case, scenes).
+
+---
+
+_(Previous context below this line)_
+
+## Current Focus
+
+Implementing and integrating a conditional debug panel UI.
+
+## Recent Changes
+
+- **Added `DebugPanel.ts`:** Created a new UI class (`src/lib/ui/DebugPanel.ts`) to display debug information using Phaser Text objects.
+- **Integrated `DebugPanel` into `Game.ts`:**
+  - Conditionally creates `DebugPanel` instance if `import.meta.env.DEV` is true.
+  - Added a keyboard listener ('Q') to toggle the panel's visibility.
+  - Stores the `LevelGenerator` instance to access generated entities.
+  - Passes entity counts (platforms, enemies, coins, crates) to `DebugPanel.update()`.
+  - Ensures `DebugPanel` is destroyed on scene restart (`restartLevel`).
+- **Updated `LevelGenerator.ts`:**
+  - Added internal arrays `coins` and `crates` to track generated entities.
+  - Added public getter methods `getCoins()` and `getCrates()`.
+  - Clears internal entity arrays at the start of `generateLevel`.
+- **Refactored `Game.ts` Update Loop:** Adjusted arguments for `player.update`, `enemy.update`, and `background.update` based on linter feedback. Commented out `cameraManager.update()` due to persistent linter errors.
+- **Updated Memory Bank:** Modified `systemPatterns.md` and `progress.md` to reflect the addition of the debug panel and associated changes/issues.
+
+## Next Steps
+
+- Test the debug panel functionality in a development build.
+- Investigate the issue with the `CameraManager.update()` call.
+- Implement the display of culling information in the debug panel.
+- Continue with tasks listed in `progress.md` (tuning generation, level progression etc.).
+
+## Active Decisions & Considerations
+
+- Using `import.meta.env.DEV` (provided by Vite) is a standard way to include development-only features.
+- Fetching entity data via getters on `LevelGenerator` keeps the debug panel decoupled from the specific generation logic.
+- Displaying entity counts is a first step; more detailed info (positions, states) could be added later.
+- Culling information display needs investigation (Phaser camera culling API or visual representation).
+- The `CameraManager.update` issue needs debugging to understand if the method exists and what its expected signature is.
+
+## Important Patterns & Preferences
+
+- **Conditional Compilation/Features:** Using build flags (`import.meta.env.DEV`) to include/exclude code blocks for different environments (dev vs. production).
+- **Decoupled Debug Info:** Accessing data for debug displays through well-defined interfaces (getters) rather than directly accessing internal state of other classes.
+
+## Learnings & Project Insights
+
+- Integrating new UI elements requires careful handling of instantiation, updates, and cleanup (especially during scene restarts).
+- Linter feedback is crucial but sometimes requires iterative refinement or temporary workarounds (like commenting out problematic code) when the exact cause isn't immediately clear.
+- Assumptions about method signatures or existence based on documentation or previous context can be wrong; direct code checking or targeted debugging is sometimes necessary.
+
+## Current Focus
+
 Testing fall sensor placement using post-generation minimum Y calculation.
 
 ## Recent Changes

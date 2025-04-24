@@ -39,6 +39,7 @@ export class Game extends Scene {
   private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
   private enemies: Enemy[] = [];
   private cameraManager: CameraManager;
+  private levelGenerator: LevelGenerator;
 
   constructor() {
     super(SCENES.GAME);
@@ -52,6 +53,12 @@ export class Game extends Scene {
     this.setupWorldBounds();
     this.initGame();
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
+
+    // Conditionally launch the Debug UI Scene in parallel
+    if (import.meta.env.DEV) {
+      console.log("Launching DebugUIScene...");
+      this.scene.launch(SCENES.DEBUG_UI);
+    }
   }
 
   createBackground = () => {
@@ -91,12 +98,12 @@ export class Game extends Scene {
    */
   private generateLevelEntities(): void {
     const currentLevel = getLevel();
-    const levelGenerator = new LevelGenerator(this, currentLevel);
-    this.player = levelGenerator.generateLevel();
-    this.enemies = levelGenerator.getEnemies();
+    this.levelGenerator = new LevelGenerator(this, currentLevel);
+    this.player = this.levelGenerator.generateLevel();
+    this.enemies = this.levelGenerator.getEnemies();
 
     // Get all generated platforms
-    const platforms = levelGenerator.getPlatforms();
+    const platforms = this.levelGenerator.getPlatforms();
 
     // Calculate the lowest Y coordinate from the actual platform objects
     let lowestPlatformY = WORLD_HEIGHT; // Start with a high value (or default)
@@ -108,16 +115,8 @@ export class Game extends Scene {
           platforms[i].getBounds().bottom
         );
       }
-    } else {
-      // Handle case with no platforms - place sensor at a default depth
-      console.warn(
-        "No platforms generated, placing fall sensor at default depth."
-      );
-      lowestPlatformY = 300; // Or some other sensible default Y
     }
-
     // Create the fall sensor *after* generating the level and finding the lowest point
-    // const lowestPlatformY = levelGenerator.getLowestPlatformBottomY(); // Old method
     this.createFallSensor(lowestPlatformY);
   }
 
@@ -379,17 +378,38 @@ export class Game extends Scene {
   }
 
   /**
-   * Per-frame game update logic.
-   *
-   * @param time - Current game time.
-   * @param delta - Time elapsed since last update.
+   * Main game loop: updates player, enemies, camera, and background.
+   * Also emits debug data if in development mode.
    */
   update(time: number, delta: number): void {
-    this.background.update();
-    this.player.update(time, delta);
+    if (!this.physicsEnabled || this.gameState !== GAME_STATE.PLAYING) {
+      return;
+    }
 
-    if (this.gameState !== GAME_STATE.PLAYING) return;
+    this.player?.update(time, delta);
     this.enemies.forEach((enemy) => enemy.update());
+    this.background?.update();
+
+    // Conditionally emit debug data for the DebugUIScene
+    if (import.meta.env.DEV) {
+      // Ensure player exists before accessing properties
+      const playerPos = this.player
+        ? { x: Math.round(this.player.x), y: Math.round(this.player.y) }
+        : { x: "N/A", y: "N/A" };
+
+      // Create simplified data with counts, not full objects
+      const debugData = {
+        Platforms: this.levelGenerator?.getPlatforms()?.length || 0,
+        Enemies: this.enemies?.length || 0,
+        Coins: this.levelGenerator?.getCoins()?.length || 0,
+        Crates: this.levelGenerator?.getCrates()?.length || 0,
+        PlayerPos: playerPos,
+        // Culling: 'N/A'
+      };
+
+      // Use scene events to emit data to the parallel UI scene
+      this.events.emit("updateDebugData", debugData);
+    }
   }
 
   /**
@@ -423,10 +443,21 @@ export class Game extends Scene {
   }
 
   /**
-   * Restarts the level by restarting the current scene.
+   * Restarts the current level by shutting down and starting the scene again.
+   * Also restarts the DebugUIScene if it's running.
    */
   private restartLevel(): void {
+    if (this.restartTriggered) return;
     this.restartTriggered = true;
-    this.scene.restart();
+    this.physicsEnabled = false;
+    this.matter.world.enabled = false;
+
+    // Stop the debug UI scene if it's active
+    if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
+      console.log("Stopping DebugUIScene on restart...");
+      this.scene.stop(SCENES.DEBUG_UI);
+    }
+
+    this.scene.restart(); // This will re-run create() which launches DebugUIScene again if DEV
   }
 }

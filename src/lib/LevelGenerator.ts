@@ -66,7 +66,6 @@ export class LevelGenerator {
   private coins: Coin[] = [];
   private enemies: Enemy[] = [];
   private crates: (CrateBig | CrateSmall)[] = [];
-  private finish?: Finish;
   private player?: Player;
 
   // Calculated bounds after generation
@@ -115,7 +114,7 @@ export class LevelGenerator {
     this.enemies = [];
     this.coins = [];
     this.crates = [];
-    this.finish = undefined;
+
     this.player = undefined;
 
     this.createPlayerStart(currentPos);
@@ -343,7 +342,7 @@ export class LevelGenerator {
     const finishX = lastPlatformBounds.right - 16;
     // Place finish Y 100px above the top surface of the last platform
     const finishY = lastPlatformBounds.top - 60; // Increased from 50
-    this.finish = new Finish(this.scene, finishX, finishY);
+    new Finish(this.scene, finishX, finishY);
   }
 
   /**

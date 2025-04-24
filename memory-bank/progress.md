@@ -10,6 +10,7 @@
 - Fall detection.
 - Parallax background scrolling.
 - Procedural level generation (platforms, enemies, coins, crates, player start, finish).
+  - **Improved:** Enemy and crate placement ensures they occupy distinct platforms and utilizes a post-platform-generation shuffling approach for distribution.
 - Dynamic camera zoom based on player state (movement, death).
 - **Development Debug Panel:**
   - Runs in a separate `DebugUIScene` parallel to `Game`.
@@ -22,6 +23,7 @@
 
 ## What's Left to Build
 
+- Test improved level generation (enemy/crate placement).
 - Level progression logic beyond simple counter increment.
 - More complex level designs/generation features.
 - Additional enemy types or behaviors.
@@ -33,6 +35,7 @@
 ## Current Status
 
 - Core gameplay loop is functional with procedurally generated levels.
+- Level generation logic for enemy and crate placement has been refactored for better distribution and to prevent overlap.
 - Debug panel refactored into a separate scene for independence from game camera.
 - Basic culling implemented for coins and enemies.
 
@@ -49,3 +52,4 @@
 - Added a conditional debug UI (`DebugPanel`) to aid development without impacting production builds.
 - **Refactored Debug UI:** Moved `DebugPanel` into its own `DebugUIScene` launched in parallel to `Game` scene. This prevents the debug UI from being affected by the game camera zoom and uses event emission for data transfer.
 - **Added Culling:** Introduced bounds checking in `Game.ts` to disable rendering and physics processing for off-screen coins and enemies, improving performance.
+- **Refactored Item Placement:** Changed level generation (`LevelGenerator.ts`) to place enemies and crates _after_ all platforms are created using a shuffled list of eligible platforms. This ensures they don't share a platform and allows better control over total counts.

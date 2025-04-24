@@ -408,6 +408,8 @@ export class Game extends Scene {
    */
   private restartLevel(): void {
     this.restartTriggered = true;
+    this.enemies.forEach((enemy) => enemy.destroy(true));
+    this.enemies = [];
     this.scene.restart();
   }
 }

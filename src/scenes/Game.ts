@@ -199,7 +199,7 @@ export class Game extends Scene {
     new Platform(this, 650, 300, 10, "3");
     new Platform(this, 950, 300, 10, "4");
 
-    new Finish(this, 750, -230);
+    new Finish(this, 750, 230);
     new CrateBig(this, 400, 250);
     new CrateSmall(this, 650, 250);
     new Coin(this, 550, 250);
@@ -358,12 +358,10 @@ export class Game extends Scene {
    * @param delta - Time elapsed since last update.
    */
   update(time: number, delta: number): void {
-    console.log(this.gameState);
-
-    if (this.gameState !== GAME_STATE.PLAYING) return;
-
     this.background.update();
     this.player.update(time, delta);
+
+    if (this.gameState !== GAME_STATE.PLAYING) return;
     this.enemies.forEach((enemy) => enemy.update());
   }
 
@@ -389,6 +387,7 @@ export class Game extends Scene {
 
     this.player.finishLevel();
     addLevel();
+    this.enemies.forEach((enemy) => enemy.handleGameOver());
 
     // Short delay before showing the level complete UI
 

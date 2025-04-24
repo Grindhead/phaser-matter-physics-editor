@@ -33,7 +33,7 @@ export class Enemy extends Phaser.Physics.Matter.Sprite {
   }
 
   handleGameOver(): void {
-    // this.setVelocity(0, 0);
+    this.setVelocity(0, 0);
   }
 
   update(): void {

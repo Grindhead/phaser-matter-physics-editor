@@ -20,10 +20,11 @@ import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 import { CoinUI } from "../lib/ui/CoinUI";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
 import { getCoins, setCoins } from "../lib/helpers/coinManager";
-import { addLevel, setLevel } from "../lib/helpers/levelManager";
+import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
 import { ParallaxBackground } from "../entities/ParallaxBackground";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
+import { LevelGenerator } from "../lib/LevelGenerator";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -66,15 +67,58 @@ export class Game extends Scene {
   }
 
   /**
-   * Initializes game objects and collision handlers.
+   * Initializes game objects and collision handlers using procedural generation.
    */
   private initGame(): void {
     setCoins(0);
-    setLevel(1);
-    this.spawnEntities();
+    if (getLevel() === 0) {
+      setLevel(1);
+    }
+    this.enemies = [];
+
+    this.generateLevelEntities();
+
     this.setupCollisions();
     this.coinUI = new CoinUI(this);
+    if (!this.player) {
+      throw new Error("Player not created during level generation!");
+    }
     this.cameraManager = new CameraManager(this, this.player);
+  }
+
+  /**
+   * Uses LevelGenerator to create the entities for the current level.
+   */
+  private generateLevelEntities(): void {
+    const currentLevel = getLevel();
+    const levelGenerator = new LevelGenerator(this, currentLevel);
+    this.player = levelGenerator.generateLevel();
+    this.enemies = levelGenerator.getEnemies();
+
+    // Get all generated platforms
+    const platforms = levelGenerator.getPlatforms();
+
+    // Calculate the lowest Y coordinate from the actual platform objects
+    let lowestPlatformY = WORLD_HEIGHT; // Start with a high value (or default)
+    if (platforms.length > 0) {
+      lowestPlatformY = platforms[0].getBounds().bottom;
+      for (let i = 1; i < platforms.length; i++) {
+        lowestPlatformY = Math.min(
+          lowestPlatformY,
+          platforms[i].getBounds().bottom
+        );
+      }
+    } else {
+      // Handle case with no platforms - place sensor at a default depth
+      console.warn(
+        "No platforms generated, placing fall sensor at default depth."
+      );
+      lowestPlatformY = 300; // Or some other sensible default Y
+    }
+
+    // Create the fall sensor *after* generating the level and finding the lowest point
+    // const lowestPlatformY = levelGenerator.getLowestPlatformBottomY(); // Old method
+    this.createFallSensor(lowestPlatformY);
   }
 
   /**
@@ -160,15 +204,22 @@ export class Game extends Scene {
     this.physicsEnabled = true;
 
     this.showUIOverlay(GAME_STATE.PLAYING); // Use constant
-    this.createFallSensor();
   }
 
   /**
    * Creates an invisible Matter.js sensor below the level to detect if the player falls off.
+   * @param lowestPlatformBottomY The Y coordinate of the bottom edge of the lowest platform.
    */
-  private createFallSensor(): void {
+  private createFallSensor(lowestPlatformBottomY: number): void {
     const sensorHeight = 50;
-    const yPosition = 500 + sensorHeight;
+    const offsetBelowPlatform = 500;
+    // Calculate the sensor's center Y position
+    const yPosition =
+      lowestPlatformBottomY + offsetBelowPlatform + sensorHeight / 2;
+
+    console.log(
+      `Creating fall sensor at Y: ${yPosition} (based on lowest platform bottom: ${lowestPlatformBottomY})`
+    );
 
     // we set the collision filter to match the platform collision filter
     // so that matterjs recognizes the fall sensor as a platform
@@ -188,30 +239,6 @@ export class Game extends Scene {
         },
       }
     );
-  }
-
-  /**
-   * Spawns all required static and interactive game entities.
-   */
-  private spawnEntities(): void {
-    new Platform(this, 150, 300, 6, "1");
-    new Platform(this, 350, 300, 6, "2");
-    new Platform(this, 650, 300, 10, "3");
-    new Platform(this, 950, 300, 10, "4");
-
-    new Finish(this, 750, 230);
-    new CrateBig(this, 400, 250);
-    new CrateSmall(this, 650, 250);
-    new Coin(this, 550, 250);
-
-    this.createEnemies();
-
-    this.player = new Player(this, 100, 200);
-  }
-
-  private createEnemies(): void {
-    const enemy = new Enemy(this, 880, 230);
-    this.enemies.push(enemy);
   }
 
   /**
@@ -400,8 +427,6 @@ export class Game extends Scene {
    */
   private restartLevel(): void {
     this.restartTriggered = true;
-    this.enemies.forEach((enemy) => enemy.destroy(true));
-    this.enemies = [];
     this.scene.restart();
   }
 }

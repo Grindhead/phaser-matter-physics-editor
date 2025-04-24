@@ -51,19 +51,15 @@ export class Game extends Scene {
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
   create(): void {
-    this.background = new ParallaxBackground(
-      this,
-      0,
-      0,
-      this.game.canvas.width,
-      this.game.canvas.height,
-      "background",
-      0.5 // Example scroll factor
-    );
+    this.createBackground();
     this.setupWorldBounds();
     this.initGame();
     this.showUIOverlay(GameState.WAITING_TO_START);
   }
+
+  createBackground = () => {
+    this.background = new ParallaxBackground(this, "background", 0.5);
+  };
 
   /**
    * Configures world and camera bounds, disables physics initially.

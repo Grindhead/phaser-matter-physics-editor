@@ -1,5 +1,5 @@
 import { Scene, GameObjects } from "phaser";
-import { getCoins } from "../../lib/helpers/coinManager";
+import { getCoins } from "../helpers/coinManager";
 
 /**
  * A stateless UI component that displays a coin count using the Roboto font.

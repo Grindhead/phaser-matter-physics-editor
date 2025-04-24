@@ -16,7 +16,7 @@
 
 - **Scene Management:** Using Phaser's scene system (e.g., `Boot`, `Preloader`, `Game`).
 - **Entity Class Pattern:** Each game object (Player, Enemy, Coin, Platform, Background) is represented by its own class, typically extending a Phaser `GameObject`.
-- **State Machine (Simple):** The `Game` scene uses a `GameState` enum to manage flow (Waiting, Playing, Game Over, Level Complete).
+- **State Machine (Simple):** The `Game` scene uses a `GAME_STATE` constant object (previously an enum) to manage flow (Waiting, Playing, Game Over, Level Complete).
 - **UI Components:** Dedicated classes for UI elements (e.g., `CoinUI`).
 
 ## Component Relationships
@@ -24,6 +24,7 @@
 - `Game` scene orchestrates entity creation, updates, and collision detection.
 - Entities interact via Matter.js physics collisions.
 - UI elements subscribe to game state changes or events.
+- `CameraManager` controls camera bounds, follow, and dynamic zoom based on player velocity (zooming out on jump initially, now zooming in).
 
 ## Critical Implementation Paths
 
@@ -35,3 +36,5 @@
 ## New Patterns
 
 - **Parallax Background:** Implemented using `ParallaxBackground` class (`src/entities/ParallaxBackground.ts`) which extends `Phaser.GameObjects.TileSprite` and updates its `tilePositionX` based on camera scroll in its `update` method.
+- **Camera Management:** A dedicated `CameraManager` class (`src/lib/ui/CameraManager.ts`) handles camera setup (bounds, follow, lerp) and effects like death zoom, separating camera logic from the main `Game` scene.
+- **Constants for States:** Using a `const` object (`GAME_STATE`) instead of an `enum` for defining fixed state values, providing string-based values and potentially simpler integration in some contexts.

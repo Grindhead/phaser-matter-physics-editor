@@ -22,10 +22,11 @@
 
 - Core gameplay loop is functional for a single level.
 - Background refactored to use a parallax scrolling TileSprite.
+- Camera logic refactored into `CameraManager` with dynamic zoom.
 
 ## Known Issues
 
-- [List any known bugs or issues here]
+- ~~Entities (Player, Enemies) were being created twice on game start.~~ (Fixed)
 
 ## Evolution of Project Decisions
 

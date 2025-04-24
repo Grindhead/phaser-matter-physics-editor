@@ -19,13 +19,13 @@ jobs:
           cache: "pnpm"
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: npm install -g pnpm # Install pnpm globally
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install # Use pnpm to install dependencies
 
       - name: Build project
-        run: pnpm build
+        run: pnpm build # Use pnpm to build the project
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0

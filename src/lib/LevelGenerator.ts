@@ -85,7 +85,7 @@ export class LevelGenerator {
   private readonly CRATE_SMALL_HEIGHT = 32;
   private readonly CRATE_BIG_HEIGHT = 64;
   private readonly PLATFORM_DISPLAY_HEIGHT = 32;
-  private readonly MIN_PLATFORM_LENGTH_WITH_ENEMY = 14;
+  private readonly MIN_PLATFORM_LENGTH_WITH_ENEMY = 16;
   // --- New Constant for Coin Spacing ---
   private readonly MIN_COIN_SPACING = 64; // Min horizontal pixels between coin centers (Increased from 32)
 

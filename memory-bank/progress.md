@@ -18,6 +18,7 @@
   - Displays entity counts (platforms, enemies, coins, crates) and player position.
   - Immune to game camera zoom.
   - Larger font size (24px).
+  - Displays culled entity counts (coins, enemies).
 
 ## What's Left to Build
 
@@ -33,6 +34,7 @@
 
 - Core gameplay loop is functional with procedurally generated levels.
 - Debug panel refactored into a separate scene for independence from game camera.
+- Basic culling implemented for coins and enemies.
 
 ## Known Issues
 
@@ -45,3 +47,4 @@
 - Camera logic refactored into `CameraManager`.
 - Added a conditional debug UI (`DebugPanel`) to aid development without impacting production builds.
 - **Refactored Debug UI:** Moved `DebugPanel` into its own `DebugUIScene` launched in parallel to `Game` scene. This prevents the debug UI from being affected by the game camera zoom and uses event emission for data transfer.
+- **Added Culling:** Introduced bounds checking in `Game.ts` to disable rendering and physics processing for off-screen coins and enemies, improving performance.

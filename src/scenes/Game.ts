@@ -22,6 +22,7 @@ import { ParallaxBackground } from "../entities/ParallaxBackground";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
 import { LevelGenerator } from "../lib/LevelGenerator";
+import { Geom, Physics } from "phaser";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -374,36 +375,112 @@ export class Game extends Scene {
   }
 
   /**
-   * Main game loop: updates player, enemies, camera, and background.
-   * Also emits debug data if in development mode.
+   * Scene lifecycle hook. Called every frame, updates entities and checks game state.
+   * @param time - The current time in milliseconds.
+   * @param delta - The time elapsed since the last frame in milliseconds.
    */
   update(time: number, delta: number): void {
-    if (!this.physicsEnabled) {
-      return;
-    }
+    if (!this.physicsEnabled) return;
 
+    // Update main game elements - Reverted to previous signatures based on linter errors
     this.player?.update(time, delta);
     this.enemies.forEach((enemy) => enemy.update());
     this.background?.update();
 
-    // Conditionally emit debug data for the DebugUIScene
-    if (import.meta.env.DEV) {
-      // Ensure player exists before accessing properties
-      const playerPos = this.player
-        ? { x: Math.round(this.player.x), y: Math.round(this.player.y) }
-        : { x: "N/A", y: "N/A" };
+    // Initialize culling counters
+    let culledCoinsCount = 0;
+    let culledEnemiesCount = 0;
 
-      // Create simplified data with counts, not full objects
-      const debugData = {
-        Platforms: this.levelGenerator?.getPlatforms()?.length || 0,
-        Enemies: this.enemies?.length || 0,
-        Coins: this.levelGenerator?.getCoins()?.length || 0,
-        Crates: this.levelGenerator?.getCrates()?.length || 0,
-        PlayerPos: playerPos,
-      };
+    // Update debug panel data if in dev mode
+    if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
+      this.events.emit("updateDebugData", {
+        playerX: this.player.x,
+        playerY: this.player.y,
+        platformCount: this.levelGenerator.getPlatforms().length,
+        enemyCount: this.enemies.length,
+        coinCount: this.levelGenerator.getCoins().length,
+        crateCount: this.levelGenerator.getCrates().length,
+      });
+    }
 
-      // Use scene events to emit data to the parallel UI scene
-      this.events.emit("updateDebugData", debugData);
+    // Camera updates
+    // this.cameraManager.update(this.player.body.velocity.y); // Still commented out
+
+    // --- Culling Logic ---
+    const cameraView = this.cameras.main.worldView;
+    // Add a buffer around the camera view to prevent entities popping in/out too abruptly
+    const cullBuffer = 100;
+    // Use Phaser's Geom.Rectangle
+    const cullRect = new Geom.Rectangle(
+      cameraView.x - cullBuffer,
+      cameraView.y - cullBuffer,
+      cameraView.width + cullBuffer * 2,
+      cameraView.height + cullBuffer * 2
+    );
+
+    // Cull Coins
+    this.levelGenerator.getCoins().forEach((coin) => {
+      if (!coin.body) return; // Ensure coin and body exist
+      const isVisible = Geom.Rectangle.Contains(
+        cullRect,
+        coin.body.position.x,
+        coin.body.position.y
+      );
+      coin.setVisible(isVisible);
+      const body = coin.body as MatterJS.BodyType;
+
+      // Increment count FIRST if not visible
+      if (!isVisible) {
+        culledCoinsCount++;
+      }
+
+      // Now check if static and return if so (no sleep logic needed)
+      if (body && "isStatic" in body && body.isStatic) return;
+
+      // Try using Phaser's GameObject sleep/awake methods
+      if (isVisible) {
+        coin.setAwake(); // Wake up if it fell asleep automatically
+      } else {
+        coin.setToSleep();
+      }
+    });
+
+    // Cull Enemies
+    this.enemies.forEach((enemy) => {
+      if (!enemy.body) return; // Ensure enemy and body exist
+      const isVisible = Geom.Rectangle.Contains(
+        cullRect,
+        enemy.body.position.x,
+        enemy.body.position.y
+      );
+      enemy.setVisible(isVisible);
+      const body = enemy.body as MatterJS.BodyType;
+      if (body && "isStatic" in body && body.isStatic) return;
+
+      // Try using Phaser's GameObject sleep/awake methods
+      if (isVisible) {
+        enemy.setAwake(); // Wake up if it fell asleep automatically
+      } else {
+        enemy.setToSleep();
+      }
+
+      if (!isVisible) {
+        culledEnemiesCount++;
+      }
+    });
+
+    // Emit updated debug data including culling counts
+    if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
+      this.events.emit("updateDebugData", {
+        playerX: Math.round(this.player.x),
+        playerY: Math.round(this.player.y),
+        platformCount: this.levelGenerator.getPlatforms().length,
+        enemyCount: this.enemies.length,
+        coinCount: this.levelGenerator.getCoins().length,
+        crateCount: this.levelGenerator.getCrates().length,
+        culledCoins: culledCoinsCount,
+        culledEnemies: culledEnemiesCount,
+      });
     }
   }
 
@@ -449,6 +526,6 @@ export class Game extends Scene {
       this.scene.stop(SCENES.DEBUG_UI);
     }
 
-    this.scene.restart(); // This will re-run create() which launches DebugUIScene again if DEV
+    this.scene.restart();
   }
 }

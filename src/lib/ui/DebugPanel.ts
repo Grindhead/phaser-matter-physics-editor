@@ -54,9 +54,6 @@ export class DebugPanel {
       }
     }
 
-    // Add a note about culling
-    debugContent += "\nCulling: (Not implemented yet)\n";
-
     this.text.setText(debugContent);
   }
 

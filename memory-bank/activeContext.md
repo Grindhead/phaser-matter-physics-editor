@@ -25,8 +25,8 @@ Refactoring the Debug Panel into a separate Phaser Scene.
 ## Next Steps
 
 - Test the refactored debug panel functionality (launching, toggling, data updates, restart behavior).
+- Test the new culling implementation for coins and enemies, verifying counts in the debug panel.
 - Investigate the issue with the `CameraManager.update()` call (currently commented out in `Game.ts`).
-- Implement the display of culling information in the debug panel.
 - Continue with tasks listed in `progress.md` (tuning generation, level progression etc.).
 
 ## Active Decisions & Considerations
@@ -35,16 +35,25 @@ Refactoring the Debug Panel into a separate Phaser Scene.
 - Using Phaser's built-in event emitter (`scene.events` or `game.events`) is suitable for communication between parallel scenes.
 - Ensuring cleanup (stopping parallel scenes, removing listeners) during restarts or transitions is important to prevent memory leaks or unexpected behavior.
 - The debug scene is only launched and data is only emitted in development builds, minimizing production overhead.
+- Culling logic uses camera bounds + a buffer to determine visibility.
+- Setting visibility (`setVisible(false)`) hides culled objects.
+- Waking up bodies (`setAwake()`) is done when culled objects become visible again.
+- **Limitation:** Could not reliably force Matter bodies to sleep via API (`Matter.Sleeping.set` or `gameObject.sleep()`) due to type/import issues. Physics calculations for culled dynamic bodies may continue.
 
 ## Important Patterns & Preferences
 
 - **Parallel Scenes:** Utilizing Phaser's ability to run multiple scenes concurrently, often for separating UI layers from the main game logic.
 - **Scene Communication (Events):** Employing the event emitter pattern for decoupled communication between scenes.
+- **Performance Optimization (Culling):** Checking entity visibility against camera bounds and disabling rendering/physics for off-screen objects.
+- Using `Matter.Sleeping` can help optimize physics performance for inactive bodies.
+- Phaser's `setAwake()` can be used to wake bodies that slept automatically.
 
 ## Learnings & Project Insights
 
 - Refactoring UI into separate scenes improves modularity and solves issues related to conflicting camera manipulations between game layers and UI layers.
 - Event-based communication provides a clean decoupling mechanism between different parts of the application (in this case, scenes).
+- Simple bounds checking is a common first step for implementing culling.
+- Using `Matter.Sleeping` can help optimize physics performance for inactive bodies.
 
 ---
 

@@ -39,6 +39,7 @@
 ## Known Issues
 
 - `CameraManager.update()` call in `Game.ts` is commented out due to potential signature mismatch or missing implementation error during integration.
+- Idle animation doesn't always play immediately upon landing. (Fixed: Added explicit idle animation check in `Player.ts::handleCollisionStart`)
 
 ## Evolution of Project Decisions
 

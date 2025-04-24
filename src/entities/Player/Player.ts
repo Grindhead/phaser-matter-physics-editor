@@ -18,6 +18,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private lastJumpTime = 0;
   private isAlive = true;
   private isLevelComplete = false;
+  private justLanded = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -116,16 +117,29 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
     // On ground logic
     else if (this.isGrounded && !this.jumpInProgress) {
-      // If level is complete, force idle animation
-      if (this.isLevelComplete) {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, true);
-      }
-      // Otherwise, use velocity to determine run or idle
-      else {
-        if (this.body && Math.abs(this.body.velocity.x) > 0.1) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
+      // Check if this is the exact frame we landed
+      if (this.justLanded) {
+        const left = this.cursors?.left?.isDown || this.wasd?.A?.isDown;
+        const right = this.cursors?.right?.isDown || this.wasd?.D?.isDown;
+
+        // Prioritize input check on landing frame
+        if (!left && !right) {
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
         } else {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, true);
+          // Assume running if input is held on landing
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
+        }
+        this.justLanded = false; // Consume the flag
+      } else {
+        // On subsequent grounded frames, use velocity (unless level complete)
+        if (this.isLevelComplete) {
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+        } else {
+          if (this.body && Math.abs(this.body.velocity.x) > 0.1) {
+            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
+          } else {
+            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+          }
         }
       }
     }
@@ -160,6 +174,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     if (this.isGrounded && !wasGrounded) {
       this.jumpInProgress = false;
+      this.justLanded = true; // Set flag when landing occurs
     }
   }
 

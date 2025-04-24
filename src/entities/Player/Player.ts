@@ -147,10 +147,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   ) {
     for (const { bodyA, bodyB } of event.pairs) {
       // Log involved bodies
-      console.log(`Collision Start: A=${bodyA.label}, B=${bodyB.label}`);
 
       if (isPlayerBody(bodyA) && isGroundBody(bodyB)) {
-        console.log(`Ground contact added: ${bodyB.label}`);
         this.groundContacts.add(bodyB);
       } else if (isPlayerBody(bodyB) && isGroundBody(bodyA)) {
         this.groundContacts.add(bodyA);
@@ -161,7 +159,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isGrounded = this.groundContacts.size > 0;
 
     if (this.isGrounded && !wasGrounded) {
-      // console.log("Player: Landed! Setting jumpInProgress to false."); // Added log
       this.jumpInProgress = false;
     }
   }
@@ -170,11 +167,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     event: Phaser.Physics.Matter.Events.CollisionEndEvent
   ) {
     for (const { bodyA, bodyB } of event.pairs) {
-      // Log involved bodies
-      console.log(`Collision End: A=${bodyA.label}, B=${bodyB.label}`);
-
       if (isPlayerBody(bodyA) && isGroundBody(bodyB)) {
-        console.log(`Ground contact removed: ${bodyB.label}`);
         this.groundContacts.delete(bodyB);
       } else if (isPlayerBody(bodyB) && isGroundBody(bodyA)) {
         this.groundContacts.delete(bodyA);

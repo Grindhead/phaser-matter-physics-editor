@@ -9,9 +9,6 @@ import {
 import { Player } from "../entities/Player/Player";
 import { Enemy } from "../entities/Enemy/Enemy";
 import { Coin } from "../entities/Coin/Coin";
-import { Platform } from "../entities/Platforms/Platform";
-import { CrateBig } from "../entities/CrateBig/CrateBig";
-import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
 import { Finish } from "../entities/Finish/Finish";
 import { isCoinBody } from "../lib/helpers/isCoinBody";
 import { isPlayerBody } from "../lib/helpers/isPlayerBody";
@@ -102,9 +99,6 @@ export class Game extends Scene {
     this.player = this.levelGenerator.generateLevel();
     this.enemies = this.levelGenerator.getEnemies();
 
-    // Get all generated platforms -- No longer needed for bounds calc here
-    // const platforms = this.levelGenerator.getPlatforms();
-
     // Get overall bounds directly from the generator
     const levelBounds = this.levelGenerator.getOverallLevelBounds();
     const {
@@ -113,58 +107,9 @@ export class Game extends Scene {
       lowestY: lowestPlatformY,
     } = levelBounds;
 
-    // --- Remove bounds calculation loop ---
-    /*
-    // Calculate the lowest Y coordinate (largest Y value) and horizontal bounds
-    let lowestPlatformY = -Infinity; // Initialize to negative Infinity to find max
-    let minPlatformX = Infinity;
-    let maxPlatformX = -Infinity;
-
-    if (platforms.length > 0) {
-      console.log(`Starting bounds calculation. Found ${platforms.length} platforms.`); // Log platform count
-      // Loop through ALL platforms, starting from index 0
-      for (let i = 0; i < platforms.length; i++) {
-        const bounds = platforms[i].getBounds();
-        const currentLowestY = lowestPlatformY;
-        // Log the bounds object and type of bounds.bottom
-        // console.log(`  [Iter ${i}] Platform ${i} Bounds:`, bounds);
-        // console.log(`  [Iter ${i}] typeof bounds.bottom: ${typeof bounds.bottom}`);
-
-        lowestPlatformY = Math.max(lowestPlatformY, bounds.bottom); // Use Math.max
-        minPlatformX = Math.min(minPlatformX, bounds.left);
-        maxPlatformX = Math.max(maxPlatformX, bounds.right);
-        // Log each iteration comparison
-        console.log(
-          `  [Iter ${i}] Comparison: Math.max(${currentLowestY.toFixed(
-            2
-          )}, ${bounds.bottom}) -> lowestY after=${lowestPlatformY.toFixed(2)}` // Use Math.max
-        );
-      }
-    } else {
-      // Handle case with no platforms (e.g., sensor at default position/width?)
-      // For now, let's default to a reasonable width if no platforms exist
-      minPlatformX = 0;
-      maxPlatformX = 1000; // Or WORLD_WIDTH if it wasn't Infinity
-      lowestPlatformY = WORLD_HEIGHT - 100; // Default Y if no platforms
-    }
-    */
-    // --- End remove bounds calculation loop ---
-
     const levelWidth = maxPlatformX - minPlatformX;
     const sensorWidth = levelWidth + 1000; // Add 500px buffer on each side
     const sensorCenterX = minPlatformX + levelWidth / 2;
-
-    // Log the final calculated lowest Y (obtained from generator)
-    console.log(`Retrieved lowestPlatformY from generator: ${lowestPlatformY}`);
-    console.log(
-      `Retrieved level bounds from generator: minX=${minPlatformX}, maxX=${maxPlatformX}, width=${levelWidth}`
-    );
-    console.log(
-      `Calculated sensor params: centerX=${sensorCenterX}, width=${sensorWidth}`
-    );
-
-    // --- Comment out temporary debug graphics code ---
-    // --- END TEMPORARY DEBUG VISUALIZATION ---
 
     // Create the fall sensor using bounds from generator
     this.createFallSensor(lowestPlatformY, sensorCenterX, sensorWidth);
@@ -455,7 +400,6 @@ export class Game extends Scene {
         Coins: this.levelGenerator?.getCoins()?.length || 0,
         Crates: this.levelGenerator?.getCrates()?.length || 0,
         PlayerPos: playerPos,
-        // Culling: 'N/A'
       };
 
       // Use scene events to emit data to the parallel UI scene
@@ -502,7 +446,6 @@ export class Game extends Scene {
 
     // Stop the debug UI scene if it's active
     if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
-      console.log("Stopping DebugUIScene on restart...");
       this.scene.stop(SCENES.DEBUG_UI);
     }
 

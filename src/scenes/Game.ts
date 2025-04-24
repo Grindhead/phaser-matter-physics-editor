@@ -1,5 +1,11 @@
 import { Scene } from "phaser";
-import { SCENES, TEXTURE_ATLAS } from "../lib/constants";
+import {
+  GAME_STATE,
+  SCENES,
+  TEXTURE_ATLAS,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+} from "../lib/constants";
 import { Player } from "../entities/Player/Player";
 import { Enemy } from "../entities/Enemy/Enemy";
 import { Coin } from "../entities/Coin/Coin";
@@ -11,36 +17,27 @@ import { isCoinBody } from "../lib/helpers/isCoinBody";
 import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
-import { CoinUI } from "../entities/ui/CoinUI";
+import { CoinUI } from "../lib/ui/CoinUI";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
 import { getCoins, setCoins } from "../lib/helpers/coinManager";
 import { addLevel, setLevel } from "../lib/helpers/levelManager";
-
-const WORLD_WIDTH = 10000;
-const WORLD_HEIGHT = 4000;
-
-/**
- * Represents different states the game can be in
- */
-enum GameState {
-  WAITING_TO_START,
-  PLAYING,
-  GAME_OVER,
-  LEVEL_COMPLETE,
-}
+import { ParallaxBackground } from "../entities/ParallaxBackground";
+import { CameraManager } from "../lib/ui/CameraManager";
+import { GameStateType } from "../lib/types";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
  */
 export class Game extends Scene {
-  private background: Phaser.GameObjects.Image;
+  private background: ParallaxBackground;
   private player: Player;
   private overlayButton?: Phaser.GameObjects.Image;
   private restartTriggered = false;
   private physicsEnabled = false;
   private coinUI: CoinUI;
-  private gameState: GameState = GameState.WAITING_TO_START;
+  private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
   private enemies: Enemy[] = [];
+  private cameraManager: CameraManager;
 
   constructor() {
     super(SCENES.GAME);
@@ -50,30 +47,21 @@ export class Game extends Scene {
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
   create(): void {
-    this.setupBackground();
+    this.createBackground();
     this.setupWorldBounds();
     this.initGame();
-    this.showUIOverlay(GameState.WAITING_TO_START);
+    this.showUIOverlay(GAME_STATE.WAITING_TO_START);
   }
 
-  /**
-   * Adds a static background image centered on the screen.
-   */
-  private setupBackground(): void {
-    this.background = this.add.image(
-      this.game.canvas.width / 2,
-      this.game.canvas.height / 2,
-      "background"
-    );
-    this.background.setOrigin(0.5, 0.5);
-  }
+  createBackground = () => {
+    this.background = new ParallaxBackground(this, "background", 0.5);
+  };
 
   /**
    * Configures world and camera bounds, disables physics initially.
    */
   private setupWorldBounds(): void {
     this.matter.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.matter.world.enabled = false;
   }
 
@@ -86,6 +74,7 @@ export class Game extends Scene {
     this.spawnEntities();
     this.setupCollisions();
     this.coinUI = new CoinUI(this);
+    this.cameraManager = new CameraManager(this, this.player);
   }
 
   /**
@@ -94,7 +83,7 @@ export class Game extends Scene {
    * @param state - The game state determining which UI to show
    * @param fadeIn - Whether to fade in the UI (default: true)
    */
-  private showUIOverlay(state: GameState, fadeIn: boolean = true): void {
+  private showUIOverlay(state: GameStateType, fadeIn: boolean = true): void {
     // Clean up any existing overlay
     if (this.overlayButton) {
       this.overlayButton.destroy();
@@ -102,7 +91,7 @@ export class Game extends Scene {
     }
 
     // If we're transitioning to PLAYING state, don't show an overlay
-    if (state === GameState.PLAYING) {
+    if (state === GAME_STATE.PLAYING) {
       this.gameState = state;
       return;
     }
@@ -115,7 +104,7 @@ export class Game extends Scene {
     let callback: () => void;
 
     switch (state) {
-      case GameState.WAITING_TO_START:
+      case GAME_STATE.WAITING_TO_START:
         texture = "ui/start.png";
         callback = () => {
           // Hide the overlay and start the game
@@ -124,13 +113,13 @@ export class Game extends Scene {
           this.startGame();
         };
         break;
-      case GameState.GAME_OVER:
+      case GAME_STATE.GAME_OVER:
         texture = "ui/game-over.png";
         callback = () => {
           if (!this.restartTriggered) this.restartLevel();
         };
         break;
-      case GameState.LEVEL_COMPLETE:
+      case GAME_STATE.LEVEL_COMPLETE:
         texture = "ui/start.png"; // Using start.png as requested
         callback = () => {
           if (!this.restartTriggered) this.restartLevel();
@@ -167,11 +156,10 @@ export class Game extends Scene {
    */
   private startGame(): void {
     this.matter.world.enabled = true;
-    this.setupCamera();
     this.restartTriggered = false;
     this.physicsEnabled = true;
 
-    this.showUIOverlay(GameState.PLAYING);
+    this.showUIOverlay(GAME_STATE.PLAYING); // Use constant
     this.createFallSensor();
   }
 
@@ -206,12 +194,12 @@ export class Game extends Scene {
    * Spawns all required static and interactive game entities.
    */
   private spawnEntities(): void {
-    new Platform(this, 70, 300, 5, "1");
+    new Platform(this, 150, 300, 6, "1");
     new Platform(this, 350, 300, 6, "2");
     new Platform(this, 650, 300, 10, "3");
     new Platform(this, 950, 300, 10, "4");
 
-    new Finish(this, 750, 230);
+    new Finish(this, 750, -230);
     new CrateBig(this, 400, 250);
     new CrateSmall(this, 650, 250);
     new Coin(this, 550, 250);
@@ -224,14 +212,6 @@ export class Game extends Scene {
   private createEnemies(): void {
     const enemy = new Enemy(this, 880, 230);
     this.enemies.push(enemy);
-  }
-
-  /**
-   * Sets up the camera to follow the player smoothly.
-   */
-  private setupCamera(): void {
-    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
-    this.cameras.main.setLerp(0.08, 0.08);
   }
 
   /**
@@ -378,8 +358,12 @@ export class Game extends Scene {
    * @param delta - Time elapsed since last update.
    */
   update(time: number, delta: number): void {
-    this.player.update(time, delta);
+    console.log(this.gameState);
 
+    if (this.gameState !== GAME_STATE.PLAYING) return;
+
+    this.background.update();
+    this.player.update(time, delta);
     this.enemies.forEach((enemy) => enemy.update());
   }
 
@@ -387,18 +371,21 @@ export class Game extends Scene {
    * Triggers game over state, displays retry UI, and disables physics.
    */
   private handleGameOver(): void {
-    if (this.gameState !== GameState.PLAYING) return;
+    if (this.gameState !== GAME_STATE.PLAYING) return;
 
     this.player.kill();
     this.physicsEnabled = false;
-    this.showUIOverlay(GameState.GAME_OVER);
+    this.enemies.forEach((enemy) => enemy.handleGameOver());
+
+    this.cameraManager.handlePlayerDeath();
+    this.showUIOverlay(GAME_STATE.GAME_OVER);
   }
 
   /**
    * Triggers level complete state, displays UI, and disables physics.
    */
   private handleLevelComplete(): void {
-    if (this.gameState !== GameState.PLAYING) return;
+    if (this.gameState !== GAME_STATE.PLAYING) return;
 
     this.player.finishLevel();
     addLevel();
@@ -406,7 +393,7 @@ export class Game extends Scene {
     // Short delay before showing the level complete UI
 
     this.physicsEnabled = false;
-    this.showUIOverlay(GameState.LEVEL_COMPLETE);
+    this.showUIOverlay(GAME_STATE.LEVEL_COMPLETE);
   }
 
   /**
@@ -414,6 +401,8 @@ export class Game extends Scene {
    */
   private restartLevel(): void {
     this.restartTriggered = true;
+    this.enemies.forEach((enemy) => enemy.destroy(true));
+    this.enemies = [];
     this.scene.restart();
   }
 }

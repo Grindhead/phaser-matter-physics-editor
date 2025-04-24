@@ -21,3 +21,13 @@ export const PHYSICS_ENTITIES = {
 
 export const TEXTURE_ATLAS = "assets" as const;
 export const PHYSICS = "physics" as const;
+
+export const WORLD_WIDTH = 10000;
+export const WORLD_HEIGHT = 4000;
+
+export const GAME_STATE = {
+  WAITING_TO_START: "waiting_to_start",
+  PLAYING: "playing",
+  GAME_OVER: "game_over",
+  LEVEL_COMPLETE: "level_complete",
+} as const;

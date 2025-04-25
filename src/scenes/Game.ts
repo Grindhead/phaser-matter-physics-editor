@@ -53,10 +53,9 @@ export class Game extends Scene {
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
 
     // Conditionally launch the Debug UI Scene in parallel
-    if (import.meta.env.DEV) {
-      console.log("Launching DebugUIScene...");
-      this.scene.launch(SCENES.DEBUG_UI);
-    }
+
+    console.log("Launching DebugUIScene...");
+    this.scene.launch(SCENES.DEBUG_UI);
   }
 
   createBackground = () => {
@@ -392,7 +391,7 @@ export class Game extends Scene {
     let culledEnemiesCount = 0;
 
     // Update debug panel data if in dev mode
-    if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
+    if (this.scene.isActive(SCENES.DEBUG_UI)) {
       this.events.emit("updateDebugData", {
         playerX: this.player.x,
         playerY: this.player.y,
@@ -522,7 +521,7 @@ export class Game extends Scene {
     this.matter.world.enabled = false;
 
     // Stop the debug UI scene if it's active
-    if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
+    if (this.scene.isActive(SCENES.DEBUG_UI)) {
       this.scene.stop(SCENES.DEBUG_UI);
     }
 

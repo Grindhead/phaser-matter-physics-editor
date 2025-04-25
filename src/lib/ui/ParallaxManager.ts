@@ -20,13 +20,12 @@ export class ParallaxManager {
     const screenWidth = this.scene.scale.width;
     const screenHeight = this.scene.scale.height;
 
-    // Helper function to create and scale a layer
-
+    // Helper function to create and optionally scale a layer
     const createLayer = (
       textureKey: string,
       scrollFactorX: number,
       depth: number,
-      scaleToFitHeight: boolean = true // Add parameter with default true
+      scaleToFitHeight: boolean // Re-added parameter
     ): Phaser.GameObjects.TileSprite => {
       const texture = this.scene.textures.get(textureKey);
       if (!texture || texture.key === "__MISSING") {
@@ -39,7 +38,7 @@ export class ParallaxManager {
           "__DEFAULT"
         );
         placeholder.setOrigin(0, 0);
-        placeholder.setScrollFactor(scrollFactorX, 0);
+        placeholder.setScrollFactor(scrollFactorX, 0); // Use only X scroll factor
         placeholder.setDepth(depth);
         return placeholder;
       }
@@ -55,25 +54,25 @@ export class ParallaxManager {
         tileScaleY = screenHeight / textureHeight;
         tileScaleX = tileScaleY; // Maintain aspect ratio
         layerHeight = screenHeight; // Sprite height is screen height
+        layerY = 0;
       } else {
         // Don't scale vertically, position at bottom
-        const verticalOffset = 50; // Pixels to shift down from the bottom edge
         layerHeight = textureHeight; // Sprite height is texture height
-        layerY = screenHeight - layerHeight + verticalOffset; // Apply offset
+        layerY = screenHeight - layerHeight; // Position bottom at screen bottom
         // Keep original scale
         tileScaleX = 1;
         tileScaleY = 1;
       }
 
       const layer = this.scene.add.tileSprite(
-        0, // X position
-        layerY, // Calculated Y position
-        screenWidth, // TileSprite width
-        layerHeight, // Calculated height
+        0,
+        layerY,
+        screenWidth,
+        layerHeight,
         textureKey
       );
       layer.setOrigin(0, 0);
-      layer.setScrollFactor(scrollFactorX, 0);
+      layer.setScrollFactor(scrollFactorX, 0); // Use only X scroll factor
       layer.setDepth(depth);
 
       // Apply scaling
@@ -84,15 +83,32 @@ export class ParallaxManager {
     };
 
     // Background (furthest back) - Scale to fit height
-    this.backgroundLayer = createLayer("background", 0.2, -3, true);
+    this.backgroundLayer = createLayer("background", 2, -3, true);
 
-    // Middle layer - Scale to fit height
+    // Middle layer - Scale to fit height (Using user's X factor)
     this.middleLayer = createLayer("middleground", 1.5, -2, true);
     this.middleLayer.y = 0;
 
-    // Foreground (closest) - Position at bottom, don't scale height
-    this.foregroundLayer = createLayer("foreground", 2, 1, false);
-    this.foregroundLayer.y = 950;
+    // Foreground (closest) - Position at bottom, don't scale height (Using user's X factor & depth)
+    this.foregroundLayer = createLayer("foreground", 2.0, 1, false);
+    this.foregroundLayer.y = 980;
+  }
+
+  /**
+   * Updates the width of all parallax layers.
+   * Should be called after the level width is determined.
+   * @param newWidth The new width for the layers.
+   */
+  public updateWidth(newWidth: number): void {
+    if (this.backgroundLayer) {
+      this.backgroundLayer.width = newWidth;
+    }
+    if (this.middleLayer) {
+      this.middleLayer.width = newWidth;
+    }
+    if (this.foregroundLayer) {
+      this.foregroundLayer.width = newWidth;
+    }
   }
 
   // Optional: Add update method if manual tilePosition updates are needed later

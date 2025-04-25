@@ -103,9 +103,19 @@ export class Game extends Scene {
       lowestY: lowestPlatformY,
     } = levelBounds;
 
-    const levelWidth = maxPlatformX - minPlatformX;
+    // Calculate actual level width
+    // Ensure minX is not negative infinity if no platforms were generated (edge case)
+    const startX = minPlatformX === -Infinity ? 0 : minPlatformX;
+    const endX = maxPlatformX === Infinity ? startX : maxPlatformX;
+    const levelWidth = Math.max(endX - startX, this.scale.width); // Use at least screen width
+
+    // Update parallax background width
+    if (this.parallaxManager) {
+      this.parallaxManager.updateWidth(levelWidth);
+    }
+
     const sensorWidth = levelWidth + 1000; // Add 500px buffer on each side
-    const sensorCenterX = minPlatformX + levelWidth / 2;
+    const sensorCenterX = startX + (endX - startX) / 2; // Center based on actual start/end
 
     // Create the fall sensor using bounds from generator
     this.createFallSensor(lowestPlatformY, sensorCenterX, sensorWidth);

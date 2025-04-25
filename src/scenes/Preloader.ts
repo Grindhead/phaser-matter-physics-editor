@@ -33,6 +33,8 @@ export class Preloader extends Scene {
     this.load.atlas(TEXTURE_ATLAS, "assets.png", "assets.json");
     this.load.json(PHYSICS, "physics.json");
     this.load.image("background", "background.png");
+    this.load.image("middleground", "middle.png");
+    this.load.image("foreground", "foreground.png");
   }
 
   create() {

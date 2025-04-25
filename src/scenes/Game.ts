@@ -18,17 +18,16 @@ import { CoinUI } from "../lib/ui/CoinUI";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
 import { getCoins, setCoins } from "../lib/helpers/coinManager";
 import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
-import { ParallaxBackground } from "../entities/ParallaxBackground";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
 import { LevelGenerator } from "../lib/LevelGenerator";
 import { Geom, Physics } from "phaser";
+import { ParallaxManager } from "../lib/ui/ParallaxManager";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
  */
 export class Game extends Scene {
-  private background: ParallaxBackground;
   private player: Player;
   private overlayButton?: Phaser.GameObjects.Image;
   private restartTriggered = false;
@@ -38,6 +37,7 @@ export class Game extends Scene {
   private enemies: Enemy[] = [];
   private cameraManager: CameraManager;
   private levelGenerator: LevelGenerator;
+  private parallaxManager: ParallaxManager;
 
   constructor() {
     super(SCENES.GAME);
@@ -47,7 +47,7 @@ export class Game extends Scene {
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
   create(): void {
-    this.createBackground();
+    this.parallaxManager = new ParallaxManager(this);
     this.setupWorldBounds();
     this.initGame();
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
@@ -57,10 +57,6 @@ export class Game extends Scene {
     console.log("Launching DebugUIScene...");
     this.scene.launch(SCENES.DEBUG_UI);
   }
-
-  createBackground = () => {
-    this.background = new ParallaxBackground(this, "background", 0.5);
-  };
 
   /**
    * Configures world and camera bounds, disables physics initially.
@@ -384,7 +380,6 @@ export class Game extends Scene {
     // Update main game elements - Reverted to previous signatures based on linter errors
     this.player?.update(time, delta);
     this.enemies.forEach((enemy) => enemy.update());
-    this.background?.update();
 
     // Initialize culling counters
     let culledCoinsCount = 0;

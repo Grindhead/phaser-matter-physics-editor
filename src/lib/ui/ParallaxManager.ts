@@ -80,7 +80,7 @@ export class ParallaxManager {
     this.middleLayer = createLayer("middleground", -2, 250, 0.5);
 
     // Foreground - Locked above middleground (offset -100)
-    this.foregroundLayer = createLayer("foreground", 1, 150, 0.5);
+    this.foregroundLayer = createLayer("foreground", 1, -80, 0.5);
   }
 
   // Removed updateWidth method

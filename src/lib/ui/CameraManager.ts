@@ -4,7 +4,7 @@ import { Player } from "../../entities/Player/Player";
 const WORLD_WIDTH = 10000;
 const WORLD_HEIGHT = 4000;
 // Define zoom levels
-const BASE_ZOOM = 1.0; // Reduced base zoom
+const BASE_ZOOM = 1.5; // Reduced base zoom
 const DEATH_ZOOM_IN = 1.5; // Zoom level on death
 const DEATH_ZOOM_DURATION = 700; // Duration of death zoom tween in ms
 

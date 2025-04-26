@@ -71,7 +71,7 @@ export class LevelGenerator {
   private coins: Coin[] = [];
   private enemies: Enemy[] = [];
   private crates: (CrateBig | CrateSmall)[] = [];
-  private player?: Player;
+  private player: Player;
 
   // Calculated bounds after generation
   private levelMinX: number = 0;
@@ -111,7 +111,7 @@ export class LevelGenerator {
       params.maxPlatforms + 1
     );
 
-    let currentPos: PlacementPosition = { x: 150, y: 300 };
+    let currentPos: PlacementPosition = { x: 180, y: 300 };
     let totalCoins = 0;
     let lastPlatform: Platform | null = null;
     // Keep track of platforms eligible for item placement
@@ -121,8 +121,6 @@ export class LevelGenerator {
     this.enemies = [];
     this.coins = [];
     this.crates = [];
-
-    this.player = undefined;
 
     this.createPlayerStart(currentPos);
 
@@ -214,7 +212,7 @@ export class LevelGenerator {
   private createPlayerStart(startPos: PlacementPosition): void {
     this.player = new Player(
       this.scene,
-      startPos.x - 50,
+      startPos.x,
       startPos.y - 50 - this.PLATFORM_DISPLAY_HEIGHT / 2
     );
   }

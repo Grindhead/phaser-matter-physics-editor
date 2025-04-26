@@ -49,10 +49,6 @@ export class Game extends Scene {
     this.setupWorldBounds();
     this.initGame();
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
-
-    // Conditionally launch the Debug UI Scene in parallel
-
-    console.log("Launching DebugUIScene...");
     this.scene.launch(SCENES.DEBUG_UI);
   }
 
@@ -386,7 +382,7 @@ export class Game extends Scene {
     if (!this.physicsEnabled) return;
 
     // Update main game elements - Reverted to previous signatures based on linter errors
-    this.player?.update(time, delta);
+    this.player.update(time, delta);
     this.enemies.forEach((enemy) => enemy.update());
 
     // Initialize culling counters
@@ -426,17 +422,12 @@ export class Game extends Scene {
         coin.body.position.y
       );
       coin.setVisible(isVisible);
-      const body = coin.body as MatterJS.BodyType;
 
       // Increment count FIRST if not visible
       if (!isVisible) {
         culledCoinsCount++;
       }
 
-      // Now check if static and return if so (no sleep logic needed)
-      if (body && "isStatic" in body && body.isStatic) return;
-
-      // Try using Phaser's GameObject sleep/awake methods
       if (isVisible) {
         coin.setAwake(); // Wake up if it fell asleep automatically
       } else {
@@ -453,12 +444,9 @@ export class Game extends Scene {
         enemy.body.position.y
       );
       enemy.setVisible(isVisible);
-      const body = enemy.body as MatterJS.BodyType;
-      if (body && "isStatic" in body && body.isStatic) return;
 
-      // Try using Phaser's GameObject sleep/awake methods
       if (isVisible) {
-        enemy.setAwake(); // Wake up if it fell asleep automatically
+        enemy.setAwake();
       } else {
         enemy.setToSleep();
       }

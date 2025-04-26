@@ -10,6 +10,7 @@ import { CrateBig } from "../entities/CrateBig/CrateBig";
 import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
 import { Finish } from "../entities/Finish/Finish";
 import { WORLD_HEIGHT } from "./constants";
+import { setTotalCoinsInLevel } from "./helpers/coinManager"; // Added import
 
 // Simple Pseudo-Random Number Generator (PRNG) using Mulberry32 algorithm
 // Provides deterministic random numbers based on an initial seed.
@@ -170,6 +171,9 @@ export class LevelGenerator {
     if (!this.player) {
       throw new Error("Level Generator: Player was not created!");
     }
+
+    setTotalCoinsInLevel(totalCoins); // Set the total coins for the level
+
     return this.player;
   }
 

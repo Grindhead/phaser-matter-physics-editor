@@ -15,7 +15,12 @@ import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
-import { getCoins, setCoins } from "../lib/helpers/coinManager";
+import {
+  getCoins,
+  setCoins,
+  resetCoins,
+  resetTotalCoinsInLevel,
+} from "../lib/helpers/coinManager";
 import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
@@ -64,7 +69,8 @@ export class Game extends Scene {
    * Initializes game objects and collision handlers using procedural generation.
    */
   private initGame(): void {
-    setCoins(0);
+    resetCoins();
+    resetTotalCoinsInLevel();
     if (getLevel() === 0) {
       setLevel(1);
     }
@@ -514,5 +520,9 @@ export class Game extends Scene {
     }
 
     this.scene.restart();
+
+    // Reset coin counts explicitly before restart might fully complete
+    resetCoins();
+    resetTotalCoinsInLevel();
   }
 }

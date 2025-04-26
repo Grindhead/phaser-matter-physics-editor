@@ -1,5 +1,6 @@
 // coinsManager.ts
 let coins: number = 0;
+let totalCoinsInLevel: number = 0;
 
 /**
  * Returns the current coin count
@@ -29,4 +30,26 @@ export const setCoins = (value: number): void => {
  */
 export const resetCoins = (): void => {
   coins = 0;
+};
+
+/**
+ * Returns the total number of coins in the current level
+ */
+export const getTotalCoinsInLevel = (): number => {
+  return totalCoinsInLevel;
+};
+
+/**
+ * Sets the total number of coins for the current level
+ * @param value - Total coin count for the level
+ */
+export const setTotalCoinsInLevel = (value: number): void => {
+  totalCoinsInLevel = value;
+};
+
+/**
+ * Resets the total coin count for the level to zero
+ */
+export const resetTotalCoinsInLevel = (): void => {
+  totalCoinsInLevel = 0;
 };

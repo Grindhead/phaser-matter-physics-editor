@@ -66,7 +66,7 @@ export class ParallaxManager {
       );
       layer.setOrigin(0, 0);
       layer.setDepth(depth);
-      layer.setScrollFactor(0, 1); // Lock all layers vertically
+      layer.setScrollFactor(0, 0); // Lock all layers vertically relative to the camera view
       layer.tileScaleY = scaleFactor;
       layer.tileScaleX = scaleFactor;
 
@@ -77,10 +77,10 @@ export class ParallaxManager {
     this.backgroundLayer = createLayer("background", -3, 0, 1);
 
     // Middle layer - Locked slightly above background (offset -50)
-    this.middleLayer = createLayer("middleground", -2, -50, 0.5);
+    this.middleLayer = createLayer("middleground", -2, 250, 0.5);
 
     // Foreground - Locked above middleground (offset -100)
-    this.foregroundLayer = createLayer("foreground", 1, 300, 1);
+    this.foregroundLayer = createLayer("foreground", 1, 150, 0.5);
   }
 
   // Removed updateWidth method

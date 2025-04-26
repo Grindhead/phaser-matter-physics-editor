@@ -9,7 +9,7 @@ import {
 import { CrateBig } from "../entities/CrateBig/CrateBig";
 import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
 import { Finish } from "../entities/Finish/Finish";
-import { WORLD_HEIGHT, WORLD_WIDTH } from "./constants";
+import { WORLD_HEIGHT } from "./constants";
 
 // Simple Pseudo-Random Number Generator (PRNG) using Mulberry32 algorithm
 // Provides deterministic random numbers based on an initial seed.

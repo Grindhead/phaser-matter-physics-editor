@@ -2,120 +2,102 @@ import Phaser from "phaser";
 
 /**
  * Manages the creation and properties of parallax background layers using TileSprites.
- * Ensures background/middle layers scale vertically to fit the screen height without repeating.
- * Positions the foreground layer at the bottom without vertical scaling.
+ * All layers are locked vertically relative to the camera bottom with specific offsets.
+ * Layers use their original height and are not scaled vertically.
+ * Manually updates tilePositionX for horizontal parallax effect.
+ * Layers are created with the full level width after initialization.
  */
 export class ParallaxManager {
   private scene: Phaser.Scene;
   private backgroundLayer: Phaser.GameObjects.TileSprite;
   private middleLayer: Phaser.GameObjects.TileSprite;
   private foregroundLayer: Phaser.GameObjects.TileSprite;
+  private levelWidth: number = 0;
+
+  // Store scroll factors
+  private bgScrollFactorX: number;
+  private midScrollFactorX: number;
+  private fgScrollFactorX: number;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
+  }
+
+  /**
+   * Initializes the parallax layers after the level width is known.
+   * @param levelWidth The total width of the level.
+   */
+  public initialize(levelWidth: number): void {
+    this.levelWidth = Math.max(levelWidth, this.scene.scale.width); // Ensure at least screen width
     this.createLayers();
   }
 
   private createLayers(): void {
-    const screenWidth = this.scene.scale.width;
+    // Use stored levelWidth, not screenWidth for sprite creation
     const screenHeight = this.scene.scale.height;
 
-    // Helper function to create and optionally scale a layer
+    // Store factors from user edits/defaults
+    this.bgScrollFactorX = 0.2; // Reset background factor
+    this.midScrollFactorX = 1.5; // User edit
+    this.fgScrollFactorX = 2.0; // User edit
+
+    // Helper function to create a layer locked vertically to camera bottom
     const createLayer = (
       textureKey: string,
-      scrollFactorX: number,
       depth: number,
-      scaleToFitHeight: boolean // Re-added parameter
+      verticalOffset: number,
+      scaleFactor: number
     ): Phaser.GameObjects.TileSprite => {
       const texture = this.scene.textures.get(textureKey);
-      if (!texture || texture.key === "__MISSING") {
-        console.warn(`ParallaxManager: Texture not found: ${textureKey}`);
-        const placeholder = this.scene.add.tileSprite(
-          0,
-          0,
-          screenWidth,
-          screenHeight,
-          "__DEFAULT"
-        );
-        placeholder.setOrigin(0, 0);
-        placeholder.setScrollFactor(scrollFactorX, 0); // Use only X scroll factor
-        placeholder.setDepth(depth);
-        return placeholder;
-      }
       const textureHeight = texture.getSourceImage().height;
 
-      let layerY = 0;
-      let layerHeight = screenHeight;
-      let tileScaleY = 1;
-      let tileScaleX = 1;
+      // Calculate the visually scaled height of the texture
+      const scaledTextureHeight = textureHeight * scaleFactor;
 
-      if (scaleToFitHeight) {
-        // Calculate scale factor to fit height
-        tileScaleY = screenHeight / textureHeight;
-        tileScaleX = tileScaleY; // Maintain aspect ratio
-        layerHeight = screenHeight; // Sprite height is screen height
-        layerY = 0;
-      } else {
-        // Don't scale vertically, position at bottom
-        layerHeight = textureHeight; // Sprite height is texture height
-        layerY = screenHeight - layerHeight; // Position bottom at screen bottom
-        // Keep original scale
-        tileScaleX = 1;
-        tileScaleY = 1;
-      }
+      // Use scaled height, calculate Y relative to screen bottom + offset
+      const layerY = screenHeight - scaledTextureHeight + verticalOffset;
 
       const layer = this.scene.add.tileSprite(
         0,
         layerY,
-        screenWidth,
-        layerHeight,
+        this.levelWidth, // Use stored level width
+        scaledTextureHeight, // Use scaled height for the TileSprite itself
         textureKey
       );
       layer.setOrigin(0, 0);
-      layer.setScrollFactor(scrollFactorX, 0); // Use only X scroll factor
       layer.setDepth(depth);
-
-      // Apply scaling
-      layer.tileScaleY = tileScaleY;
-      layer.tileScaleX = tileScaleX;
+      layer.setScrollFactor(0, 1); // Lock all layers vertically
+      layer.tileScaleY = scaleFactor;
+      layer.tileScaleX = scaleFactor;
 
       return layer;
     };
 
-    // Background (furthest back) - Scale to fit height
-    this.backgroundLayer = createLayer("background", 2, -3, true);
+    // Background - Locked to bottom of camera (offset 0)
+    this.backgroundLayer = createLayer("background", -3, 0, 1);
 
-    // Middle layer - Scale to fit height (Using user's X factor)
-    this.middleLayer = createLayer("middleground", 1.5, -2, true);
-    this.middleLayer.y = 0;
+    // Middle layer - Locked slightly above background (offset -50)
+    this.middleLayer = createLayer("middleground", -2, -50, 0.5);
 
-    // Foreground (closest) - Position at bottom, don't scale height (Using user's X factor & depth)
-    this.foregroundLayer = createLayer("foreground", 2.0, 1, false);
-    this.foregroundLayer.y = 980;
+    // Foreground - Locked above middleground (offset -100)
+    this.foregroundLayer = createLayer("foreground", 1, 300, 1);
   }
+
+  // Removed updateWidth method
 
   /**
-   * Updates the width of all parallax layers.
-   * Should be called after the level width is determined.
-   * @param newWidth The new width for the layers.
+   * Updates the tilePositionX of each layer based on camera scroll
+   * to create the parallax effect.
+   * Should be called in the scene's update loop.
    */
-  public updateWidth(newWidth: number): void {
-    if (this.backgroundLayer) {
-      this.backgroundLayer.width = newWidth;
+  public update(): void {
+    // Ensure layers exist before updating
+    if (!this.backgroundLayer || !this.middleLayer || !this.foregroundLayer) {
+      return;
     }
-    if (this.middleLayer) {
-      this.middleLayer.width = newWidth;
-    }
-    if (this.foregroundLayer) {
-      this.foregroundLayer.width = newWidth;
-    }
+    const scrollX = this.scene.cameras.main.scrollX;
+    this.backgroundLayer.tilePositionX = scrollX * this.bgScrollFactorX;
+    this.middleLayer.tilePositionX = scrollX * this.midScrollFactorX;
+    this.foregroundLayer.tilePositionX = scrollX * this.fgScrollFactorX;
   }
-
-  // Optional: Add update method if manual tilePosition updates are needed later
-  // public update(): void {
-  //   // Example: Manually update tile positions based on camera scroll
-  //   // this.backgroundLayer.tilePositionX = this.scene.cameras.main.scrollX * 0.2;
-  //   // this.middleLayer.tilePositionX = this.scene.cameras.main.scrollX * 0.5;
-  //   // this.foregroundLayer.tilePositionX = this.scene.cameras.main.scrollX * 1;
-  // }
 }

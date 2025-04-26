@@ -21,7 +21,7 @@ import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
 import { LevelGenerator } from "../lib/LevelGenerator";
-import { Geom, Physics } from "phaser";
+import { Geom } from "phaser";
 import { ParallaxManager } from "../lib/ui/ParallaxManager";
 
 /**
@@ -104,18 +104,17 @@ export class Game extends Scene {
     } = levelBounds;
 
     // Calculate actual level width
-    // Ensure minX is not negative infinity if no platforms were generated (edge case)
     const startX = minPlatformX === -Infinity ? 0 : minPlatformX;
     const endX = maxPlatformX === Infinity ? startX : maxPlatformX;
-    const levelWidth = Math.max(endX - startX, this.scale.width); // Use at least screen width
+    const levelWidth = Math.max(endX - startX, this.scale.width);
 
-    // Update parallax background width
+    // Initialize parallax background layers with the calculated level width
     if (this.parallaxManager) {
-      this.parallaxManager.updateWidth(levelWidth);
+      this.parallaxManager.initialize(levelWidth);
     }
 
-    const sensorWidth = levelWidth + 1000; // Add 500px buffer on each side
-    const sensorCenterX = startX + (endX - startX) / 2; // Center based on actual start/end
+    const sensorWidth = levelWidth + 1000;
+    const sensorCenterX = startX + (endX - startX) / 2;
 
     // Create the fall sensor using bounds from generator
     this.createFallSensor(lowestPlatformY, sensorCenterX, sensorWidth);
@@ -387,6 +386,9 @@ export class Game extends Scene {
   update(time: number, delta: number): void {
     if (!this.physicsEnabled) return;
 
+    // Update Parallax Background first
+    this.parallaxManager?.update();
+
     // Update main game elements - Reverted to previous signatures based on linter errors
     this.player?.update(time, delta);
     this.enemies.forEach((enemy) => enemy.update());
@@ -406,9 +408,6 @@ export class Game extends Scene {
         crateCount: this.levelGenerator.getCrates().length,
       });
     }
-
-    // Camera updates
-    // this.cameraManager.update(this.player.body.velocity.y); // Still commented out
 
     // --- Culling Logic ---
     const cameraView = this.cameras.main.worldView;

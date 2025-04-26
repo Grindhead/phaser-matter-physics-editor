@@ -498,7 +498,7 @@ export class Game extends Scene {
     if (this.gameState !== GAME_STATE.PLAYING) return;
 
     this.player.finishLevel();
-    addLevel();
+    addLevel(1);
     this.enemies.forEach((enemy) => enemy.handleGameOver());
     this.cameraManager.handleZoomIn();
     this.showUIOverlay(GAME_STATE.LEVEL_COMPLETE);

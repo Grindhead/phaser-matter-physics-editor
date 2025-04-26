@@ -14,30 +14,33 @@ import { isCoinBody } from "../lib/helpers/isCoinBody";
 import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
-import { CoinUI } from "../lib/ui/CoinUI";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
-import { getCoins, setCoins } from "../lib/helpers/coinManager";
+import {
+  getCoins,
+  setCoins,
+  resetCoins,
+  resetTotalCoinsInLevel,
+} from "../lib/helpers/coinManager";
 import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
-import { ParallaxBackground } from "../entities/ParallaxBackground";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
 import { LevelGenerator } from "../lib/LevelGenerator";
-import { Geom, Physics } from "phaser";
+import { Geom } from "phaser";
+import { ParallaxManager } from "../lib/ui/ParallaxManager";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
  */
 export class Game extends Scene {
-  private background: ParallaxBackground;
   private player: Player;
   private overlayButton?: Phaser.GameObjects.Image;
   private restartTriggered = false;
   private physicsEnabled = false;
-  private coinUI: CoinUI;
   private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
   private enemies: Enemy[] = [];
   private cameraManager: CameraManager;
   private levelGenerator: LevelGenerator;
+  private parallaxManager: ParallaxManager;
 
   constructor() {
     super(SCENES.GAME);
@@ -47,20 +50,12 @@ export class Game extends Scene {
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
   create(): void {
-    this.createBackground();
+    this.parallaxManager = new ParallaxManager(this);
     this.setupWorldBounds();
     this.initGame();
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
-
-    // Conditionally launch the Debug UI Scene in parallel
-
-    console.log("Launching DebugUIScene...");
     this.scene.launch(SCENES.DEBUG_UI);
   }
-
-  createBackground = () => {
-    this.background = new ParallaxBackground(this, "background", 0.5);
-  };
 
   /**
    * Configures world and camera bounds, disables physics initially.
@@ -74,7 +69,8 @@ export class Game extends Scene {
    * Initializes game objects and collision handlers using procedural generation.
    */
   private initGame(): void {
-    setCoins(0);
+    resetCoins();
+    resetTotalCoinsInLevel();
     if (getLevel() === 0) {
       setLevel(1);
     }
@@ -83,7 +79,6 @@ export class Game extends Scene {
     this.generateLevelEntities();
 
     this.setupCollisions();
-    this.coinUI = new CoinUI(this);
     if (!this.player) {
       throw new Error("Player not created during level generation!");
     }
@@ -107,9 +102,18 @@ export class Game extends Scene {
       lowestY: lowestPlatformY,
     } = levelBounds;
 
-    const levelWidth = maxPlatformX - minPlatformX;
-    const sensorWidth = levelWidth + 1000; // Add 500px buffer on each side
-    const sensorCenterX = minPlatformX + levelWidth / 2;
+    // Calculate actual level width
+    const startX = minPlatformX === -Infinity ? 0 : minPlatformX;
+    const endX = maxPlatformX === Infinity ? startX : maxPlatformX;
+    const levelWidth = Math.max(endX - startX, this.scale.width);
+
+    // Initialize parallax background layers with the calculated level width
+    if (this.parallaxManager) {
+      this.parallaxManager.initialize(levelWidth);
+    }
+
+    const sensorWidth = levelWidth + 1000;
+    const sensorCenterX = startX + (endX - startX) / 2;
 
     // Create the fall sensor using bounds from generator
     this.createFallSensor(lowestPlatformY, sensorCenterX, sensorWidth);
@@ -370,7 +374,6 @@ export class Game extends Scene {
     const coinSprite = body.gameObject as Coin;
     coinSprite?.collect();
     setCoins(getCoins() + 1);
-    this.coinUI.update();
   }
 
   /**
@@ -379,12 +382,14 @@ export class Game extends Scene {
    * @param delta - The time elapsed since the last frame in milliseconds.
    */
   update(time: number, delta: number): void {
+    // Update Parallax Background first, regardless of physics state
+    this.parallaxManager?.update();
+
     if (!this.physicsEnabled) return;
 
     // Update main game elements - Reverted to previous signatures based on linter errors
-    this.player?.update(time, delta);
+    this.player.update(time, delta);
     this.enemies.forEach((enemy) => enemy.update());
-    this.background?.update();
 
     // Initialize culling counters
     let culledCoinsCount = 0;
@@ -401,9 +406,6 @@ export class Game extends Scene {
         crateCount: this.levelGenerator.getCrates().length,
       });
     }
-
-    // Camera updates
-    // this.cameraManager.update(this.player.body.velocity.y); // Still commented out
 
     // --- Culling Logic ---
     const cameraView = this.cameras.main.worldView;
@@ -426,17 +428,12 @@ export class Game extends Scene {
         coin.body.position.y
       );
       coin.setVisible(isVisible);
-      const body = coin.body as MatterJS.BodyType;
 
       // Increment count FIRST if not visible
       if (!isVisible) {
         culledCoinsCount++;
       }
 
-      // Now check if static and return if so (no sleep logic needed)
-      if (body && "isStatic" in body && body.isStatic) return;
-
-      // Try using Phaser's GameObject sleep/awake methods
       if (isVisible) {
         coin.setAwake(); // Wake up if it fell asleep automatically
       } else {
@@ -453,12 +450,9 @@ export class Game extends Scene {
         enemy.body.position.y
       );
       enemy.setVisible(isVisible);
-      const body = enemy.body as MatterJS.BodyType;
-      if (body && "isStatic" in body && body.isStatic) return;
 
-      // Try using Phaser's GameObject sleep/awake methods
       if (isVisible) {
-        enemy.setAwake(); // Wake up if it fell asleep automatically
+        enemy.setAwake();
       } else {
         enemy.setToSleep();
       }
@@ -504,7 +498,7 @@ export class Game extends Scene {
     if (this.gameState !== GAME_STATE.PLAYING) return;
 
     this.player.finishLevel();
-    addLevel();
+    addLevel(1);
     this.enemies.forEach((enemy) => enemy.handleGameOver());
     this.cameraManager.handleZoomIn();
     this.showUIOverlay(GAME_STATE.LEVEL_COMPLETE);
@@ -526,5 +520,9 @@ export class Game extends Scene {
     }
 
     this.scene.restart();
+
+    // Reset coin counts explicitly before restart might fully complete
+    resetCoins();
+    resetTotalCoinsInLevel();
   }
 }

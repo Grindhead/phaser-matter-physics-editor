@@ -3,7 +3,7 @@ import { Game as MainGame } from "./scenes/Game";
 import { GameOver } from "./scenes/GameOver";
 import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
-import { DebugUIScene } from "./scenes/DebugUIScene";
+import { UIScene } from "./scenes/DebugUIScene";
 
 import { Game, Types } from "phaser";
 
@@ -28,7 +28,7 @@ const config: Types.Core.GameConfig = {
       },
     },
   },
-  scene: [Boot, Preloader, MainMenu, MainGame, DebugUIScene, GameOver],
+  scene: [Boot, Preloader, MainMenu, MainGame, UIScene, GameOver],
 };
 
 export default new Game(config);

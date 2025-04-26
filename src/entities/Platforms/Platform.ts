@@ -2,6 +2,8 @@ import { PHYSICS, PHYSICS_ENTITIES } from "../../lib/constants";
 import { buildPlatform } from "../../lib/helpers/platformBuilder";
 
 export class Platform extends Phaser.Physics.Matter.Sprite {
+  public segmentCount: number;
+
   constructor(
     scene: Phaser.Scene,
     x: number,

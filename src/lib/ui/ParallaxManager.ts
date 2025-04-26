@@ -77,7 +77,7 @@ export class ParallaxManager {
     this.backgroundLayer = createLayer("background", -3, 0, 1);
 
     // Middle layer - Locked slightly above background (offset -50)
-    this.middleLayer = createLayer("middleground", -2, 250, 0.5);
+    this.middleLayer = createLayer("middleground", -2, 200, 0.5);
 
     // Foreground - Locked above middleground (offset -100)
     this.foregroundLayer = createLayer("foreground", 1, -80, 0.5);

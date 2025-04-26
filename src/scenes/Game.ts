@@ -14,7 +14,6 @@ import { isCoinBody } from "../lib/helpers/isCoinBody";
 import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
-import { CoinUI } from "../lib/ui/CoinUI";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
 import { getCoins, setCoins } from "../lib/helpers/coinManager";
 import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
@@ -32,7 +31,6 @@ export class Game extends Scene {
   private overlayButton?: Phaser.GameObjects.Image;
   private restartTriggered = false;
   private physicsEnabled = false;
-  private coinUI: CoinUI;
   private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
   private enemies: Enemy[] = [];
   private cameraManager: CameraManager;
@@ -79,7 +77,6 @@ export class Game extends Scene {
     this.generateLevelEntities();
 
     this.setupCollisions();
-    this.coinUI = new CoinUI(this);
     if (!this.player) {
       throw new Error("Player not created during level generation!");
     }
@@ -375,7 +372,6 @@ export class Game extends Scene {
     const coinSprite = body.gameObject as Coin;
     coinSprite?.collect();
     setCoins(getCoins() + 1);
-    this.coinUI.update();
   }
 
   /**
@@ -384,10 +380,10 @@ export class Game extends Scene {
    * @param delta - The time elapsed since the last frame in milliseconds.
    */
   update(time: number, delta: number): void {
-    if (!this.physicsEnabled) return;
-
-    // Update Parallax Background first
+    // Update Parallax Background first, regardless of physics state
     this.parallaxManager?.update();
+
+    if (!this.physicsEnabled) return;
 
     // Update main game elements - Reverted to previous signatures based on linter errors
     this.player?.update(time, delta);

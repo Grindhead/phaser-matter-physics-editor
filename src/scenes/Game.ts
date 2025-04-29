@@ -35,13 +35,6 @@ import { Geom } from "phaser";
 import { ParallaxManager } from "../lib/helpers/parralax/ParallaxManager";
 import { Barrel } from "../entities/Barrel/Barrel";
 
-// Define a type for the debug renderer config for clarity
-type MatterDebugConfig = {
-  renderFill?: boolean;
-  renderLine?: boolean;
-  // Add other Matter debug config properties if needed
-};
-
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
  */

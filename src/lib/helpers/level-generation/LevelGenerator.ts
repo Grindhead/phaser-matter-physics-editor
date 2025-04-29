@@ -27,7 +27,6 @@ import {
 import {
   populatePlatformWithCoins,
   placeItemsOnPlatforms,
-  placeBarrelsBetweenPlatforms,
 } from "./itemPlacementHelper";
 
 // Simple Pseudo-Random Number Generator (PRNG) using Mulberry32 algorithm
@@ -165,7 +164,7 @@ export class LevelGenerator {
       );
 
       // Calculate potential position and gaps for the *next* platform
-      const { nextX, nextY, dX, dY } = this.calculateNextPlatformPosition(
+      const { nextX, nextY, dX } = this.calculateNextPlatformPosition(
         { x: currentPlatformX, y: currentPlatformY },
         platformLength,
         lastPlatform,
@@ -176,7 +175,6 @@ export class LevelGenerator {
       let barrelX = 0;
       let barrelY = 0;
       let newBarrelRange: { start: number; end: number } | null = null;
-      let skipPlatformPlacement = false;
 
       // --- Barrel Substitution Logic --- START
       // Only consider placing a bridge barrel if it's NOT the very last segment before the finish
@@ -209,7 +207,6 @@ export class LevelGenerator {
           barrelY = Math.min(barrelY, WORLD_HEIGHT - BARREL_HEIGHT / 2 - 2);
 
           placeBridgeBarrel = true;
-          skipPlatformPlacement = true; // Set flag to skip platform
         } else {
           console.warn(
             `  Overlap detected for bridge barrel at X=${barrelX.toFixed(
@@ -273,11 +270,6 @@ export class LevelGenerator {
       (p) => p !== lastPlatform
     );
 
-    // --- Item Placement Logic (Use Helper) ---
-    console.log(
-      "Platforms available for item placement:",
-      finalItemPlacementPlatforms.length
-    ); // DEBUG LOG
     placeItemsOnPlatforms(
       this.scene,
       finalItemPlacementPlatforms,
@@ -286,17 +278,6 @@ export class LevelGenerator {
       this.enemies, // Pass the arrays to be populated
       this.crates
     );
-
-    // --- Place Barrels Between Platforms --- (Temporarily Disabled for Debugging)
-    /*
-    placeBarrelsBetweenPlatforms(
-      this.scene,
-      this.platforms, // Pass the full list of platforms
-      this.prng,
-      params.targetBarrels,
-      this.barrels // Pass the barrels array to be populated
-    );
-    */
 
     this.createFinishPoint(lastPlatform);
     this.calculateOverallBounds(); // Calculate bounds after all platforms exist
@@ -472,7 +453,7 @@ export class LevelGenerator {
     // Place finish X at the right edge of the last platform
     const finishX = lastPlatformBounds.right - 40;
     // Place finish Y 100px above the top surface of the last platform
-    const finishY = lastPlatformBounds.top - 110; // Increased from 50
+    const finishY = lastPlatformBounds.top - 45; // Increased from 50
     new Finish(this.scene, finishX, finishY);
   }
 

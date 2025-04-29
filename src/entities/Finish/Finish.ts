@@ -13,6 +13,8 @@ export class Finish extends Phaser.Physics.Matter.Sprite {
       isSensor: true,
     });
 
+    this.setOrigin(0.3, 0.5);
+
     this.play(FINISH_ANIMATION_KEYS.FINISH_IDLE);
 
     createAnimationChain(this, FINISH_ANIMATIONS);

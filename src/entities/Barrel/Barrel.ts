@@ -43,7 +43,6 @@ export class Barrel extends Phaser.Physics.Matter.Sprite {
 
     this.play(BARREL_ANIMATION_KEYS.BARREL_LAUNCH);
     this.isEntered = false;
-    console.log("[Barrel] Launch called, isEntered = false");
 
     const launchAngleRadians = Phaser.Math.DegToRad(this.angle);
     const launchVector = new Phaser.Math.Vector2(
@@ -51,9 +50,6 @@ export class Barrel extends Phaser.Physics.Matter.Sprite {
       Math.sin(launchAngleRadians) * BARREL_LAUNCH_SPEED
     );
 
-    console.log(
-      `[Barrel] Calculated launch vector: (${launchVector.x}, ${launchVector.y})`
-    );
     return launchVector;
   }
 }

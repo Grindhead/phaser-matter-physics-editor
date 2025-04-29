@@ -436,3 +436,15 @@ Update ParallaxManager to use texture atlas frames.
 
 - Ensure all required asset packs are loaded before scenes that depend on them start.
 - Refactoring managers to use specialized component classes can simplify the manager's responsibilities.
+
+**Current Focus:** Integrating the `FXLand` landing effect into the `Player` class.
+
+**Recent Changes:**
+
+- Imported `FXLand` into `Player.ts`.
+- Modified `Player.ts` -> `handleCollisionStart` to instantiate `FXLand` at the player's feet (`this.x`, `this.getBounds().bottom`) when `isGrounded` transitions from `false` to `true`.
+
+**Next Steps:**
+
+- Test the landing effect to ensure it appears correctly.
+- Address remaining tasks in `progress.md` (mobile controls, level completion, death sequence, etc.).

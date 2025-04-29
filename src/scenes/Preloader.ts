@@ -4,6 +4,7 @@ import { createAnimations } from "../lib/helpers/createAnimations";
 import { PLAYER_ANIMATIONS } from "../entities/Player/playerAnimations";
 import { COIN_ANIMATIONS } from "../entities/Coin/coinAnimations";
 import { FINISH_ANIMATIONS } from "../entities/Finish/finishAnimations";
+import { FX_ANIMATIONS } from "../entities/fx-land/fxAnimations";
 
 export class Preloader extends Scene {
   constructor() {
@@ -49,5 +50,6 @@ export class Preloader extends Scene {
     createAnimations(this.game.anims, TEXTURE_ATLAS, PLAYER_ANIMATIONS);
     createAnimations(this.game.anims, TEXTURE_ATLAS, COIN_ANIMATIONS);
     createAnimations(this.game.anims, TEXTURE_ATLAS, FINISH_ANIMATIONS);
+    createAnimations(this.game.anims, TEXTURE_ATLAS, FX_ANIMATIONS);
   }
 }

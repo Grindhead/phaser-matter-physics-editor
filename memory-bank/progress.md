@@ -2,6 +2,12 @@
 
 ## What Works
 
+- Player movement (left/right).
+- Player jumping.
+- Basic animation states (idle, run, jump, fall).
+- Ground detection using Matter.js collision events.
+- `FXLand` effect exists as a separate entity.
+- **`FXLand` effect spawns when player lands.**
 - Basic platformer mechanics (movement, jumping).
 - Coin collection and UI tracking.
 - Enemy presence.
@@ -23,6 +29,10 @@
 
 ## What's Left to Build
 
+- Integrate `FXLand` instantiation into the player's landing logic.
+- Implement mobile controls (`createMobileControls` is empty).
+- Define level completion logic/trigger.
+- Implement player death sequence (`kill` method exists but needs trigger).
 - Test improved level generation (enemy/crate placement).
 - Level progression logic beyond simple counter increment.
 - More complex level designs/generation features.
@@ -54,3 +64,4 @@
 - **Refactored Debug UI:** Moved `DebugPanel` into its own `DebugUIScene` launched in parallel to `Game` scene. This prevents the debug UI from being affected by the game camera zoom and uses event emission for data transfer.
 - **Added Culling:** Introduced bounds checking in `Game.ts` to disable rendering and physics processing for off-screen coins and enemies, improving performance.
 - **Refactored Item Placement:** Changed level generation (`LevelGenerator.ts`) to place enemies and crates _after_ all platforms are created using a shuffled list of eligible platforms. This ensures they don't share a platform and allows better control over total counts.
+- Landing effect (`FXLand`) is triggered within the `Player`'s `handleCollisionStart` method for immediate feedback upon landing.

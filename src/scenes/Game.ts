@@ -26,7 +26,7 @@ import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
 import { LevelGenerator } from "../lib/LevelGenerator";
 import { Geom } from "phaser";
-import { ParallaxManager } from "../lib/ui/ParallaxManager";
+import { ParallaxManager } from "../lib/helpers/parralax/ParallaxManager";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.

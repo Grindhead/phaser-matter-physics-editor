@@ -1,13 +1,17 @@
 import Phaser from "phaser";
 import { SCENES } from "../lib/constants";
 import { DebugPanel } from "../lib/ui/DebugPanel";
+import { CoinUI } from "../lib/ui/CoinUI";
+import { LevelUI } from "../lib/ui/LevelUI";
 
 /**
  * A separate scene for displaying the Debug UI overlay.
  * Runs in parallel with the main Game scene.
  */
-export class DebugUIScene extends Phaser.Scene {
-  private debugPanel?: DebugPanel;
+export class UIScene extends Phaser.Scene {
+  private debugPanel: DebugPanel;
+  private coinUI: CoinUI;
+  private levelUI: LevelUI;
 
   constructor() {
     super(SCENES.DEBUG_UI);
@@ -19,6 +23,10 @@ export class DebugUIScene extends Phaser.Scene {
     // Position top-right: x = screen width - padding, y = padding
     const padding = 10;
     this.debugPanel = new DebugPanel(this, this.scale.width - padding, padding);
+
+    // Instantiate CoinUI in the top-left corner
+    this.coinUI = new CoinUI(this);
+    this.levelUI = new LevelUI(this);
 
     // Listen for data updates from the Game scene
     const gameScene = this.scene.get(SCENES.GAME);
@@ -32,18 +40,24 @@ export class DebugUIScene extends Phaser.Scene {
           this.handleDebugDataUpdate,
           this
         );
+        this.levelUI.destroy();
+        this.coinUI.destroy();
       });
     }
 
     // Setup Q key listener within this scene
     this.input.keyboard?.on("keydown-Q", () => {
-      this.debugPanel?.toggle();
+      this.debugPanel.toggle();
     });
   }
 
   private handleDebugDataUpdate(data: { [key: string]: any }): void {
-    this.debugPanel?.update(data);
+    this.debugPanel.update(data);
   }
 
-  // No update method needed here, panel is updated via events
+  // Update CoinUI every frame
+  update(): void {
+    this.coinUI.update();
+    this.levelUI.update();
+  }
 }

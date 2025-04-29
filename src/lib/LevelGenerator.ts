@@ -9,7 +9,8 @@ import {
 import { CrateBig } from "../entities/CrateBig/CrateBig";
 import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
 import { Finish } from "../entities/Finish/Finish";
-import { WORLD_HEIGHT, WORLD_WIDTH } from "./constants";
+import { WORLD_HEIGHT } from "./constants";
+import { setTotalCoinsInLevel } from "./helpers/coinManager"; // Added import
 
 // Simple Pseudo-Random Number Generator (PRNG) using Mulberry32 algorithm
 // Provides deterministic random numbers based on an initial seed.
@@ -71,7 +72,7 @@ export class LevelGenerator {
   private coins: Coin[] = [];
   private enemies: Enemy[] = [];
   private crates: (CrateBig | CrateSmall)[] = [];
-  private player?: Player;
+  private player: Player;
 
   // Calculated bounds after generation
   private levelMinX: number = 0;
@@ -111,7 +112,7 @@ export class LevelGenerator {
       params.maxPlatforms + 1
     );
 
-    let currentPos: PlacementPosition = { x: 150, y: 300 };
+    let currentPos: PlacementPosition = { x: 180, y: 300 };
     let totalCoins = 0;
     let lastPlatform: Platform | null = null;
     // Keep track of platforms eligible for item placement
@@ -121,8 +122,6 @@ export class LevelGenerator {
     this.enemies = [];
     this.coins = [];
     this.crates = [];
-
-    this.player = undefined;
 
     this.createPlayerStart(currentPos);
 
@@ -144,7 +143,7 @@ export class LevelGenerator {
       const platform = this.createPlatform(currentPos, platformLength, i);
 
       // Populate only with coins now
-      totalCoins += this.populatePlatformWithCoins(platform, params);
+      totalCoins += this.populatePlatformWithCoins(platform);
 
       // Add platform to potential item placement list (skip first platform)
       if (i > 0) {
@@ -172,6 +171,9 @@ export class LevelGenerator {
     if (!this.player) {
       throw new Error("Level Generator: Player was not created!");
     }
+
+    setTotalCoinsInLevel(totalCoins); // Set the total coins for the level
+
     return this.player;
   }
 
@@ -214,7 +216,7 @@ export class LevelGenerator {
   private createPlayerStart(startPos: PlacementPosition): void {
     this.player = new Player(
       this.scene,
-      startPos.x - 50,
+      startPos.x,
       startPos.y - 50 - this.PLATFORM_DISPLAY_HEIGHT / 2
     );
   }
@@ -297,10 +299,7 @@ export class LevelGenerator {
    * Populates a given platform with coins. Returns the number of coins added.
    * Enemy and crate placement is now handled separately.
    */
-  private populatePlatformWithCoins(
-    platform: Platform,
-    params: PlatformGenerationParams
-  ): number {
+  private populatePlatformWithCoins(platform: Platform): number {
     const bounds = platform.getBounds();
     const platformWidth = bounds.width;
     let coinsAdded = 0;
@@ -324,11 +323,10 @@ export class LevelGenerator {
         const placeX = bounds.left + startOffset + i * this.MIN_COIN_SPACING;
 
         // --- Avoid placing coins too close to the center ---
-        const centerBuffer = 16; // Pixels around the center to avoid
+        const centerBuffer = 16;
         if (Math.abs(placeX - bounds.centerX) < centerBuffer) {
-          continue; // Skip placing this coin if too close to center
+          continue;
         }
-        // --- End center avoidance ---
 
         const coin = new Coin(this.scene, placeX, placeY);
         this.coins.push(coin);
@@ -373,13 +371,10 @@ export class LevelGenerator {
       const placeX = bounds.centerX;
       const placeY = bounds.top - this.ENEMY_HEIGHT / 2;
 
-      // Optional: Check platform length if needed
-      // --- Reinstate platform length check for enemies ---
       if (platform.segmentCount < this.MIN_PLATFORM_LENGTH_WITH_ENEMY) {
         i--; // Decrement enemy counter since we didn't place one
         continue; // Skip this platform, try the next shuffled one
       }
-      // --- End reinstatement ---
 
       const enemy = new Enemy(this.scene, placeX, placeY);
       this.enemies.push(enemy);
@@ -450,14 +445,6 @@ export class LevelGenerator {
       this.levelMaxX = Math.max(this.levelMaxX, bounds.right);
       this.levelLowestY = Math.max(this.levelLowestY, bounds.bottom); // Max Y is lowest point
     }
-
-    console.log(
-      `Calculated Overall Bounds: minX=${this.levelMinX.toFixed(
-        2
-      )}, maxX=${this.levelMaxX.toFixed(
-        2
-      )}, lowestY=${this.levelLowestY.toFixed(2)}`
-    );
   }
 
   /**

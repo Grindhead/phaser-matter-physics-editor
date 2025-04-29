@@ -30,22 +30,22 @@ export class Preloader extends Scene {
   preload() {
     //  Load the assets for the game - Replace with your own assets
     this.load.setPath("assets");
-    this.load.atlas(TEXTURE_ATLAS, "assets.png", "assets.json");
+    // Load each atlas individually using the keys defined inside assets.json
+    this.load.multiatlas(TEXTURE_ATLAS, "assets.json");
+    console.log(
+      "Preloader: Initiated loading atlas TEXTURE_ATLAS_1 (assets-1)"
+    ); // Log initiation
     this.load.json(PHYSICS, "physics.json");
-    this.load.image("background", "background.png");
-    this.load.image("middleground", "middle.png");
-    this.load.image("foreground", "foreground.png");
   }
 
   create() {
-    //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
-    //  For example, you can define global animations here, so we can use them in other scenes.
     this.setupAnimations();
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
     this.scene.start(SCENES.MAIN_MENU);
   }
 
   setupAnimations() {
+    // Create animations using the correct atlas key 'assets-1'
     createAnimations(this.game.anims, TEXTURE_ATLAS, PLAYER_ANIMATIONS);
     createAnimations(this.game.anims, TEXTURE_ATLAS, COIN_ANIMATIONS);
     createAnimations(this.game.anims, TEXTURE_ATLAS, FINISH_ANIMATIONS);

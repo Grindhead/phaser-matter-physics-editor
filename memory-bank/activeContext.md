@@ -2,6 +2,32 @@
 
 ## Current Focus
 
+Loading both texture atlases in the Preloader.
+
+## Recent Changes
+
+- **Updated `Preloader.ts`:** Added a line to load the second texture atlas (`assets2.png`, `assets2.json`) using the key `texturePack2`.
+
+## Next Steps
+
+- Verify that animations or entities using the second atlas work correctly.
+- Update animation creation if necessary to use the second atlas.
+- Continue with other tasks listed in `progress.md`.
+
+## Active Decisions & Considerations
+
+- Using the base constant `TEXTURE_ATLAS` and appending `"2"` maintains a consistent naming convention.
+
+## Important Patterns & Preferences
+
+- Loading all necessary atlases during the preloading phase.
+
+## Learnings & Project Insights
+
+- Ensure all required asset packs are loaded before scenes that depend on them start.
+
+## Current Focus
+
 Preventing enemy placement on the final platform.
 
 ## Recent Changes
@@ -378,3 +404,32 @@ Refactoring `GameState` enum to a `GAME_STATE` constant object.
 - Implemented logic in `CameraManager.update` to smoothly adjust camera zoom based on the player's vertical velocity (zooming out slightly when jumping).
 - Stored a reference to the `Player` instance within `CameraManager`.
 - Called `cameraManager.update()`
+
+## Current Focus
+
+Update ParallaxManager to use texture atlas frames.
+
+## Recent Changes
+
+- Updated `Preloader.ts` to load both texture atlases (`assets-0.json`/`assets-1.json`).
+
+## Next Steps
+
+- Modify `ParallaxManager.ts` to reference frames within the loaded texture atlases ('assets-0', 'assets-1') instead of standalone image keys.
+- Update the `createLayer` logic to use frame dimensions and pass the correct atlas key and frame name to `scene.add.tileSprite`.
+
+## Active Decisions & Considerations
+
+- Using frames from the texture atlas is generally more performant (fewer texture binds) and aligns with standard asset management practices in Phaser.
+- The specific frames needed are:
+  - `bg/background.png` from atlas `assets-0`
+  - `bg/middle-ground.png` from atlas `assets-1`
+  - `bg/foreground.png` from atlas `assets-1`
+
+## Important Patterns & Preferences
+
+- Leveraging texture atlases for efficient asset loading and rendering.
+
+## Learnings & Project Insights
+
+- Ensure code references the correct atlas key and frame name when using packed textures.

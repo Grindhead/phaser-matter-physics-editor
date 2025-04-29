@@ -1,0 +1,18 @@
+{
+  "textures": [
+    {
+      "key": "assets",
+      "textureURL": "assets.png",
+      "atlasURL": "assets.json"
+    },
+    {
+      "key": "assets2",
+      "textureURL": "assets2.png",
+      "atlasURL": "assets2.json"
+    }
+  ],
+  "meta": {
+    "app": "Phaser MultiAtlas Definition",
+    "version": "1.0"
+  }
+}

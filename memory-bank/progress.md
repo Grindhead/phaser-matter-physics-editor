@@ -38,6 +38,7 @@
 - Level generation logic for enemy and crate placement has been refactored for better distribution and to prevent overlap.
 - Debug panel refactored into a separate scene for independence from game camera.
 - Basic culling implemented for coins and enemies.
+- **Preloader updated to load both `texturePack` and `texturePack2` atlases.**
 
 ## Known Issues
 

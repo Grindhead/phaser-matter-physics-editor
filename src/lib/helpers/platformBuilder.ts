@@ -64,7 +64,7 @@ function createTextureFromContainer(
     frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.LEFT].prefix,
     x: TILE_WIDTH / 2,
     y: TILE_HEIGHT / 2,
-    add: false, // Don't add it to the scene
+    add: false,
   });
 
   const middlePlatform = scene.make.tileSprite({
@@ -74,7 +74,7 @@ function createTextureFromContainer(
     y: TILE_HEIGHT / 2 + 1.5,
     width: TILE_WIDTH * (tileCount - 2),
     height: TILE_HEIGHT,
-    add: false, // Don't add it to the scene
+    add: false,
   });
 
   const rightPlatform = scene.make.image({
@@ -82,7 +82,7 @@ function createTextureFromContainer(
     frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.RIGHT].prefix,
     x: totalWidth - TILE_WIDTH / 2,
     y: TILE_HEIGHT / 2,
-    add: false, // Don't add it to the scene
+    add: false,
   });
 
   // Add parts to the container

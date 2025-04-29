@@ -179,7 +179,8 @@ export class LevelGenerator {
       let skipPlatformPlacement = false;
 
       // --- Barrel Substitution Logic --- START
-      if (dX > params.maxHorizontalGap) {
+      // Only consider placing a bridge barrel if it's NOT the very last segment before the finish
+      if (dX > params.maxHorizontalGap && i < numPlatforms - 1) {
         barrelX = lastPlatform.getBounds().right + dX / 2;
         newBarrelRange = {
           start: barrelX - BARREL_WIDTH / 2,

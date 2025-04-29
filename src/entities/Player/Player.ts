@@ -6,7 +6,7 @@ import { FXLand } from "../fx-land/FxLand";
 import { Barrel } from "../Barrel/Barrel";
 import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 
-const JUMP_VELOCITY = -10;
+const JUMP_VELOCITY = -9;
 const WALK_VELOCITY = 3;
 const FALL_DELAY_MS = 150;
 const BARREL_LAUNCH_VELOCITY = 12;

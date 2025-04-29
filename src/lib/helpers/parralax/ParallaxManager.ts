@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { TEXTURE_ATLAS } from "../../constants";
 
 /**
  * Manages the creation and properties of parallax background layers using TileSprites.
@@ -43,16 +44,21 @@ export class ParallaxManager {
 
     // Helper function to create a layer locked vertically to camera bottom
     const createLayer = (
-      textureKey: string,
+      atlasKey: string, // Now atlas key
+      frameName: string, // Now frame name
       depth: number,
       verticalOffset: number,
       scaleFactor: number
     ): Phaser.GameObjects.TileSprite => {
-      const texture = this.scene.textures.get(textureKey);
-      const textureHeight = texture.getSourceImage().height;
+      // Get frame dimensions from the atlas
+      const frame = this.scene.textures.getFrame(atlasKey, frameName);
+      if (!frame) {
+        console.error(`Frame '${frameName}' not found in atlas '${atlasKey}'`);
+      }
+      const frameHeight = frame.height;
 
       // Calculate the visually scaled height of the texture
-      const scaledTextureHeight = textureHeight * scaleFactor;
+      const scaledTextureHeight = frameHeight * scaleFactor;
 
       // Use scaled height, calculate Y relative to screen bottom + offset
       const layerY = screenHeight - scaledTextureHeight + verticalOffset;
@@ -62,7 +68,8 @@ export class ParallaxManager {
         layerY,
         this.levelWidth, // Use stored level width
         scaledTextureHeight, // Use scaled height for the TileSprite itself
-        textureKey
+        atlasKey, // Use atlas key
+        frameName // Use frame name
       );
       layer.setOrigin(0, 0);
       layer.setDepth(depth);
@@ -74,16 +81,32 @@ export class ParallaxManager {
     };
 
     // Background - Locked to bottom of camera (offset 0)
-    this.backgroundLayer = createLayer("background", -3, 0, 1);
+    this.backgroundLayer = createLayer(
+      TEXTURE_ATLAS,
+      "bg/background.png",
+      -3,
+      -220,
+      1
+    );
 
     // Middle layer - Locked slightly above background (offset -50)
-    this.middleLayer = createLayer("middleground", -2, -150, 0.32);
+    this.middleLayer = createLayer(
+      TEXTURE_ATLAS,
+      "bg/middle-ground.png",
+      -2,
+      -250,
+      1
+    );
 
     // Foreground - Locked above middleground (offset -100)
-    this.foregroundLayer = createLayer("foreground", 1, -80, 0.5);
+    this.foregroundLayer = createLayer(
+      TEXTURE_ATLAS,
+      "bg/foreground.png",
+      3,
+      -250,
+      1
+    );
   }
-
-  // Removed updateWidth method
 
   /**
    * Updates the tilePositionX of each layer based on camera scroll

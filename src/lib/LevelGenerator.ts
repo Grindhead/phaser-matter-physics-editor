@@ -417,6 +417,14 @@ export class LevelGenerator {
   }
 
   /**
+   * Removes a specific coin instance from the internal list.
+   * @param coinToRemove The Coin instance to remove.
+   */
+  removeCoin(coinToRemove: Coin): void {
+    this.coins = this.coins.filter((coin) => coin !== coinToRemove);
+  }
+
+  /**
    * Returns the array of generated Crate instances.
    */
   getCrates(): (CrateBig | CrateSmall)[] {

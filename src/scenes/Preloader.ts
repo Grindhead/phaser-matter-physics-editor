@@ -5,6 +5,7 @@ import { PLAYER_ANIMATIONS } from "../entities/Player/playerAnimations";
 import { COIN_ANIMATIONS } from "../entities/Coin/coinAnimations";
 import { FINISH_ANIMATIONS } from "../entities/Finish/finishAnimations";
 import { FX_ANIMATIONS } from "../entities/fx-land/fxAnimations";
+import { BARREL_ANIMATIONS } from "../entities/Barrel/barrelAnimations";
 
 export class Preloader extends Scene {
   constructor() {
@@ -29,13 +30,9 @@ export class Preloader extends Scene {
   }
 
   preload() {
-    //  Load the assets for the game - Replace with your own assets
+    //  Load the assets for the game
     this.load.setPath("assets");
-    // Load each atlas individually using the keys defined inside assets.json
     this.load.multiatlas(TEXTURE_ATLAS, "assets.json");
-    console.log(
-      "Preloader: Initiated loading atlas TEXTURE_ATLAS_1 (assets-1)"
-    ); // Log initiation
     this.load.json(PHYSICS, "physics.json");
   }
 
@@ -51,5 +48,6 @@ export class Preloader extends Scene {
     createAnimations(this.game.anims, TEXTURE_ATLAS, COIN_ANIMATIONS);
     createAnimations(this.game.anims, TEXTURE_ATLAS, FINISH_ANIMATIONS);
     createAnimations(this.game.anims, TEXTURE_ATLAS, FX_ANIMATIONS);
+    createAnimations(this.game.anims, TEXTURE_ATLAS, BARREL_ANIMATIONS);
   }
 }

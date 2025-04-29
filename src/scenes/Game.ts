@@ -375,8 +375,11 @@ export class Game extends Scene {
    */
   private collectCoin(body: MatterJS.BodyType): void {
     const coinSprite = body.gameObject as Coin;
-    coinSprite?.collect();
-    setCoins(getCoins() + 1);
+    if (coinSprite) {
+      this.levelGenerator.removeCoin(coinSprite); // Remove from generator's list
+      coinSprite.collect(); // Play animation and schedule destroy
+      setCoins(getCoins() + 1);
+    }
   }
 
   /**

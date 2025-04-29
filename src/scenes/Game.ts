@@ -15,18 +15,32 @@ import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
+import { isBarrelBody } from "../lib/helpers/isBarrelBody";
 import {
   getCoins,
   setCoins,
   resetCoins,
   resetTotalCoinsInLevel,
 } from "../lib/helpers/coinManager";
-import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
+import {
+  addLevel,
+  getLevel,
+  setLevel,
+  resetLevel,
+} from "../lib/helpers/levelManager";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
-import { LevelGenerator } from "../lib/LevelGenerator";
+import { LevelGenerator } from "../lib/helpers/level-generation/LevelGenerator";
 import { Geom } from "phaser";
 import { ParallaxManager } from "../lib/helpers/parralax/ParallaxManager";
+import { Barrel } from "../entities/Barrel/Barrel";
+
+// Define a type for the debug renderer config for clarity
+type MatterDebugConfig = {
+  renderFill?: boolean;
+  renderLine?: boolean;
+  // Add other Matter debug config properties if needed
+};
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -38,9 +52,14 @@ export class Game extends Scene {
   private physicsEnabled = false;
   private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
   private enemies: Enemy[] = [];
+  private barrels: Barrel[] = [];
   private cameraManager: CameraManager;
   private levelGenerator: LevelGenerator;
   private parallaxManager: ParallaxManager;
+  private totalBarrelsGenerated: number = 0;
+  private culledBarrelsCount: number = 0;
+  private physicsDebugActive: boolean = false; // Track the state
+  private debugGraphics: Phaser.GameObjects.Graphics; // Graphics object for debug drawing
 
   constructor() {
     super(SCENES.GAME);
@@ -50,10 +69,21 @@ export class Game extends Scene {
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
   create(): void {
+    this.restartTriggered = false;
     this.parallaxManager = new ParallaxManager(this);
     this.setupWorldBounds();
     this.initGame();
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
+
+    // Configure Matter debug rendering, initially off
+    this.debugGraphics = this.add.graphics().setAlpha(1).setDepth(9999); // Use full alpha and high depth
+    this.matter.world.debugGraphic = this.debugGraphics; // Correctly assign the property
+    this.matter.world.drawDebug = false; // Reverted: Initially off
+    this.physicsDebugActive = false; // Reverted: Initially false
+
+    // Listen for the event from DebugUIScene
+    this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
+
     this.scene.launch(SCENES.DEBUG_UI);
   }
 
@@ -71,10 +101,12 @@ export class Game extends Scene {
   private initGame(): void {
     resetCoins();
     resetTotalCoinsInLevel();
+    resetLevel();
     if (getLevel() === 0) {
       setLevel(1);
     }
     this.enemies = [];
+    this.barrels = [];
 
     this.generateLevelEntities();
 
@@ -93,6 +125,9 @@ export class Game extends Scene {
     this.levelGenerator = new LevelGenerator(this, currentLevel);
     this.player = this.levelGenerator.generateLevel();
     this.enemies = this.levelGenerator.getEnemies();
+    this.barrels = this.levelGenerator.getBarrels();
+    // Store the total count
+    this.totalBarrelsGenerated = this.barrels.length;
 
     // Get overall bounds directly from the generator
     const levelBounds = this.levelGenerator.getOverallLevelBounds();
@@ -128,6 +163,7 @@ export class Game extends Scene {
   private showUIOverlay(state: GameStateType, fadeIn: boolean = true): void {
     // Clean up any existing overlay
     if (this.overlayButton) {
+      this.overlayButton.off("pointerup"); // Explicitly remove the listener
       this.overlayButton.destroy();
       this.overlayButton = undefined;
     }
@@ -194,14 +230,32 @@ export class Game extends Scene {
   }
 
   /**
+   * Toggles the Matter.js debug rendering graphics on or off.
+   */
+  private togglePhysicsDebug(): void {
+    this.physicsDebugActive = !this.physicsDebugActive;
+    console.log(
+      `[Game] Toggling physics debug. Active: ${this.physicsDebugActive}`
+    );
+    // Use the built-in drawDebug flag
+    this.matter.world.drawDebug = this.physicsDebugActive;
+    console.log(
+      `[Game] Matter world drawDebug set to: ${this.matter.world.drawDebug}`
+    );
+    // Also toggle the visibility of the graphics object itself
+    // No need to toggle visibility if drawDebug handles it and it starts visible
+    // this.debugGraphics.setVisible(this.physicsDebugActive);
+    this.debugGraphics.setVisible(this.physicsDebugActive); // Reverted: Toggle visibility
+    console.log(`[Game] Debug graphics visible: ${this.debugGraphics.visible}`);
+  }
+
+  /**
    * Enables physics, sets camera follow, and marks the game as running.
    */
   private startGame(): void {
+    this.gameState = GAME_STATE.PLAYING;
     this.matter.world.enabled = true;
-    this.restartTriggered = false;
     this.physicsEnabled = true;
-
-    this.showUIOverlay(GAME_STATE.PLAYING); // Use constant
   }
 
   /**
@@ -245,31 +299,20 @@ export class Game extends Scene {
    * Configures Matter.js collision handlers for key entities.
    */
   private setupCollisions(): void {
-    this.matter.world.on(
-      "collisionstart",
-      (event: Phaser.Physics.Matter.Events.CollisionStartEvent) => {
-        if (this.physicsEnabled) this.checkCollisions(event);
-      }
-    );
+    this.matter.world.on("collisionstart", this.handleCollisionStart);
   }
 
-  /**
-   * Checks for coin, finish, or enemy collisions on contact.
-   *
-   * @param event - The collision start event data.
-   */
-  private checkCollisions = ({
+  private handleCollisionStart = ({
     pairs,
   }: Phaser.Physics.Matter.Events.CollisionStartEvent): void => {
+    if (!this.physicsEnabled) return; // Ignore collisions before game starts
+
     for (const { bodyA, bodyB } of pairs) {
-      if (
-        this.checkFallSensorCollision(bodyA, bodyB) ||
-        this.checkCoinCollision(bodyA, bodyB) ||
-        this.checkFinishCollision(bodyA, bodyB) ||
-        this.checkEnemyCollision(bodyA, bodyB)
-      ) {
-        return;
-      }
+      if (this.checkFallSensorCollision(bodyA, bodyB)) return;
+      if (this.checkEnemyCollision(bodyA, bodyB)) return;
+      if (this.checkFinishCollision(bodyA, bodyB)) return;
+      if (this.checkCoinCollision(bodyA, bodyB)) return;
+      if (this.checkBarrelCollision(bodyA, bodyB)) return;
     }
   };
 
@@ -372,108 +415,87 @@ export class Game extends Scene {
    */
   private collectCoin(body: MatterJS.BodyType): void {
     const coinSprite = body.gameObject as Coin;
-    coinSprite?.collect();
-    setCoins(getCoins() + 1);
+    if (coinSprite) {
+      this.levelGenerator.removeCoin(coinSprite); // Remove from generator's list
+      coinSprite.collect(); // Play animation and schedule destroy
+      setCoins(getCoins() + 1);
+    }
   }
 
   /**
    * Scene lifecycle hook. Called every frame, updates entities and checks game state.
-   * @param time - The current time in milliseconds.
-   * @param delta - The time elapsed since the last frame in milliseconds.
    */
-  update(time: number, delta: number): void {
+  update(): void {
     // Update Parallax Background first, regardless of physics state
     this.parallaxManager?.update();
 
     if (!this.physicsEnabled) return;
 
-    // Update main game elements - Reverted to previous signatures based on linter errors
-    this.player.update(time, delta);
+    // Update main game elements
+    this.player?.update();
     this.enemies.forEach((enemy) => enemy.update());
 
-    // Initialize culling counters
-    let culledCoinsCount = 0;
-    let culledEnemiesCount = 0;
-
-    // Update debug panel data if in dev mode
-    if (this.scene.isActive(SCENES.DEBUG_UI)) {
-      this.events.emit("updateDebugData", {
-        playerX: this.player.x,
-        playerY: this.player.y,
-        platformCount: this.levelGenerator.getPlatforms().length,
-        enemyCount: this.enemies.length,
-        coinCount: this.levelGenerator.getCoins().length,
-        crateCount: this.levelGenerator.getCrates().length,
-      });
-    }
-
     // --- Culling Logic ---
-    const cameraView = this.cameras.main.worldView;
-    // Add a buffer around the camera view to prevent entities popping in/out too abruptly
-    const cullBuffer = 100;
-    // Use Phaser's Geom.Rectangle
-    const cullRect = new Geom.Rectangle(
-      cameraView.x - cullBuffer,
-      cameraView.y - cullBuffer,
-      cameraView.width + cullBuffer * 2,
-      cameraView.height + cullBuffer * 2
+    const cam = this.cameras.main;
+    const cullBounds = new Geom.Rectangle(
+      cam.worldView.x - 100, // Add buffer
+      cam.worldView.y - 100,
+      cam.worldView.width + 200,
+      cam.worldView.height + 200
     );
 
-    // Cull Coins
+    // Initialize culling counters
+    let culledCoins = 0;
+    let culledEnemies = 0;
+
     this.levelGenerator.getCoins().forEach((coin) => {
-      if (!coin.body) return; // Ensure coin and body exist
-      const isVisible = Geom.Rectangle.Contains(
-        cullRect,
-        coin.body.position.x,
-        coin.body.position.y
-      );
-      coin.setVisible(isVisible);
-
-      // Increment count FIRST if not visible
-      if (!isVisible) {
-        culledCoinsCount++;
-      }
-
-      if (isVisible) {
-        coin.setAwake(); // Wake up if it fell asleep automatically
-      } else {
-        coin.setToSleep();
+      const visible = Geom.Rectangle.Overlaps(cullBounds, coin.getBounds());
+      coin.setVisible(visible);
+      coin.setActive(visible); // Also disable updates if not visible
+      if (!visible) {
+        culledCoins++;
       }
     });
 
-    // Cull Enemies
     this.enemies.forEach((enemy) => {
-      if (!enemy.body) return; // Ensure enemy and body exist
-      const isVisible = Geom.Rectangle.Contains(
-        cullRect,
-        enemy.body.position.x,
-        enemy.body.position.y
-      );
-      enemy.setVisible(isVisible);
-
-      if (isVisible) {
-        enemy.setAwake();
-      } else {
-        enemy.setToSleep();
-      }
-
-      if (!isVisible) {
-        culledEnemiesCount++;
+      const visible = Geom.Rectangle.Overlaps(cullBounds, enemy.getBounds());
+      enemy.setVisible(visible);
+      enemy.setActive(visible); // Disable physics/updates
+      if (!visible) {
+        culledEnemies++;
       }
     });
 
-    // Emit updated debug data including culling counts
-    if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
-      this.events.emit("updateDebugData", {
-        playerX: Math.round(this.player.x),
-        playerY: Math.round(this.player.y),
-        platformCount: this.levelGenerator.getPlatforms().length,
-        enemyCount: this.enemies.length,
-        coinCount: this.levelGenerator.getCoins().length,
-        crateCount: this.levelGenerator.getCrates().length,
-        culledCoins: culledCoinsCount,
-        culledEnemies: culledEnemiesCount,
-      });
+    // Reset culled barrel count each frame
+    this.culledBarrelsCount = 0;
+    this.barrels.forEach((barrel) => {
+      const visible = Geom.Rectangle.Overlaps(cullBounds, barrel.getBounds());
+      barrel.setVisible(visible);
+      barrel.setActive(visible); // Disable physics/updates
+      if (!visible) {
+        this.culledBarrelsCount++;
+      } else {
+        barrel.update();
+      }
+    });
+
+    // --- Debug Data Emission ---
+    if (import.meta.env.DEV) {
+      const debugData = {
+        PlayerPos: {
+          x: Math.round(this.player.x),
+          y: Math.round(this.player.y),
+        },
+        Platforms: this.levelGenerator.getPlatforms().length,
+        Enemies: this.enemies.length,
+        CulledEnemies: culledEnemies,
+        Coins: this.levelGenerator.getCoins().length,
+        CulledCoins: culledCoins,
+        Crates: this.levelGenerator.getCrates().length,
+        Barrels: this.totalBarrelsGenerated,
+        CulledBarrels: this.culledBarrelsCount,
+      };
+      this.events.emit("updateDebugData", debugData);
     }
   }
 
@@ -512,7 +534,9 @@ export class Game extends Scene {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
     this.physicsEnabled = false;
-    this.matter.world.enabled = false;
+
+    // Explicitly remove world collision listener before restart
+    this.matter.world.off("collisionstart", this.handleCollisionStart);
 
     // Stop the debug UI scene if it's active
     if (this.scene.isActive(SCENES.DEBUG_UI)) {
@@ -520,9 +544,45 @@ export class Game extends Scene {
     }
 
     this.scene.restart();
+  }
 
-    // Reset coin counts explicitly before restart might fully complete
-    resetCoins();
-    resetTotalCoinsInLevel();
+  /**
+   * Checks for collisions between the Player and a Barrel.
+   *
+   * @param bodyA - The first body in the collision pair.
+   * @param bodyB - The second body in the collision pair.
+   * @returns True if a player-barrel collision was handled, false otherwise.
+   */
+  private checkBarrelCollision(
+    bodyA: MatterJS.BodyType,
+    bodyB: MatterJS.BodyType
+  ): boolean {
+    // Reverted to original logic to fix unrelated linter error
+    let playerBody: MatterJS.BodyType | null = null;
+    let barrelBody: MatterJS.BodyType | null = null;
+
+    if (isPlayerBody(bodyA) && isBarrelBody(bodyB)) {
+      playerBody = bodyA;
+      barrelBody = bodyB;
+    } else if (isPlayerBody(bodyB) && isBarrelBody(bodyA)) {
+      playerBody = bodyB;
+      barrelBody = bodyA;
+    }
+
+    if (playerBody && barrelBody) {
+      // Get the corresponding Barrel sprite
+      const barrelSprite = barrelBody.gameObject as Barrel;
+      if (
+        barrelSprite &&
+        !this.player.isInBarrel &&
+        !this.player.recentlyExitedBarrel
+      ) {
+        console.log("[Game] Player collided with barrel", barrelSprite);
+        this.player.enterBarrel(barrelSprite);
+        return true; // Collision handled
+      }
+    }
+
+    return false; // No relevant collision
   }
 }

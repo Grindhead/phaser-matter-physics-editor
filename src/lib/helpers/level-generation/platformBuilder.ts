@@ -1,8 +1,8 @@
-import { TEXTURE_ATLAS } from "../constants"; // Assuming this is where TEXTURE_ATLAS is defined
+import { TEXTURE_ATLAS } from "../../constants"; // Assuming this is where TEXTURE_ATLAS is defined
 import {
   PLATFORM_ANIMATION_KEYS,
   PLATFORM_ANIMATIONS,
-} from "../../entities/Platforms/platformAnimations";
+} from "../../../entities/Platforms/platformAnimations";
 
 // Tile dimensions
 const TILE_WIDTH = 26;

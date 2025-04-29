@@ -32,25 +32,48 @@ export class DebugPanel {
       return;
     }
 
-    let debugContent = `Debug Panel (Q)
------------------
-`; // Use backticks for multi-line
+    let debugContent = `Debug Panel (Q)\n-----------------\n`; // Use backticks for multi-line
 
-    // Dynamically display data passed in
+    // Define preferred display order
+    const displayOrder = [
+      "PlayerPos",
+      "Platforms",
+      "Enemies",
+      "CulledEnemies",
+      "Coins",
+      "CulledCoins",
+      "Crates",
+      "Barrels",
+      "CulledBarrels",
+    ];
+
+    // Add data in the specified order
+    for (const key of displayOrder) {
+      if (Object.prototype.hasOwnProperty.call(debugData, key)) {
+        const value = debugData[key];
+        if (
+          key === "PlayerPos" &&
+          typeof value === "object" &&
+          value !== null
+        ) {
+          debugContent += `${key}: x=${Math.round(value.x)}, y=${Math.round(
+            value.y
+          )}\n`;
+        } else if (typeof value === "number") {
+          debugContent += `${key}: ${value}\n`;
+        } else {
+          debugContent += `${key}: ${JSON.stringify(value)}\n`;
+        }
+        // Remove the key from debugData to handle remaining keys later
+        delete debugData[key];
+      }
+    }
+
+    // Append any remaining data not in the display order
     for (const key in debugData) {
       if (Object.prototype.hasOwnProperty.call(debugData, key)) {
         const value = debugData[key];
-        // Check the key or value type to format appropriately
-        if (key === "PlayerPos" && typeof value === "object") {
-          // Special formatting for position object
-          debugContent += `${key}: x=${value.x}, y=${value.y}\n`;
-        } else if (typeof value === "number") {
-          // Assume numbers are counts (Platforms, Enemies, Coins, Crates)
-          debugContent += `${key}: ${value}\n`;
-        } else {
-          // Fallback for other types (shouldn't be many)
-          debugContent += `${key}: ${JSON.stringify(value)}\n`;
-        }
+        debugContent += `${key}: ${JSON.stringify(value)}\n`;
       }
     }
 

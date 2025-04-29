@@ -10,3 +10,4 @@
 - Level progression.
 - Physics-based interactions.
 - Visual effects (FX) for player actions.
+- Donkey Kong Country-style barrels (enter, launch).

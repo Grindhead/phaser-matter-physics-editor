@@ -412,24 +412,27 @@ Update ParallaxManager to use texture atlas frames.
 ## Recent Changes
 
 - Updated `Preloader.ts` to load both texture atlases (`assets-0.json`/`assets-1.json`).
+- Modified `ParallaxBackground.ts` constructor to accept atlas/frame, width, height, and scroll factor, removing auto-scaling.
+- Refactored `ParallaxManager.ts` to instantiate `ParallaxBackground` for layers and delegate update logic to them.
 
 ## Next Steps
 
-- Modify `ParallaxManager.ts` to reference frames within the loaded texture atlases ('assets-0', 'assets-1') instead of standalone image keys.
-- Update the `createLayer` logic to use frame dimensions and pass the correct atlas key and frame name to `scene.add.tileSprite`.
+- Test the parallax background functionality to ensure layers scroll correctly.
+- Verify that animations or entities using the second atlas work correctly.
+- Update animation creation if necessary to use the second atlas.
+- Continue with other tasks listed in `progress.md`.
 
 ## Active Decisions & Considerations
 
-- Using frames from the texture atlas is generally more performant (fewer texture binds) and aligns with standard asset management practices in Phaser.
-- The specific frames needed are:
-  - `bg/background.png` from atlas `assets-0`
-  - `bg/middle-ground.png` from atlas `assets-1`
-  - `bg/foreground.png` from atlas `assets-1`
+- Using the base constant `TEXTURE_ATLAS` and appending `"2"` maintains a consistent naming convention.
+- Centralizing parallax scroll logic within `ParallaxBackground` improves modularity.
 
 ## Important Patterns & Preferences
 
-- Leveraging texture atlases for efficient asset loading and rendering.
+- Loading all necessary atlases during the preloading phase.
+- Encapsulating specific behaviors (like parallax scrolling) within dedicated classes.
 
 ## Learnings & Project Insights
 
-- Ensure code references the correct atlas key and frame name when using packed textures.
+- Ensure all required asset packs are loaded before scenes that depend on them start.
+- Refactoring managers to use specialized component classes can simplify the manager's responsibilities.

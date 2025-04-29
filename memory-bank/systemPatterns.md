@@ -28,6 +28,7 @@
 - `Game` scene orchestrates level generation (via `LevelGenerator`), updates game entities, handles collisions, manages primary game state, and emits debug data.
 - `DebugUIScene` runs in parallel to `Game`, listens for `updateDebugData` events, and manages the `DebugPanel` UI.
 - `LevelGenerator` creates instances of various entity classes (`Player`, `Platform`, `Enemy`, `Coin`, `Crate`, `Finish`), places them in the scene, and now provides getters (`getPlatforms`, `getEnemies`, `getCoins`, `getCrates`).
+- `ParallaxManager` now uses `ParallaxBackground` instances to manage background layers.
 - Entities interact via Matter.js physics collisions detected in `Game.ts`.
 - UI elements (`CoinUI`) are managed by the `Game` scene. `DebugPanel` is managed by `DebugUIScene`.
 - `CameraManager` controls the `Game` scene's camera bounds, follow, and dynamic zoom.
@@ -44,7 +45,7 @@
 ## New Patterns
 
 - **Procedural Level Generation:** Implemented via `LevelGenerator` class (`src/lib/LevelGenerator.ts`). Uses a seeded PRNG (`SimplePRNG`) for deterministic generation. The `Game` scene calls this generator during initialization (`initGame` -> `generateLevelEntities`) to populate the world instead of using static entity placement.
-- **Parallax Background:** Implemented using `ParallaxBackground` class (`src/entities/ParallaxBackground.ts`) which extends `Phaser.GameObjects.TileSprite` and updates its `tilePositionX` based on camera scroll in its `update` method.
+- **Parallax Background:** Implemented using `ParallaxBackground` class (`src/lib/helpers/parralax/ParallaxBackground.ts`) which extends `Phaser.GameObjects.TileSprite` and updates its `tilePositionX` based on camera scroll in its `update` method. The `ParallaxManager` (`src/lib/helpers/parralax/ParallaxManager.ts`) is responsible for creating and managing multiple `ParallaxBackground` instances.
 - **Camera Management:** A dedicated `CameraManager` class (`src/lib/ui/CameraManager.ts`) handles camera setup (bounds, follow, lerp) and effects like death zoom, separating camera logic from the main `Game` scene.
 - **Constants for States:** Using a `const` object (`GAME_STATE`) instead of an `enum` for defining fixed state values, providing string-based values and potentially simpler integration in some contexts.
 - **Conditional Debug UI (Separate Scene):** A `DebugPanel` class (`src/lib/ui/DebugPanel.ts`) displays runtime information. It is managed by a dedicated `DebugUIScene` (`src/scenes/DebugUIScene.ts`) which runs in parallel to the main `Game` scene. `DebugUIScene` is launched conditionally in development builds (`import.meta.env.DEV`) by the `Game` scene. Communication uses Phaser's event emitter (`Game` emits `updateDebugData`, `DebugUIScene` listens and updates the panel). The panel is toggled via 'Q' key handled within `DebugUIScene`.

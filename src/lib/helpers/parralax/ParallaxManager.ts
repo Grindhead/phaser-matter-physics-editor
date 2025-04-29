@@ -1,8 +1,9 @@
 import Phaser from "phaser";
 import { TEXTURE_ATLAS } from "../../constants";
+import { ParallaxBackground } from "./ParallaxBackground";
 
 /**
- * Manages the creation and properties of parallax background layers using TileSprites.
+ * Manages the creation and properties of parallax background layers using ParallaxBackground.
  * All layers are locked vertically relative to the camera bottom with specific offsets.
  * Layers use their original height and are not scaled vertically.
  * Manually updates tilePositionX for horizontal parallax effect.
@@ -10,9 +11,9 @@ import { TEXTURE_ATLAS } from "../../constants";
  */
 export class ParallaxManager {
   private scene: Phaser.Scene;
-  private backgroundLayer: Phaser.GameObjects.TileSprite;
-  private middleLayer: Phaser.GameObjects.TileSprite;
-  private foregroundLayer: Phaser.GameObjects.TileSprite;
+  private backgroundLayer: ParallaxBackground;
+  private middleLayer: ParallaxBackground;
+  private foregroundLayer: ParallaxBackground;
   private levelWidth: number = 0;
 
   // Store scroll factors
@@ -38,18 +39,19 @@ export class ParallaxManager {
     const screenHeight = this.scene.scale.height;
 
     // Store factors from user edits/defaults
-    this.bgScrollFactorX = 0.2; // Reset background factor
-    this.midScrollFactorX = 1.5; // User edit
-    this.fgScrollFactorX = 2.0; // User edit
+    this.bgScrollFactorX = 0.2;
+    this.midScrollFactorX = 1.5;
+    this.fgScrollFactorX = 2.0;
 
-    // Helper function to create a layer locked vertically to camera bottom
+    // Helper function to create a layer
     const createLayer = (
-      atlasKey: string, // Now atlas key
-      frameName: string, // Now frame name
+      atlasKey: string,
+      frameName: string,
       depth: number,
       verticalOffset: number,
-      scaleFactor: number
-    ): Phaser.GameObjects.TileSprite => {
+      scaleFactor: number,
+      scrollFactorX: number
+    ): ParallaxBackground => {
       // Get frame dimensions from the atlas
       const frame = this.scene.textures.getFrame(atlasKey, frameName);
       if (!frame) {
@@ -60,57 +62,60 @@ export class ParallaxManager {
       // Calculate the visually scaled height of the texture
       const scaledTextureHeight = frameHeight * scaleFactor;
 
-      // Use scaled height, calculate Y relative to screen bottom + offset
+      // Calculate Y relative to screen bottom + offset
       const layerY = screenHeight - scaledTextureHeight + verticalOffset;
 
-      const layer = this.scene.add.tileSprite(
-        0,
-        layerY,
-        this.levelWidth, // Use stored level width
-        scaledTextureHeight, // Use scaled height for the TileSprite itself
-        atlasKey, // Use atlas key
-        frameName // Use frame name
+      // Instantiate ParallaxBackground
+      const layer = new ParallaxBackground(
+        this.scene,
+        atlasKey,
+        frameName,
+        this.levelWidth,
+        scaledTextureHeight,
+        scrollFactorX
       );
-      layer.setOrigin(0, 0);
-      layer.setDepth(depth);
-      layer.setScrollFactor(0, 0); // Lock all layers vertically relative to the camera view
-      layer.tileScaleY = scaleFactor;
-      layer.tileScaleX = scaleFactor;
+
+      layer.y = layerY; // Set Y position
+      layer.setDepth(depth); // Set depth
+
+      // No need to set origin, scrollFactor, tileScale as ParallaxBackground handles them
 
       return layer;
     };
 
-    // Background - Locked to bottom of camera (offset 0)
+    // Background
     this.backgroundLayer = createLayer(
       TEXTURE_ATLAS,
       "bg/background.png",
       -3,
       -220,
-      1
+      1,
+      this.bgScrollFactorX
     );
 
-    // Middle layer - Locked slightly above background (offset -50)
+    // Middle layer
     this.middleLayer = createLayer(
       TEXTURE_ATLAS,
       "bg/middle-ground.png",
       -2,
       -250,
-      1
+      1,
+      this.midScrollFactorX
     );
 
-    // Foreground - Locked above middleground (offset -100)
+    // Foreground
     this.foregroundLayer = createLayer(
       TEXTURE_ATLAS,
       "bg/foreground.png",
       3,
       -250,
-      1
+      1,
+      this.fgScrollFactorX
     );
   }
 
   /**
-   * Updates the tilePositionX of each layer based on camera scroll
-   * to create the parallax effect.
+   * Updates the tilePositionX of each layer by calling its own update method.
    * Should be called in the scene's update loop.
    */
   public update(): void {
@@ -118,9 +123,9 @@ export class ParallaxManager {
     if (!this.backgroundLayer || !this.middleLayer || !this.foregroundLayer) {
       return;
     }
-    const scrollX = this.scene.cameras.main.scrollX;
-    this.backgroundLayer.tilePositionX = scrollX * this.bgScrollFactorX;
-    this.middleLayer.tilePositionX = scrollX * this.midScrollFactorX;
-    this.foregroundLayer.tilePositionX = scrollX * this.fgScrollFactorX;
+    // Call update on each ParallaxBackground instance
+    this.backgroundLayer.update();
+    this.middleLayer.update();
+    this.foregroundLayer.update();
   }
 }

@@ -1,35 +1,26 @@
 import Phaser from "phaser";
 
 /**
- * A tile sprite background that does not repeat vertically,
- * scales the texture to fit the canvas height exactly.
+ * A tile sprite background that updates its tilePositionX based on camera scroll.
+ * Does not automatically scale or position itself.
  */
 export class ParallaxBackground extends Phaser.GameObjects.TileSprite {
   private customScrollFactorX: number;
 
   constructor(
     scene: Phaser.Scene,
-    textureKey: string,
+    atlasKey: string,
+    frameName: string,
+    width: number,
+    height: number,
     scrollFactorX: number = 0.5
   ) {
-    const canvasWidth = scene.scale.width;
-    const canvasHeight = scene.scale.height;
-
-    const image = scene.textures.get(textureKey).getSourceImage();
-
-    const textureHeight = image.height;
-
-    // Calculate scale so texture fits vertically
-    const scaleY = canvasHeight / textureHeight;
-
-    super(scene, 0, 0, canvasWidth, canvasHeight, textureKey);
+    super(scene, 0, 0, width, height, atlasKey, frameName);
 
     this.customScrollFactorX = scrollFactorX;
 
     this.setOrigin(0, 0);
-    this.setScrollFactor(0);
-    this.tileScaleY = scaleY;
-    this.tileScaleX = scaleY; // optional: maintain aspect ratio
+    this.setScrollFactor(0, 0);
 
     scene.add.existing(this);
   }

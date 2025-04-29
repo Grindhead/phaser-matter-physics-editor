@@ -1,38 +1,34 @@
 import { Scene } from "phaser";
-import { Player } from "../entities/Player/Player";
-import { Enemy } from "../entities/Enemy/Enemy";
-import { Coin } from "../entities/Coin/Coin";
+import { Player } from "../../../entities/Player/Player";
+import { Enemy } from "../../../entities/Enemy/Enemy";
+import { Coin } from "../../../entities/Coin/Coin";
 import {
   Platform,
   // PlatformSegment, // Removed unused import
-} from "../entities/Platforms/Platform";
-import { CrateBig } from "../entities/CrateBig/CrateBig";
-import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
-import { Finish } from "../entities/Finish/Finish";
-import { Barrel } from "../entities/Barrel/Barrel";
-import { WORLD_HEIGHT } from "./constants";
-import { setTotalCoinsInLevel } from "./helpers/coinManager"; // Added import
+} from "../../../entities/Platforms/Platform";
+import { CrateBig } from "../../../entities/CrateBig/CrateBig";
+import { CrateSmall } from "../../../entities/CrateSmall/CrateSmall";
+import { Finish } from "../../../entities/Finish/Finish";
+import { Barrel } from "../../../entities/Barrel/Barrel";
+import { WORLD_HEIGHT } from "../../constants";
+import { setTotalCoinsInLevel } from "../coinManager"; // Added import
 // Import the new configuration interface and constants
 import {
   LevelGenerationParams,
   MAX_JUMP_DISTANCE_X,
   MAX_JUMP_HEIGHT_UP,
   MAX_FALL_HEIGHT,
-  // COIN_HEIGHT, // No longer needed here
-  // ENEMY_HEIGHT, // No longer needed here
-  // CRATE_SMALL_HEIGHT, // No longer needed here
-  // CRATE_BIG_HEIGHT, // No longer needed here
-  // BARREL_HEIGHT, // No longer needed here
-  // MIN_PLATFORM_LENGTH_WITH_ENEMY, // No longer needed here
-  // MIN_COIN_SPACING, // No longer needed here
   MIN_ABS_VERTICAL_GAP,
   PLATFORM_SEGMENT_WIDTH,
-} from "./interfaces/LevelGenerationConfig";
+  BARREL_HEIGHT,
+  BARREL_WIDTH, // Ensure BARREL_WIDTH is imported
+} from "../../interfaces/LevelGenerationConfig";
 // Import the item placement helpers
 import {
   populatePlatformWithCoins,
   placeItemsOnPlatforms,
-} from "./helpers/level-generation/itemPlacementHelper";
+  placeBarrelsBetweenPlatforms,
+} from "./itemPlacementHelper";
 
 // Simple Pseudo-Random Number Generator (PRNG) using Mulberry32 algorithm
 // Provides deterministic random numbers based on an initial seed.
@@ -110,6 +106,8 @@ export class LevelGenerator {
   // --- Keep PLATFORM_DISPLAY_HEIGHT if still used directly for player offset
   private readonly PLATFORM_DISPLAY_HEIGHT = 32; // Or import if moved
 
+  private bridgeBarrelRanges: { start: number; end: number }[] = []; // Track bridge barrel horizontal ranges
+
   constructor(scene: Scene, levelNumber: number) {
     this.scene = scene;
     this.levelNumber = levelNumber;
@@ -129,52 +127,148 @@ export class LevelGenerator {
       params.maxPlatforms + 1
     );
 
-    let currentPos: PlacementPosition = { x: 180, y: 300 };
+    let currentPlatformX = 180; // Use separate X and Y tracking
+    let currentPlatformY = 300;
     let totalCoins = 0;
     let lastPlatform: Platform | null = null;
-    // Keep track of platforms eligible for item placement
     const itemPlacementPlatforms: Platform[] = [];
 
-    this.platforms = []; // Clear previous generation
+    this.platforms = [];
     this.enemies = [];
     this.coins = [];
     this.crates = [];
     this.barrels = [];
+    this.bridgeBarrelRanges = []; // Reset for new level
 
-    this.createPlayerStart(currentPos);
+    // Create player relative to initial platform position
+    this.createPlayerStart({ x: currentPlatformX, y: currentPlatformY });
 
-    for (let i = 0; i < numPlatforms; i++) {
-      let minLength = params.minPlatformLength;
-      const maxLength = params.maxPlatformLength;
-      if (minLength > maxLength) {
-        minLength = maxLength;
-      }
+    // Create the starting platform explicitly
+    const startPlatformLength = this.prng.nextInt(
+      params.minPlatformLength,
+      params.maxPlatformLength + 1
+    );
+    const startPlatform = this.createPlatform(
+      { x: currentPlatformX, y: currentPlatformY },
+      startPlatformLength,
+      0
+    );
+    lastPlatform = startPlatform;
+    // Don't add start platform to item placement list
 
-      const platformLength = this.prng.nextInt(minLength, maxLength + 1);
+    // Loop to generate the remaining platforms (or barrels)
+    // Need numPlatforms - 1 because we created the start platform already
+    for (let i = 1; i < numPlatforms; i++) {
+      let platformLength = this.prng.nextInt(
+        params.minPlatformLength,
+        params.maxPlatformLength + 1
+      );
 
-      currentPos = this.calculateNextPlatformPosition(
-        currentPos,
+      // Calculate potential position and gaps for the *next* platform
+      const { nextX, nextY, dX, dY } = this.calculateNextPlatformPosition(
+        { x: currentPlatformX, y: currentPlatformY },
         platformLength,
         lastPlatform,
         params
       );
-      const platform = this.createPlatform(currentPos, platformLength, i);
 
-      // Populate with coins using the helper function
-      totalCoins += populatePlatformWithCoins(
-        this.scene,
-        platform,
-        this.prng,
-        this.coins // Pass the coins array to the helper
-      );
+      let placeBridgeBarrel = false;
+      let barrelX = 0;
+      let barrelY = 0;
+      let newBarrelRange: { start: number; end: number } | null = null;
+      let skipPlatformPlacement = false;
 
-      // Add platform to potential item placement list (skip first platform)
-      if (i > 0) {
-        itemPlacementPlatforms.push(platform);
+      // --- Barrel Substitution Logic --- START
+      if (dX > params.maxHorizontalGap) {
+        barrelX = lastPlatform.getBounds().right + dX / 2;
+        newBarrelRange = {
+          start: barrelX - BARREL_WIDTH / 2,
+          end: barrelX + BARREL_WIDTH / 2,
+        };
+
+        let overlaps = false;
+        for (const range of this.bridgeBarrelRanges) {
+          // Use this.bridgeBarrelRanges
+          if (
+            newBarrelRange.start < range.end &&
+            newBarrelRange.end > range.start
+          ) {
+            overlaps = true;
+            break;
+          }
+        }
+
+        if (!overlaps) {
+          // Calculate Y only if placing
+          const barrelPlaceYOffset = 10;
+          barrelY =
+            lastPlatform.getBounds().top +
+            BARREL_HEIGHT / 2 +
+            barrelPlaceYOffset;
+          barrelY = Math.min(barrelY, WORLD_HEIGHT - BARREL_HEIGHT / 2 - 2);
+
+          placeBridgeBarrel = true;
+          skipPlatformPlacement = true; // Set flag to skip platform
+        } else {
+          console.warn(
+            `  Overlap detected for bridge barrel at X=${barrelX.toFixed(
+              0
+            )}. Placing platform instead.`
+          );
+          // Do not set placeBridgeBarrel = true
+          // Let code fall through to platform placement
+        }
       }
+      // --- Barrel Substitution Logic --- END
 
-      lastPlatform = platform; // Store reference to the last created platform
-    }
+      // --- Placement Decision ---
+      if (placeBridgeBarrel) {
+        console.log(
+          `Impossible gap detected (dX=${dX.toFixed(0)} > maxJump=${
+            params.maxHorizontalGap
+          }). Placing barrel.`
+        );
+        const bridgeBarrel = new Barrel(this.scene, barrelX, barrelY);
+        this.barrels.push(bridgeBarrel);
+        this.bridgeBarrelRanges.push(newBarrelRange!); // Add range to tracker
+
+        // Adjust position for NEXT iteration
+        currentPlatformX =
+          barrelX +
+          this.prng.nextInt(
+            params.minHorizontalGap,
+            params.maxHorizontalGap + 1
+          );
+        console.log(
+          `  Placed barrel at (${barrelX.toFixed(0)}, ${barrelY.toFixed(
+            0
+          )}). Next platform target X: ${currentPlatformX.toFixed(0)}`
+        );
+        // Keep lastPlatform pointing to the platform *before* the barrel for next Y calculation
+        // currentPlatformY is not updated here, will be recalculated next iteration relative to lastPlatform
+      } else {
+        // --- Normal Platform Placement (or fallback from overlapping barrel) ---
+        const platform = this.createPlatform(
+          { x: nextX, y: nextY },
+          platformLength,
+          i
+        );
+
+        totalCoins += populatePlatformWithCoins(
+          this.scene,
+          platform,
+          this.prng,
+          this.coins
+        );
+
+        itemPlacementPlatforms.push(platform);
+
+        // Update tracking variables for next iteration
+        lastPlatform = platform;
+        currentPlatformX = nextX;
+        currentPlatformY = nextY;
+      }
+    } // End of platform generation loop
 
     // Filter out the very last platform from item placement eligibility
     const finalItemPlacementPlatforms = itemPlacementPlatforms.filter(
@@ -182,15 +276,29 @@ export class LevelGenerator {
     );
 
     // --- Item Placement Logic (Use Helper) ---
+    console.log(
+      "Platforms available for item placement:",
+      finalItemPlacementPlatforms.length
+    ); // DEBUG LOG
     placeItemsOnPlatforms(
       this.scene,
       finalItemPlacementPlatforms,
       this.prng,
       params,
       this.enemies, // Pass the arrays to be populated
-      this.crates,
-      this.barrels
+      this.crates
     );
+
+    // --- Place Barrels Between Platforms --- (Temporarily Disabled for Debugging)
+    /*
+    placeBarrelsBetweenPlatforms(
+      this.scene,
+      this.platforms, // Pass the full list of platforms
+      this.prng,
+      params.targetBarrels,
+      this.barrels // Pass the barrels array to be populated
+    );
+    */
 
     this.createFinishPoint(lastPlatform);
     this.calculateOverallBounds(); // Calculate bounds after all platforms exist
@@ -198,10 +306,6 @@ export class LevelGenerator {
     console.log(
       `Level generated with ${this.platforms.length} platforms, ${this.enemies.length} enemies, ${this.crates.length} crates, ${this.barrels.length} barrels, ${totalCoins} coins.`
     );
-
-    if (!this.player) {
-      throw new Error("Level Generator: Player was not created!");
-    }
 
     setTotalCoinsInLevel(totalCoins); // Set the total coins for the level
 
@@ -282,55 +386,64 @@ export class LevelGenerator {
    * Calculates the position for the next platform, ensuring solvability.
    */
   private calculateNextPlatformPosition(
-    currentPos: PlacementPosition,
+    currentPos: PlacementPosition, // Represents the center of the platform being calculated
     platformLength: number,
-    lastPlatform: Platform | null,
+    lastPlatform: Platform | null, // The platform we are generating *from*
     params: PlatformGenerationParams
-  ): PlacementPosition {
-    let nextX = currentPos.x;
-    let nextY = currentPos.y;
-    const estimatedHalfWidth = (platformLength * PLATFORM_SEGMENT_WIDTH) / 2; // Use imported constant
+  ): { nextX: number; nextY: number; dX: number; dY: number } {
+    // Return gaps too
+    // Represents the CENTER of the platform being calculated
+    let currentX = currentPos.x;
+    let currentY = currentPos.y;
+    let dX = 0; // Horizontal gap from last platform right edge to next platform left edge
+    let dY = 0; // Vertical gap (center-to-center)
 
     if (lastPlatform) {
       const lastPlatformBounds = lastPlatform.getBounds();
-      let horizontalGap = this.prng.nextInt(
+      const estimatedHalfWidth = (platformLength * PLATFORM_SEGMENT_WIDTH) / 2;
+
+      // Generate the HORIZONTAL gap first (edge to edge)
+      // Allow generating gaps potentially larger than maxHorizontalGap
+      const maxPossibleGap = params.maxHorizontalGap * 1.2; // Allow 20% overshoot
+      dX = this.prng.nextInt(
         params.minHorizontalGap,
-        params.maxHorizontalGap + 1
-      );
-      let verticalGap = this.prng.nextInt(
-        params.minVerticalGap,
-        params.maxVerticalGap + 1
+        maxPossibleGap + 1 // Generate up to the overshoot limit
       );
 
-      // Basic Solvability Adjustment (Clamp gaps to player jump limits)
-      horizontalGap = Math.min(horizontalGap, MAX_JUMP_DISTANCE_X); // Use imported constant
-      if (verticalGap < 0) {
-        // Jumping upwards
-        verticalGap = Math.max(verticalGap, -MAX_JUMP_HEIGHT_UP); // Use imported constant
-      }
+      // Generate the VERTICAL gap (center to center)
+      dY = this.prng.nextInt(params.minVerticalGap, params.maxVerticalGap + 1);
 
-      // --- Ensure Minimum Absolute Vertical Gap ---
-      if (Math.abs(verticalGap) < MIN_ABS_VERTICAL_GAP) {
-        // Use imported constant
-        // If the gap is too small, push it slightly away from zero
-        verticalGap =
-          verticalGap >= 0
-            ? MIN_ABS_VERTICAL_GAP // Make it a small positive gap
-            : -MIN_ABS_VERTICAL_GAP; // Make it a small negative gap
-        // Clamp again after adjustment, just in case
-        verticalGap = Phaser.Math.Clamp(
-          verticalGap,
+      // --- Ensure Minimum Absolute Vertical Gap --- (Keep this)
+      if (Math.abs(dY) < MIN_ABS_VERTICAL_GAP) {
+        dY = dY >= 0 ? MIN_ABS_VERTICAL_GAP : -MIN_ABS_VERTICAL_GAP;
+        dY = Phaser.Math.Clamp(
+          dY,
           params.minVerticalGap,
           params.maxVerticalGap
         );
       }
       // --- End Minimum Absolute Vertical Gap ---
 
-      nextX = lastPlatformBounds.right + horizontalGap + estimatedHalfWidth;
-      nextY = lastPlatform.y + verticalGap; // Calculate Y relative to the last platform's center
+      // Calculate the potential center X of the next platform based on generated dX
+      currentX = lastPlatformBounds.right + dX + estimatedHalfWidth;
+      // Calculate the potential center Y of the next platform relative to the last
+      currentY = lastPlatform.y + dY;
+
+      // Clamp Y position to prevent going too high or low relative to world (Keep this)
+      const minY = 100; // Prevent platforms too close to the top edge
+      const maxY = WORLD_HEIGHT - 100; // Prevent platforms too close to the bottom
+      currentY = Phaser.Math.Clamp(currentY, minY, maxY);
+      // Recalculate dY based on clamped Y for accurate reporting if needed
+      dY = currentY - lastPlatform.y;
+    } else {
+      // Should not happen if starting platform is created first
+      console.error(
+        "calculateNextPlatformPosition called without lastPlatform!"
+      );
     }
 
-    return { x: nextX, y: nextY };
+    // Return calculated potential position AND the potentially large dX
+    return { nextX: currentX, nextY: currentY, dX, dY };
   }
 
   /**

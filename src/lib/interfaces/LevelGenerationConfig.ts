@@ -18,7 +18,7 @@ export interface LevelGenerationParams {
 
 // --- Configuration Constants ---
 // Estimated player jump capabilities
-export const MAX_JUMP_DISTANCE_X = 200;
+export const MAX_JUMP_DISTANCE_X = 150; // TEMPORARILY REDUCED from 200 for testing bridge barrels
 export const MAX_JUMP_HEIGHT_UP = 120;
 export const MAX_FALL_HEIGHT = 400;
 
@@ -28,12 +28,13 @@ export const ENEMY_HEIGHT = 40;
 export const CRATE_SMALL_HEIGHT = 32;
 export const CRATE_BIG_HEIGHT = 64;
 export const BARREL_HEIGHT = 48;
+export const BARREL_WIDTH = 40;
 export const PLATFORM_DISPLAY_HEIGHT = 32; // May not be needed directly here but good for context
 
 // Generation constraints
-export const MIN_PLATFORM_LENGTH_WITH_ENEMY = 10;
-export const MIN_COIN_SPACING = 64;
+export const MIN_PLATFORM_LENGTH_WITH_ENEMY = 6;
+export const MIN_COIN_SPACING = 48;
 export const MIN_ABS_VERTICAL_GAP = 20;
 
 // Platform segment width (pixels)
-export const PLATFORM_SEGMENT_WIDTH = 16;
+export const PLATFORM_SEGMENT_WIDTH = 32;

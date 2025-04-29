@@ -11,3 +11,4 @@
 - Satisfying collection mechanics.
 - Smooth performance.
 - Engaging barrel mechanic: Player can enter barrels and be launched in a specific direction, adding a new layer of traversal and puzzle potential.
+  - Barrels should be strategically placed in gaps between platforms, potentially being required to bridge larger gaps and complete the level.

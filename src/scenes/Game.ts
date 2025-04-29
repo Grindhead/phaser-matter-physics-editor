@@ -22,14 +22,10 @@ import {
   resetCoins,
   resetTotalCoinsInLevel,
 } from "../lib/helpers/coinManager";
-import {
-  addLevel,
-  getLevel,
-  setLevel,
-} from "../lib/helpers/level-generation/levelManager";
+import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
-import { LevelGenerator } from "../lib/LevelGenerator";
+import { LevelGenerator } from "../lib/helpers/level-generation/LevelGenerator";
 import { Geom } from "phaser";
 import { ParallaxManager } from "../lib/helpers/parralax/ParallaxManager";
 import { Barrel } from "../entities/Barrel/Barrel";
@@ -434,6 +430,8 @@ export class Game extends Scene {
       barrel.setActive(visible); // Disable physics/updates
       if (!visible) {
         this.culledBarrelsCount++;
+      } else {
+        barrel.update();
       }
     });
 
@@ -517,6 +515,17 @@ export class Game extends Scene {
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
+    // If the player is already in a barrel OR just exited one, ignore collision
+    if (this.player?.isInBarrel || this.player?.recentlyExitedBarrel) {
+      // Add log if blocked by the cooldown flag
+      if (this.player?.recentlyExitedBarrel) {
+        console.log(
+          `[Game] Barrel collision blocked by recentlyExitedBarrel flag at ${this.time.now}`
+        );
+      }
+      return false;
+    }
+
     let playerBody: MatterJS.BodyType | null = null;
     let barrelBody: MatterJS.BodyType | null = null;
 
@@ -530,8 +539,13 @@ export class Game extends Scene {
 
     if (playerBody && barrelBody) {
       const barrelInstance = barrelBody.gameObject as Barrel;
+
+      if (barrelInstance.isEntered) {
+        return false;
+      }
       // Ensure player exists and is not already in a barrel
       if (this.player && !this.player.isInBarrel && barrelInstance) {
+        console.log("[Game] checkBarrelCollision calling player.enterBarrel");
         this.player.enterBarrel(barrelInstance);
         return true; // Collision handled
       }

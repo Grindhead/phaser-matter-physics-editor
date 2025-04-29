@@ -36,6 +36,7 @@
   - Barrel animation triggers (enter, launch) (in `Barrel.ts` / `Game.ts`).
   - Player launch physics (in `Player.ts` / `Game.ts`).
   - Define barrel properties (e.g., launch direction/strength) (in `Barrel.ts` and potentially set by `LevelGenerator`).
+  - **Debug Barrel Interaction:** Resolve rapid toggling of `Barrel.isEntered` state (see `activeContext.md`).
 - Integrate `FXLand` instantiation into the player's landing logic.
 - Implement mobile controls (`createMobileControls` is empty).
 - Define level completion logic/trigger.
@@ -53,6 +54,7 @@
 
 - Core gameplay loop is functional with procedurally generated levels.
 - Level generation logic for enemy and crate placement has been refactored for better distribution and to prevent overlap.
+- Barrel placement logic refactored: Barrels are now placed between platforms, **with Y-position calculated relative to adjacent platforms for reachability**, and overlap prevention.
 - Debug panel refactored into a separate scene for independence from game camera.
 - Basic culling implemented for coins and enemies.
 - **Preloader updated to load both `texturePack` and `texturePack2` atlases.**
@@ -60,8 +62,8 @@
 ## Known Issues
 
 - `CameraManager.update()` call in `Game.ts` is commented out due to potential signature mismatch or missing implementation error during integration.
-- Barrel interaction logic (collision, entry, launch) is not implemented.
-- **New:** `Barrel.ts` entity exists, but interaction logic is not implemented.
+- **Barrel interaction logic incomplete:** Collision/entry implemented, but launch behavior leads to rapid state toggling (`Barrel.isEntered`).
+  - **Rejected Fix:** Modifying barrel state/adding collision cooldown was rejected.
 - Idle animation doesn't always play immediately upon landing. (Fixed: Added explicit idle animation check in `Player.ts::handleCollisionStart`)
 
 ## Evolution of Project Decisions
@@ -75,5 +77,6 @@
 - **Refactored Item Placement:** Changed level generation (`LevelGenerator.ts`) to place enemies and crates _after_ all platforms are created using a shuffled list of eligible platforms. This ensures they don't share a platform and allows better control over total counts.
 - Landing effect (`FXLand`) is triggered within the `Player`'s `handleCollisionStart` method for immediate feedback upon landing.
 - **Added Barrel Entity:** Introduced `Barrel.ts` as a new interactive element.
-- **Added Barrel Spawning:** Updated `LevelGenerator.ts` to procedurally place `Barrel` instances.
+- **Updated Barrel Spawning:** Updated `LevelGenerator.ts` and added helper `itemPlacementHelper.ts` to procedurally place `Barrel` instances on the ground _between_ platforms, ensuring they don't overlap **and calculating Y-position relative to adjacent platforms for reachability.**
 - **Guaranteed Barrel Spawn Chance:** Updated `LevelGenerator.ts` to calculate a minimum required platform count based on target item counts (enemies, crates, barrel) to ensure enough eligible platforms exist, guaranteeing at least one barrel can be placed. (Verified implementation)
+- **Barrel Collision/Entry:** Implemented basic player-barrel collision in `Game.ts` triggering `player.enterBarrel` and `barrel.enter`.

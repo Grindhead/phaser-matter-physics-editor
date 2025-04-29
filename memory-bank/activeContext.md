@@ -2,6 +2,52 @@
 
 ## Current Focus
 
+Preventing overlap between consecutively generated bridge barrels.
+
+- **Status:** Bridge barrel substitution logic is working (barrels generate when `dX > maxHorizontalGap` with reduced jump distance). Enemy spawning is fixed.
+- **Issue:** Bridge barrels generated in the main loop can overlap horizontally if impossible gaps occur close together, as there's no overlap check in that specific logic path.
+- **Goal:** Prevent bridge barrels from overlapping horizontally.
+- **Approach:**
+  1.  **Track Bridge Barrel Ranges:** In `generateLevel`, maintain a list (`bridgeBarrelRanges`) of horizontal extents occupied by already-placed bridge barrels.
+  2.  **Add Overlap Check:** Inside the `if (dX > params.maxHorizontalGap)` block:
+      - Calculate the potential range of the new barrel.
+      - Check this range against `bridgeBarrelRanges`.
+      - **If Overlap:** Log a warning, skip barrel placement, and allow the code to fall through to place a normal (but distant) platform instead.
+      - **If No Overlap:** Place the barrel, add its range to `bridgeBarrelRanges`, adjust `currentPlatformX` for the next iteration, and `continue` the loop (skipping platform placement).
+  3.  **Keep Jump Distance Reduced:** Keep `MAX_JUMP_DISTANCE_X` temporarily at 150 for testing.
+  4.  **Keep Optional Barrels Disabled:** Keep `placeBarrelsBetweenPlatforms` commented out.
+
+## Recent Changes
+
+- Confirmed bridge barrel substitution logic triggers with reduced `MAX_JUMP_DISTANCE_X` (150).
+- Temporarily reduced `MAX_JUMP_DISTANCE_X`.
+- Reduced `MIN_PLATFORM_LENGTH_WITH_ENEMY` to 6, fixing enemy spawning.
+
+## Next Steps
+
+- Implement the overlap check for bridge barrels in `LevelGenerator.ts`.
+- Test level generation, checking console logs and visually inspecting barrel placement for overlaps.
+- If overlap is prevented, revert `MAX_JUMP_DISTANCE_X` to 200.
+- Then, uncomment `placeBarrelsBetweenPlatforms`.
+- Perform final test.
+
+## Active Decisions & Considerations
+
+- Choosing to place a platform instead of an overlapping barrel simplifies the logic, although it removes the mandatory jump for that specific gap.
+- This overlap check is separate from the one in `placeBarrelsBetweenPlatforms`, which handles optional barrels.
+
+## Important Patterns & Preferences
+
+- **State Tracking during Generation:** Maintaining state (occupied ranges) within the generation loop to inform subsequent placement decisions.
+
+## Learnings & Project Insights
+
+- Adding new generation features can introduce conflicts (like overlaps) with existing or similar features placed nearby, requiring explicit checks.
+
+## _Previous Context Entries Below_
+
+## Current Focus
+
 Ensuring barrels always have a chance to spawn in `LevelGenerator.ts`.
 
 - **Requirement:** Guarantee that enough platforms are generated to accommodate the targeted number of enemies, crates, and at least one barrel, considering the start/end platforms are ineligible for item placement.
@@ -30,8 +76,6 @@ Ensuring barrels always have a chance to spawn in `LevelGenerator.ts`.
 ## Learnings & Project Insights
 
 - Simple procedural rules can sometimes lead to edge cases (e.g., not enough platforms for all desired items) that require explicit checks or adjustments.
-
-## _Previous Context Entries Below_
 
 ## Current Focus
 
@@ -355,3 +399,111 @@ Implementing and integrating a conditional debug panel UI.
   - Conditionally creates `DebugPanel` instance if `import.meta.env.DEV` is true.
   - Added a keyboard listener ('Q') to toggle the panel's visibility.
   - Stores the `
+
+## Current Focus
+
+Investigating the rapid toggling of the `Barrel.isEntered` flag during gameplay.
+
+- **Observed Behavior:** The `console.log` in `Barrel.update()` shows the `isEntered` property flipping between `true` and `false` frequently when the player interacts with a barrel.
+- **Current Hypothesis:** The toggling likely stems from the interplay between the player entering the barrel (`player.enterBarrel()` called on collision), the barrel's state update (`barrel.isEntered` set to `true` only _after_ the enter animation completes), the player attempting to launch (`player.launchFromBarrel()` calls `barrel.launch()`), and the barrel's state being immediately set to `false` by `barrel.launch()`. Rapid re-collision after launching might restart this cycle.
+
+## Recent Changes
+
+- Investigation into `Barrel.isEntered` toggling.
+- **Rejected:** A proposed solution involving removing `Barrel.isEntered`, adding a new `isRotating` flag to `Barrel.ts`, and adding a collision cooldown to `Player.ts` after exiting a barrel was rejected by the user. The physics collision filtering is handled by `physics.json`.
+
+## Next Steps
+
+- Continue debugging the barrel interaction logic based on the current hypothesis, focusing on the existing state management in `Player.ts` and `Barrel.ts` and the collision handling in `Game.ts`.
+- Analyze the sequence of events: player collision -> `player.enterBarrel` -> `barrel.enter` -> animation delay -> `barrel.isEntered = true` -> player input -> `player.launchFromBarrel` -> `barrel.launch` -> `barrel.isEntered = false` -> `player.exitBarrel`. Determine if/where immediate re-collision occurs.
+
+## Active Decisions & Considerations
+
+- Stick to the existing state flags (`player.isInBarrel`, `barrel.isEntered`) and animation-driven logic in `Barrel.ts`.
+- Verify if the launch mechanism provides enough separation or if a different approach to prevent immediate re-collision (without changing collision filters) is needed.
+
+## Important Patterns & Preferences
+
+- Relying on `physics.json` for collision filter definitions.
+- Debugging complex interactions by analyzing state changes and event sequences across multiple entities (`Player`, `Barrel`, `Game`).
+
+## Learnings & Project Insights
+
+- State synchronization between interacting entities, especially when involving animation delays, can lead to complex debugging scenarios.
+- Understanding the exact sequence and timing of events (collisions, state changes, animation completion) is crucial.
+
+## Current Focus
+
+Adjusting barrel vertical placement for player accessibility.
+
+- **Problem:** Barrels placed at a fixed ground level were often unreachable from adjacent platforms.
+- **Requirement:** Position barrels vertically so the player can drop onto them from platforms.
+- **Approach:** Modified `placeBarrelsBetweenPlatforms` in `itemPlacementHelper.ts`. Instead of a fixed `groundY`, the `placeY` is now calculated for each barrel. It's positioned slightly below the top edge of the _lower_ of the two platforms defining the gap, clamped to prevent falling below the world floor. This ensures barrels are always reachable by dropping down.
+
+## Recent Changes
+
+- **Updated Barrel Y-Placement in `itemPlacementHelper.ts`:**
+  - `availableGaps` now stores the `top` Y-coordinate of adjacent platforms.
+  - Removed static `groundY` calculation.
+  - Barrel `placeY` is calculated dynamically: `Math.max(platformATop, platformBTop) + BARREL_HEIGHT / 2 + buffer`.
+  - `placeY` is clamped using `Math.min` against `WORLD_HEIGHT - BARREL_HEIGHT / 2 - buffer` to stay above the absolute bottom.
+
+## Next Steps
+
+- Test level generation to confirm barrels are now positioned at reachable heights below platforms.
+- Continue implementing barrel interaction logic (player entry, launch) as per `progress.md`.
+
+## Active Decisions & Considerations
+
+- Placing barrels relative to the lower adjacent platform guarantees accessibility _to_ the barrel via dropping.
+- Accessibility _from_ the barrel (jumping back up) will depend on the height difference and the eventual barrel launch mechanics.
+- Clamping the Y position prevents barrels from being generated below the playable area.
+
+## Important Patterns & Preferences
+
+- **Context-Aware Placement:** Adjusting procedural placement logic based on the local environment (adjacent platform heights) rather than global coordinates.
+
+## Learnings & Project Insights
+
+- Reachability is a key constraint in procedural generation for platformers. Placement must consider player movement capabilities relative to surrounding structures.
+
+## Current Focus
+
+Debugging level generation: 0 enemies and 0 barrels spawning.
+
+- **Issue:** Level generation results in 0 enemies and 0 barrels.
+- **Analysis (based on logs):**
+  - `Platforms available for item placement: 12`. This count seems sufficient, indicating the primary issue isn't the number of platforms available _after_ the loop.
+  - `0 barrels`: The condition for placing bridge barrels (`dX > params.maxHorizontalGap`) was not met in the test run. Random gaps generated were all jumpable.
+  - `0 enemies`: With 12 available platforms, the most likely cause is that none met the `platform.segmentCount >= MIN_PLATFORM_LENGTH_WITH_ENEMY` (currently 10) requirement within `placeItemsOnPlatforms`.
+- **Debugging Strategy:**
+  1.  **Address Enemy Spawning:** Reduce the minimum platform length required for enemy placement. Lower `MIN_PLATFORM_LENGTH_WITH_ENEMY` in `LevelGenerationConfig.ts` from 10 to 6.
+  2.  **Monitor Bridge Barrels:** Observe if bridge barrels appear in future runs now that the primary enemy bug is addressed. If they remain absent, we may need to adjust gap parameters to make impossible gaps more likely.
+  3.  **Isolate Bridge Barrels:** Keep the call to `placeBarrelsBetweenPlatforms` commented out for now.
+
+## Recent Changes
+
+- Added logging for platform count before item placement.
+- Commented out optional barrel placement (`placeBarrelsBetweenPlatforms`).
+- Implemented barrel-platform substitution logic in `LevelGenerator.ts` loop.
+
+## Next Steps
+
+- Modify `MIN_PLATFORM_LENGTH_WITH_ENEMY` in `LevelGenerationConfig.ts` to 6.
+- Test level generation and report entity counts (platforms, enemies, crates, barrels).
+- If enemies spawn but bridge barrels still don't, consider adjusting gap generation parameters (`minHorizontalGap`, `maxHorizontalGap`) or temporarily reducing `MAX_JUMP_DISTANCE_X` to force the condition.
+- Once bridge barrels and enemies work reliably, re-enable optional barrel placement.
+
+## Active Decisions & Considerations
+
+- Prioritizing fixing the enemy spawn issue by adjusting the platform length constraint.
+- Deferring adjustments to gap generation parameters until the enemy issue is resolved.
+
+## Important Patterns & Preferences
+
+- **Constraint Tuning:** Adjusting specific constraints (like minimum platform length for items) based on observed generation results.
+
+## Learnings & Project Insights
+
+- Item placement functions can fail silently if none of the potential locations meet the required conditions (e.g., platform length).
+- Debugging procedural generation often involves isolating different components and checking intermediate results and conditions.

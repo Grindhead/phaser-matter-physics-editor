@@ -23,6 +23,12 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private isAlive = true;
   private isLevelComplete = false;
   private justLanded = false;
+  private isLaunching = false;
+  public recentlyExitedBarrel: boolean = false;
+
+  // Store original collision filter
+  private originalCollisionCategory: number | undefined;
+  private originalCollisionMask: number | undefined;
 
   public isInBarrel = false;
   private currentBarrel: Barrel | null = null;
@@ -200,12 +206,14 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     const up = this.cursors?.up?.isDown || this.wasd?.W?.isDown;
     if (up) {
+      console.log("[Player] 'Up' detected in barrel state");
       this.launchFromBarrel();
     }
   }
 
   public enterBarrel(barrel: Barrel): void {
-    if (this.isInBarrel) return;
+    console.log("[Player] enterBarrel called");
+    if (this.isInBarrel || !this.body) return;
 
     this.isInBarrel = true;
     this.currentBarrel = barrel;
@@ -225,7 +233,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   }
 
   private launchFromBarrel(): void {
-    if (!this.isInBarrel || !this.currentBarrel) return;
+    console.log("[Player] launchFromBarrel called");
+    if (!this.isInBarrel || !this.currentBarrel || this.isLaunching) return;
+
+    this.isLaunching = true;
 
     const launchVelX =
       BARREL_LAUNCH_VELOCITY_X * (this.currentBarrel.flipX ? -1 : 1);
@@ -244,17 +255,43 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         this.setVelocity(launchVelX, launchVelY);
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
       }
+      this.isLaunching = false;
     });
   }
 
   private exitBarrel(): void {
-    if (!this.isInBarrel) return;
+    if (!this.isInBarrel || !this.body) return;
+
+    const wasInBarrel = this.isInBarrel;
 
     this.isInBarrel = false;
     this.currentBarrel = null;
 
     this.setStatic(false);
     this.setVisible(true);
+
+    if (wasInBarrel) {
+      this.recentlyExitedBarrel = true;
+      console.log(
+        `[Player] Setting recentlyExitedBarrel = true at ${this.scene.time.now}`
+      );
+      this.scene.time.delayedCall(1000, () => {
+        this.recentlyExitedBarrel = false;
+        console.log(
+          `[Player] Clearing recentlyExitedBarrel = false at ${this.scene.time.now}`
+        );
+      });
+    }
+
+    if (
+      this.originalCollisionCategory !== undefined &&
+      this.originalCollisionMask !== undefined
+    ) {
+      this.setCollisionCategory(this.originalCollisionCategory);
+      this.setCollidesWith(this.originalCollisionMask);
+    }
+    this.originalCollisionCategory = undefined;
+    this.originalCollisionMask = undefined;
 
     console.log("Player exited barrel");
   }

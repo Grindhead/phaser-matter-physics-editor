@@ -233,7 +233,7 @@
             <key type="filename">bg/background.png</key>
             <key type="filename">bg/foreground.png</key>
             <key type="filename">bg/middle-ground.png</key>
-            <key type="filename">main-menu/background.png</key>
+            <key type="filename">ui/main-menu/background.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -405,24 +405,24 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">fx-land/gg_photon_fx_0001.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0002.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0003.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0004.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0005.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0006.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0007.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0008.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0009.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0010.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0011.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0012.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0013.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0014.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0015.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0016.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0017.png</key>
-            <key type="filename">fx-land/gg_photon_fx_0018.png</key>
+            <key type="filename">fx-land/fx-land-0001.png</key>
+            <key type="filename">fx-land/fx-land-0002.png</key>
+            <key type="filename">fx-land/fx-land-0003.png</key>
+            <key type="filename">fx-land/fx-land-0004.png</key>
+            <key type="filename">fx-land/fx-land-0005.png</key>
+            <key type="filename">fx-land/fx-land-0006.png</key>
+            <key type="filename">fx-land/fx-land-0007.png</key>
+            <key type="filename">fx-land/fx-land-0008.png</key>
+            <key type="filename">fx-land/fx-land-0009.png</key>
+            <key type="filename">fx-land/fx-land-0010.png</key>
+            <key type="filename">fx-land/fx-land-0011.png</key>
+            <key type="filename">fx-land/fx-land-0012.png</key>
+            <key type="filename">fx-land/fx-land-0013.png</key>
+            <key type="filename">fx-land/fx-land-0014.png</key>
+            <key type="filename">fx-land/fx-land-0015.png</key>
+            <key type="filename">fx-land/fx-land-0016.png</key>
+            <key type="filename">fx-land/fx-land-0017.png</key>
+            <key type="filename">fx-land/fx-land-0018.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -434,36 +434,6 @@
                 <rect>64,64,128,128</rect>
                 <key>scale9Paddings</key>
                 <rect>64,64,128,128</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">main-menu/play-game.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>spriteScale</key>
-                <double>1</double>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>132,29,264,57</rect>
-                <key>scale9Paddings</key>
-                <rect>132,29,264,57</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">main-menu/title.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>spriteScale</key>
-                <double>1</double>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>200,50,400,100</rect>
-                <key>scale9Paddings</key>
-                <rect>200,50,400,100</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -775,6 +745,36 @@
                 <rect>70,35,139,70</rect>
                 <key>scale9Paddings</key>
                 <rect>70,35,139,70</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">ui/main-menu/play-game.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>132,29,264,57</rect>
+                <key>scale9Paddings</key>
+                <rect>132,29,264,57</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">ui/main-menu/title.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>200,50,400,100</rect>
+                <key>scale9Paddings</key>
+                <rect>200,50,400,100</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>

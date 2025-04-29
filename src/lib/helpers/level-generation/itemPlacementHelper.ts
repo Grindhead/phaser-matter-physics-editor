@@ -5,7 +5,8 @@ import { Enemy } from "../../../entities/Enemy/Enemy";
 import { CrateBig } from "../../../entities/CrateBig/CrateBig";
 import { CrateSmall } from "../../../entities/CrateSmall/CrateSmall";
 import { Barrel } from "../../../entities/Barrel/Barrel";
-import { SimplePRNG } from "../../LevelGenerator"; // Assuming PRNG is still exported or moved
+import { SimplePRNG } from "./LevelGenerator"; // Assuming PRNG is still exported or moved
+import { WORLD_HEIGHT } from "../../constants"; // Import WORLD_HEIGHT
 import {
   LevelGenerationParams,
   MIN_COIN_SPACING,
@@ -15,6 +16,8 @@ import {
   CRATE_BIG_HEIGHT,
   CRATE_SMALL_HEIGHT,
   BARREL_HEIGHT,
+  BARREL_WIDTH, // Now correctly imported
+  // WORLD_HEIGHT, // Removed incorrect import
 } from "../../interfaces/LevelGenerationConfig";
 
 /**
@@ -63,8 +66,8 @@ export function placeItemsOnPlatforms(
   prng: SimplePRNG,
   params: LevelGenerationParams,
   enemiesArray: Enemy[],
-  cratesArray: (CrateBig | CrateSmall)[],
-  barrelsArray: Barrel[]
+  cratesArray: (CrateBig | CrateSmall)[]
+  // barrelsArray: Barrel[] // REMOVED
 ): void {
   if (eligiblePlatforms.length === 0) return;
 
@@ -81,9 +84,8 @@ export function placeItemsOnPlatforms(
 
   const targetEnemies = params.targetEnemies;
   const targetCrates = params.targetCrates;
-  const targetBarrels = params.targetBarrels; // Guaranteed >= 1
 
-  const totalPlatformsNeeded = targetEnemies + targetCrates + targetBarrels;
+  const totalPlatformsNeeded = targetEnemies + targetCrates;
 
   // Create a pool of platforms reserved for item placement
   // Slice ensures we don't try to reserve more platforms than available
@@ -97,7 +99,6 @@ export function placeItemsOnPlatforms(
 
   let enemiesPlaced = 0;
   let cratesPlaced = 0;
-  let barrelsPlaced = 0;
 
   // --- Place Enemies ---
   for (
@@ -141,22 +142,167 @@ export function placeItemsOnPlatforms(
     cratesPlaced++;
     usedPlatformIndices.add(i); // Mark platform as used
   }
+}
 
-  // --- Place Barrels ---
-  for (
-    let i = 0;
-    i < placementPool.length && barrelsPlaced < targetBarrels;
-    i++
-  ) {
-    if (usedPlatformIndices.has(i)) continue; // Skip if already used
-
-    const platform = placementPool[i];
-    const bounds = platform.getBounds();
-    const placeX = bounds.centerX;
-    const placeY = bounds.top - BARREL_HEIGHT / 2;
-    const barrel = new Barrel(scene, placeX, placeY);
-    barrelsArray.push(barrel);
-    barrelsPlaced++;
-    usedPlatformIndices.add(i); // Mark platform as used
+/**
+ * Places barrels on the ground in the gaps *between* platforms.
+ * Attempts to place the target number of barrels, avoiding overlaps.
+ */
+export function placeBarrelsBetweenPlatforms(
+  scene: Scene,
+  platforms: Platform[], // Requires the full list of platforms
+  prng: SimplePRNG,
+  targetBarrels: number,
+  barrelsArray: Barrel[] // Array to populate
+): void {
+  if (platforms.length < 2 || targetBarrels <= 0) {
+    console.warn(
+      "LevelGenerator: Not enough platforms or target barrels for gap placement."
+    );
+    return; // Need at least two platforms for a gap
   }
+
+  // Define a buffer to prevent placing barrels directly under platform edges
+  const EDGE_BUFFER = BARREL_WIDTH * 1.5; // Prevent placement within 1.5 barrel widths of the edge
+
+  // Sort platforms by their X position to process gaps sequentially
+  const sortedPlatforms = [...platforms].sort((a, b) => a.x - b.x);
+
+  const availableGaps: {
+    startX: number;
+    endX: number;
+    platformATop: number;
+    platformBTop: number;
+  }[] = [];
+
+  // Identify gaps between platforms
+  for (let i = 0; i < sortedPlatforms.length - 1; i++) {
+    const platformA = sortedPlatforms[i];
+    const platformB = sortedPlatforms[i + 1];
+    const boundsA = platformA.getBounds();
+    const boundsB = platformB.getBounds();
+
+    const gapStart = boundsA.right;
+    const gapEnd = boundsB.left;
+    const gapWidth = gapEnd - gapStart;
+
+    // Ensure there's enough horizontal space for at least one barrel,
+    // AND the edge buffers on both sides.
+    if (gapWidth >= BARREL_WIDTH + 2 * EDGE_BUFFER) {
+      availableGaps.push({
+        startX: gapStart,
+        endX: gapEnd,
+        platformATop: boundsA.top,
+        platformBTop: boundsB.top,
+      });
+    }
+  }
+
+  if (availableGaps.length === 0) {
+    console.warn(
+      "LevelGenerator: No suitable gaps wide enough found between platforms for barrels (considering edge buffers)."
+    );
+    return; // No gaps wide enough
+  }
+
+  // Keep track of occupied horizontal ranges on the ground
+  const occupiedRanges: { start: number; end: number }[] = [];
+
+  let barrelsPlaced = 0;
+  const potentialPlacementAttempts = availableGaps.length * 5; // Limit attempts
+  let attempts = 0;
+
+  while (
+    barrelsPlaced < targetBarrels &&
+    attempts < potentialPlacementAttempts
+  ) {
+    attempts++;
+    // Choose a random gap from the ones wide enough for buffers
+    const gapIndex = prng.nextInt(0, availableGaps.length);
+    const selectedGap = availableGaps[gapIndex];
+
+    // Calculate the placement range within the gap, EXCLUDING edge buffers
+    // The barrel's center point should be placed within this range.
+    const minPlaceX = selectedGap.startX + EDGE_BUFFER + BARREL_WIDTH / 2;
+    const maxPlaceX = selectedGap.endX - EDGE_BUFFER - BARREL_WIDTH / 2;
+
+    // Since we filtered availableGaps, minPlaceX should always be < maxPlaceX
+    // (unless BARREL_WIDTH is zero or negative, which is an error)
+    if (minPlaceX >= maxPlaceX) {
+      console.error(
+        "LevelGenerator: Invalid placement range calculated even after filtering gaps. Check BARREL_WIDTH and EDGE_BUFFER."
+      );
+      continue; // Skip this attempt
+    }
+
+    // Place within the preferred range (between edge buffers)
+    const placeX = prng.nextInt(minPlaceX, maxPlaceX + 1);
+    const barrelRange = {
+      start: placeX - BARREL_WIDTH / 2,
+      end: placeX + BARREL_WIDTH / 2,
+    };
+
+    // Try to place the barrel, considering overlaps
+    const placedSuccessfully = placeBarrelIfPossible(
+      scene,
+      placeX,
+      selectedGap,
+      occupiedRanges,
+      barrelsArray,
+      barrelRange
+    );
+
+    // CORRECTED: Only increment if placement was successful
+    if (placedSuccessfully) {
+      barrelsPlaced++;
+    }
+  } // End of while loop
+
+  if (barrelsPlaced < targetBarrels) {
+    console.warn(
+      `LevelGenerator: Could only place ${barrelsPlaced}/${targetBarrels} barrels due to space/overlap constraints.`
+    );
+  }
+}
+
+// Helper function to encapsulate barrel placement check and instantiation
+function placeBarrelIfPossible(
+  scene: Scene,
+  placeX: number,
+  selectedGap: { platformATop: number; platformBTop: number },
+  occupiedRanges: { start: number; end: number }[],
+  barrelsArray: Barrel[],
+  barrelRange: { start: number; end: number }
+): boolean {
+  // --- Calculate Dynamic Y Position --- START
+  const lowerPlatformTop = Math.max(
+    selectedGap.platformATop,
+    selectedGap.platformBTop
+  );
+  let placeY = lowerPlatformTop + BARREL_HEIGHT / 2 + 10; // Place center 10px below lower platform's top
+  // Clamp Y to prevent falling through world floor
+  placeY = Math.min(placeY, WORLD_HEIGHT - BARREL_HEIGHT / 2 - 2);
+  // --- Calculate Dynamic Y Position --- END
+
+  // Check for overlap with already placed barrels (horizontal only for now)
+  let overlaps = false;
+  for (const range of occupiedRanges) {
+    // Check if new range overlaps existing range (simple AABB overlap check)
+    if (barrelRange.start < range.end && barrelRange.end > range.start) {
+      overlaps = true;
+      break;
+    }
+  }
+
+  if (!overlaps) {
+    // Place the barrel
+    const barrel = new Barrel(scene, placeX, placeY); // Use dynamic placeY
+    barrelsArray.push(barrel);
+    occupiedRanges.push(barrelRange); // Mark this range as occupied
+    return true; // Barrel placed successfully
+
+    // Optional: Remove or shrink the gap to prevent placing more barrels too close?
+    // For now, we just rely on the overlap check.
+  }
+  return false; // Barrel could not be placed due to overlap
 }

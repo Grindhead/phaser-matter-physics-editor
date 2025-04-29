@@ -22,7 +22,12 @@ import {
   resetCoins,
   resetTotalCoinsInLevel,
 } from "../lib/helpers/coinManager";
-import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
+import {
+  addLevel,
+  getLevel,
+  setLevel,
+  resetLevel,
+} from "../lib/helpers/levelManager";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
 import { LevelGenerator } from "../lib/helpers/level-generation/LevelGenerator";
@@ -76,6 +81,7 @@ export class Game extends Scene {
   private initGame(): void {
     resetCoins();
     resetTotalCoinsInLevel();
+    resetLevel();
     if (getLevel() === 0) {
       setLevel(1);
     }
@@ -265,7 +271,6 @@ export class Game extends Scene {
       if (this.checkEnemyCollision(bodyA, bodyB)) return;
       if (this.checkFinishCollision(bodyA, bodyB)) return;
       if (this.checkCoinCollision(bodyA, bodyB)) return;
-      // Add call to check barrel collision
       if (this.checkBarrelCollision(bodyA, bodyB)) return;
     }
   };
@@ -488,7 +493,6 @@ export class Game extends Scene {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
     this.physicsEnabled = false;
-    this.matter.world.enabled = false;
 
     // Stop the debug UI scene if it's active
     if (this.scene.isActive(SCENES.DEBUG_UI)) {
@@ -496,10 +500,6 @@ export class Game extends Scene {
     }
 
     this.scene.restart();
-
-    // Reset coin counts explicitly before restart might fully complete
-    resetCoins();
-    resetTotalCoinsInLevel();
   }
 
   /**

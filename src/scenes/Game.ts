@@ -60,6 +60,7 @@ export class Game extends Scene {
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
   create(): void {
+    this.restartTriggered = false;
     this.parallaxManager = new ParallaxManager(this);
     this.setupWorldBounds();
     this.initGame();
@@ -143,6 +144,7 @@ export class Game extends Scene {
   private showUIOverlay(state: GameStateType, fadeIn: boolean = true): void {
     // Clean up any existing overlay
     if (this.overlayButton) {
+      this.overlayButton.off("pointerup"); // Explicitly remove the listener
       this.overlayButton.destroy();
       this.overlayButton = undefined;
     }
@@ -493,6 +495,9 @@ export class Game extends Scene {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
     this.physicsEnabled = false;
+
+    // Explicitly remove world collision listener before restart
+    this.matter.world.off("collisionstart", this.handleCollisionStart);
 
     // Stop the debug UI scene if it's active
     if (this.scene.isActive(SCENES.DEBUG_UI)) {

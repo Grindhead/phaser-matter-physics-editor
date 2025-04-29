@@ -1,5 +1,26 @@
 # System Patterns
 
+**Architecture:** Entity-Component System (implicit through Phaser GameObjects and Scenes).
+
+**Key Technical Decisions:**
+
+- Use Matter.js for physics simulation.
+- Use TexturePacker for sprite atlases.
+- Use PhysicsEditor for defining physics shapes.
+- Manage game state within Phaser Scenes.
+- Encapsulate game objects (Player, Coin, FX) into distinct classes extending Phaser Sprites/Matter Sprites.
+
+**Component Relationships:**
+
+- `Game` scene manages game loop and instantiates entities.
+- `Player` class handles input, movement, physics, and animation state.
+- Collision events are handled within the `Player` class to update its state (`isGrounded`).
+- FX classes (`FXLand`) are self-contained and handle their own lifecycle (e.g., destroy after animation).
+
+**Critical Paths:**
+
+- Player input -> Velocity update -> Physics step -> Collision detection -> State update (e.g., `isGrounded`) -> Animation update.
+
 ## Architecture Overview
 
 - Phaser 3 game engine.
@@ -7,12 +28,6 @@
 - Entity-component pattern for game objects (`src/entities`).
 - Helper functions for common logic (`src/lib/helpers`).
 - Utility classes for core systems (`src/lib`, e.g., `LevelGenerator`, `CameraManager`).
-
-## Key Technical Decisions
-
-- Matter.js for physics.
-- TypeScript for type safety and code organization.
-- Procedural level generation for dynamic content.
 
 ## Design Patterns in Use
 

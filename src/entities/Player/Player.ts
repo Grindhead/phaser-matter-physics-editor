@@ -2,6 +2,7 @@ import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
 import { createAnimationChain } from "../../lib/helpers/createAnimations";
 import { isGroundBody } from "../../lib/helpers/isGroundBody";
 import { isPlayerBody } from "../../lib/helpers/isPlayerBody";
+import { FXLand } from "../fx-land/FxLand";
 import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 
 const JUMP_VELOCITY = -8;
@@ -175,6 +176,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     if (this.isGrounded && !wasGrounded) {
       this.jumpInProgress = false;
       this.justLanded = true; // Set flag when landing occurs
+
+      // Create landing effect
+      new FXLand(this.scene, this.x, this.getBounds().bottom);
     }
   }
 

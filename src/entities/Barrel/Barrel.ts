@@ -19,7 +19,7 @@ export class Barrel extends Phaser.Physics.Matter.Sprite {
     });
 
     this.angle = -90;
-    this.setOrigin(0.5, 0.5);
+    this.setOrigin(0.22, 0.5);
     this.play(BARREL_ANIMATION_KEYS.BARREL_IDLE);
 
     scene.add.existing(this);

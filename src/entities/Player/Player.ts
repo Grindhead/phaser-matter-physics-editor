@@ -23,9 +23,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private isAlive = true;
   private isLevelComplete = false;
   private justLanded = false;
+  private currentBarrel: Barrel | null = null;
   public recentlyExitedBarrel: boolean = false;
   public isInBarrel = false;
-  private currentBarrel: Barrel | null = null;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);

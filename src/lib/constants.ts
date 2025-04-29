@@ -36,8 +36,3 @@ export const GAME_STATE = {
   GAME_OVER: "game_over",
   LEVEL_COMPLETE: "level_complete",
 } as const;
-
-// Animation keys
-export const ANIMATION_KEYS = {
-  // ... existing code ...
-} as const;

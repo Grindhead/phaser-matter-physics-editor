@@ -24,11 +24,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private isLevelComplete = false;
   private justLanded = false;
   public recentlyExitedBarrel: boolean = false;
-
-  // Store original collision filter
-  private originalCollisionCategory: number | undefined;
-  private originalCollisionMask: number | undefined;
-
   public isInBarrel = false;
   private currentBarrel: Barrel | null = null;
 
@@ -208,14 +203,12 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     const up = this.cursors?.up?.isDown || this.wasd?.W?.isDown;
     if (up) {
-      console.log("[Player] 'Up' detected in barrel state");
       this.currentBarrel.launch();
       this.exitBarrel();
     }
   }
 
   public enterBarrel(barrel: Barrel): void {
-    console.log("[Player] enterBarrel called");
     if (this.isInBarrel || !this.body) return;
 
     this.isInBarrel = true;
@@ -227,12 +220,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.setVisible(false);
 
     this.currentBarrel.enter();
-
-    console.log(
-      "Player entered barrel",
-      this.currentBarrel.x,
-      this.currentBarrel.y
-    );
   }
 
   private exitBarrel(): void {
@@ -257,29 +244,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         launchAngle
       ).toFixed(3)}`
     );
-    console.log(
-      `[Player] Calculated Launch Vector: (${launchVector.x.toFixed(
-        3
-      )}, ${launchVector.y.toFixed(3)})`
-    );
-    console.log(
-      `[Player] Current Velocity BEFORE setVelocity: (${this.body?.velocity.x.toFixed(
-        3
-      )}, ${this.body?.velocity.y.toFixed(3)})`
-    );
 
     this.setVelocity(launchVector.x, launchVector.y);
-
-    // Add a small delay to check velocity *after* physics engine step
-    this.scene.time.delayedCall(10, () => {
-      if (!this.body) return;
-      console.log(
-        `[Player] Velocity AFTER setVelocity (delayed): (${this.body.velocity.x.toFixed(
-          3
-        )}, ${this.body.velocity.y.toFixed(3)})`
-      );
-    });
-
     this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
 
     this.recentlyExitedBarrel = true;

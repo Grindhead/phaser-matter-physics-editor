@@ -15,18 +15,24 @@ import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
+import { isBarrelBody } from "../lib/helpers/isBarrelBody";
 import {
   getCoins,
   setCoins,
   resetCoins,
   resetTotalCoinsInLevel,
 } from "../lib/helpers/coinManager";
-import { addLevel, getLevel, setLevel } from "../lib/helpers/levelManager";
+import {
+  addLevel,
+  getLevel,
+  setLevel,
+} from "../lib/helpers/level-generation/levelManager";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
 import { LevelGenerator } from "../lib/LevelGenerator";
 import { Geom } from "phaser";
 import { ParallaxManager } from "../lib/helpers/parralax/ParallaxManager";
+import { Barrel } from "../entities/Barrel/Barrel";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -38,9 +44,12 @@ export class Game extends Scene {
   private physicsEnabled = false;
   private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
   private enemies: Enemy[] = [];
+  private barrels: Barrel[] = [];
   private cameraManager: CameraManager;
   private levelGenerator: LevelGenerator;
   private parallaxManager: ParallaxManager;
+  private totalBarrelsGenerated: number = 0;
+  private culledBarrelsCount: number = 0;
 
   constructor() {
     super(SCENES.GAME);
@@ -75,6 +84,7 @@ export class Game extends Scene {
       setLevel(1);
     }
     this.enemies = [];
+    this.barrels = [];
 
     this.generateLevelEntities();
 
@@ -93,6 +103,9 @@ export class Game extends Scene {
     this.levelGenerator = new LevelGenerator(this, currentLevel);
     this.player = this.levelGenerator.generateLevel();
     this.enemies = this.levelGenerator.getEnemies();
+    this.barrels = this.levelGenerator.getBarrels();
+    // Store the total count
+    this.totalBarrelsGenerated = this.barrels.length;
 
     // Get overall bounds directly from the generator
     const levelBounds = this.levelGenerator.getOverallLevelBounds();
@@ -197,11 +210,9 @@ export class Game extends Scene {
    * Enables physics, sets camera follow, and marks the game as running.
    */
   private startGame(): void {
+    this.gameState = GAME_STATE.PLAYING;
     this.matter.world.enabled = true;
-    this.restartTriggered = false;
     this.physicsEnabled = true;
-
-    this.showUIOverlay(GAME_STATE.PLAYING); // Use constant
   }
 
   /**
@@ -245,31 +256,23 @@ export class Game extends Scene {
    * Configures Matter.js collision handlers for key entities.
    */
   private setupCollisions(): void {
-    this.matter.world.on(
-      "collisionstart",
-      (event: Phaser.Physics.Matter.Events.CollisionStartEvent) => {
-        if (this.physicsEnabled) this.checkCollisions(event);
-      }
-    );
+    this.matter.world.on("collisionstart", this.handleCollisionStart);
   }
 
-  /**
-   * Checks for coin, finish, or enemy collisions on contact.
-   *
-   * @param event - The collision start event data.
-   */
-  private checkCollisions = ({
+  private handleCollisionStart = ({
     pairs,
   }: Phaser.Physics.Matter.Events.CollisionStartEvent): void => {
-    for (const { bodyA, bodyB } of pairs) {
-      if (
-        this.checkFallSensorCollision(bodyA, bodyB) ||
-        this.checkCoinCollision(bodyA, bodyB) ||
-        this.checkFinishCollision(bodyA, bodyB) ||
-        this.checkEnemyCollision(bodyA, bodyB)
-      ) {
-        return;
-      }
+    if (!this.physicsEnabled || this.gameState !== GAME_STATE.PLAYING) return;
+
+    for (const pair of pairs) {
+      const { bodyA, bodyB } = pair;
+
+      if (this.checkFallSensorCollision(bodyA, bodyB)) return;
+      if (this.checkEnemyCollision(bodyA, bodyB)) return;
+      if (this.checkFinishCollision(bodyA, bodyB)) return;
+
+      this.checkCoinCollision(bodyA, bodyB);
+      this.checkBarrelCollision(bodyA, bodyB);
     }
   };
 
@@ -378,102 +381,76 @@ export class Game extends Scene {
 
   /**
    * Scene lifecycle hook. Called every frame, updates entities and checks game state.
-   * @param time - The current time in milliseconds.
-   * @param delta - The time elapsed since the last frame in milliseconds.
    */
-  update(time: number, delta: number): void {
+  update(): void {
     // Update Parallax Background first, regardless of physics state
     this.parallaxManager?.update();
 
     if (!this.physicsEnabled) return;
 
-    // Update main game elements - Reverted to previous signatures based on linter errors
-    this.player.update(time, delta);
+    // Update main game elements
+    this.player?.update();
     this.enemies.forEach((enemy) => enemy.update());
 
-    // Initialize culling counters
-    let culledCoinsCount = 0;
-    let culledEnemiesCount = 0;
-
-    // Update debug panel data if in dev mode
-    if (this.scene.isActive(SCENES.DEBUG_UI)) {
-      this.events.emit("updateDebugData", {
-        playerX: this.player.x,
-        playerY: this.player.y,
-        platformCount: this.levelGenerator.getPlatforms().length,
-        enemyCount: this.enemies.length,
-        coinCount: this.levelGenerator.getCoins().length,
-        crateCount: this.levelGenerator.getCrates().length,
-      });
-    }
-
     // --- Culling Logic ---
-    const cameraView = this.cameras.main.worldView;
-    // Add a buffer around the camera view to prevent entities popping in/out too abruptly
-    const cullBuffer = 100;
-    // Use Phaser's Geom.Rectangle
-    const cullRect = new Geom.Rectangle(
-      cameraView.x - cullBuffer,
-      cameraView.y - cullBuffer,
-      cameraView.width + cullBuffer * 2,
-      cameraView.height + cullBuffer * 2
+    const cam = this.cameras.main;
+    const cullBounds = new Geom.Rectangle(
+      cam.worldView.x - 100, // Add buffer
+      cam.worldView.y - 100,
+      cam.worldView.width + 200,
+      cam.worldView.height + 200
     );
 
-    // Cull Coins
+    // Initialize culling counters
+    let culledCoins = 0;
+    let culledEnemies = 0;
+
     this.levelGenerator.getCoins().forEach((coin) => {
-      if (!coin.body) return; // Ensure coin and body exist
-      const isVisible = Geom.Rectangle.Contains(
-        cullRect,
-        coin.body.position.x,
-        coin.body.position.y
-      );
-      coin.setVisible(isVisible);
-
-      // Increment count FIRST if not visible
-      if (!isVisible) {
-        culledCoinsCount++;
-      }
-
-      if (isVisible) {
-        coin.setAwake(); // Wake up if it fell asleep automatically
-      } else {
-        coin.setToSleep();
+      const visible = Geom.Rectangle.Overlaps(cullBounds, coin.getBounds());
+      coin.setVisible(visible);
+      coin.setActive(visible); // Also disable updates if not visible
+      if (!visible) {
+        culledCoins++;
       }
     });
 
-    // Cull Enemies
     this.enemies.forEach((enemy) => {
-      if (!enemy.body) return; // Ensure enemy and body exist
-      const isVisible = Geom.Rectangle.Contains(
-        cullRect,
-        enemy.body.position.x,
-        enemy.body.position.y
-      );
-      enemy.setVisible(isVisible);
-
-      if (isVisible) {
-        enemy.setAwake();
-      } else {
-        enemy.setToSleep();
-      }
-
-      if (!isVisible) {
-        culledEnemiesCount++;
+      const visible = Geom.Rectangle.Overlaps(cullBounds, enemy.getBounds());
+      enemy.setVisible(visible);
+      enemy.setActive(visible); // Disable physics/updates
+      if (!visible) {
+        culledEnemies++;
       }
     });
 
-    // Emit updated debug data including culling counts
-    if (import.meta.env.DEV && this.scene.isActive(SCENES.DEBUG_UI)) {
-      this.events.emit("updateDebugData", {
-        playerX: Math.round(this.player.x),
-        playerY: Math.round(this.player.y),
-        platformCount: this.levelGenerator.getPlatforms().length,
-        enemyCount: this.enemies.length,
-        coinCount: this.levelGenerator.getCoins().length,
-        crateCount: this.levelGenerator.getCrates().length,
-        culledCoins: culledCoinsCount,
-        culledEnemies: culledEnemiesCount,
-      });
+    // Reset culled barrel count each frame
+    this.culledBarrelsCount = 0;
+    this.barrels.forEach((barrel) => {
+      const visible = Geom.Rectangle.Overlaps(cullBounds, barrel.getBounds());
+      barrel.setVisible(visible);
+      barrel.setActive(visible); // Disable physics/updates
+      if (!visible) {
+        this.culledBarrelsCount++;
+      }
+    });
+
+    // --- Debug Data Emission ---
+    if (import.meta.env.DEV) {
+      const debugData = {
+        PlayerPos: {
+          x: Math.round(this.player.x),
+          y: Math.round(this.player.y),
+        },
+        Platforms: this.levelGenerator.getPlatforms().length,
+        Enemies: this.enemies.length,
+        CulledEnemies: culledEnemies,
+        Coins: this.levelGenerator.getCoins().length,
+        CulledCoins: culledCoins,
+        Crates: this.levelGenerator.getCrates().length,
+        Barrels: this.totalBarrelsGenerated,
+        CulledBarrels: this.culledBarrelsCount,
+      };
+      this.events.emit("updateDebugData", debugData);
     }
   }
 
@@ -524,5 +501,39 @@ export class Game extends Scene {
     // Reset coin counts explicitly before restart might fully complete
     resetCoins();
     resetTotalCoinsInLevel();
+  }
+
+  /**
+   * Checks for collisions between the Player and a Barrel.
+   *
+   * @param bodyA - The first body in the collision pair.
+   * @param bodyB - The second body in the collision pair.
+   * @returns True if a player-barrel collision was handled, false otherwise.
+   */
+  private checkBarrelCollision(
+    bodyA: MatterJS.BodyType,
+    bodyB: MatterJS.BodyType
+  ): boolean {
+    let playerBody: MatterJS.BodyType | null = null;
+    let barrelBody: MatterJS.BodyType | null = null;
+
+    if (isPlayerBody(bodyA) && isBarrelBody(bodyB)) {
+      playerBody = bodyA;
+      barrelBody = bodyB;
+    } else if (isPlayerBody(bodyB) && isBarrelBody(bodyA)) {
+      playerBody = bodyB;
+      barrelBody = bodyA;
+    }
+
+    if (playerBody && barrelBody) {
+      const barrelInstance = barrelBody.gameObject as Barrel;
+      // Ensure player exists and is not already in a barrel
+      if (this.player && !this.player.isInBarrel && barrelInstance) {
+        this.player.enterBarrel(barrelInstance);
+        return true; // Collision handled
+      }
+    }
+
+    return false; // No relevant collision handled
   }
 }

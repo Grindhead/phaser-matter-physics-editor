@@ -32,7 +32,7 @@
 ## Design Patterns in Use
 
 - **Scene Management:** Using Phaser's scene system (e.g., `Boot`, `Preloader`, `Game`, `DebugUIScene`). Includes running scenes in parallel (`Game` + `DebugUIScene`).
-- **Entity Class Pattern:** Each game object (Player, Enemy, Coin, Platform, Background, Crate, Finish) is represented by its own class, typically extending a Phaser `GameObject` or `Sprite`.
+- **Entity Class Pattern:** Each game object (Player, Enemy, Coin, Platform, Background, Crate, Finish, Barrel) is represented by its own class, typically extending a Phaser `GameObject` or `Sprite`.
 - **State Machine (Simple):** The `Game` scene uses a `GAME_STATE` constant object to manage flow (Waiting, Playing, Game Over, Level Complete).
 - **UI Components:** Dedicated classes for UI elements (e.g., `CoinUI`, `CameraManager`, `DebugPanel`). `DebugPanel` is now managed by `DebugUIScene`.
 - **Procedural Generation:** A dedicated `LevelGenerator` class encapsulates the logic for creating level layouts based on a seed (level number).
@@ -44,14 +44,14 @@
 - `DebugUIScene` runs in parallel to `Game`, listens for `updateDebugData` events, and manages the `DebugPanel` UI.
 - `LevelGenerator` creates instances of various entity classes (`Player`, `Platform`, `Enemy`, `Coin`, `Crate`, `Finish`), places them in the scene, and now provides getters (`getPlatforms`, `getEnemies`, `getCoins`, `getCrates`).
 - `ParallaxManager` now uses `ParallaxBackground` instances to manage background layers.
-- Entities interact via Matter.js physics collisions detected in `Game.ts`.
+- Entities interact via Matter.js physics collisions detected in `Game.ts`. Collisions with `Barrel` entities will need specific handling for player entry/launch.
 - UI elements (`CoinUI`) are managed by the `Game` scene. `DebugPanel` is managed by `DebugUIScene`.
 - `CameraManager` controls the `Game` scene's camera bounds, follow, and dynamic zoom.
 
 ## Critical Implementation Paths
 
 - Player movement and input handling (`Player.ts`).
-- Collision detection and handling (`Game.ts` collision methods, helper functions like `isPlayerBody`).
+- Collision detection and handling (`Game.ts` collision methods, helper functions like `isPlayerBody`). Needs update for player-barrel interaction.
 - Scene transitions and state management (`Game.ts`).
 - Asset loading (`Preloader.ts`).
 - Procedural level generation logic (`LevelGenerator.ts`).
@@ -59,7 +59,7 @@
 
 ## New Patterns
 
-- **Procedural Level Generation:** Implemented via `LevelGenerator` class (`src/lib/LevelGenerator.ts`). Uses a seeded PRNG (`SimplePRNG`) for deterministic generation. The `Game` scene calls this generator during initialization (`initGame` -> `generateLevelEntities`) to populate the world instead of using static entity placement.
+- **Procedural Level Generation:** Implemented via `LevelGenerator` class (`src/lib/LevelGenerator.ts`). Uses a seeded PRNG (`SimplePRNG`) for deterministic generation. The `Game` scene calls this generator during initialization (`initGame` -> `generateLevelEntities`) to populate the world instead of using static entity placement. Includes logic to ensure a minimum number of platforms are generated based on target item counts (enemies, crates, barrels) to guarantee placement possibility.
 - **Parallax Background:** Implemented using `ParallaxBackground` class (`src/lib/helpers/parralax/ParallaxBackground.ts`) which extends `Phaser.GameObjects.TileSprite` and updates its `tilePositionX` based on camera scroll in its `update` method. The `ParallaxManager` (`src/lib/helpers/parralax/ParallaxManager.ts`) is responsible for creating and managing multiple `ParallaxBackground` instances.
 - **Camera Management:** A dedicated `CameraManager` class (`src/lib/ui/CameraManager.ts`) handles camera setup (bounds, follow, lerp) and effects like death zoom, separating camera logic from the main `Game` scene.
 - **Constants for States:** Using a `const` object (`GAME_STATE`) instead of an `enum` for defining fixed state values, providing string-based values and potentially simpler integration in some contexts.

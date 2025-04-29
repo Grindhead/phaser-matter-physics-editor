@@ -10,3 +10,4 @@
 - Clear visual feedback for player actions (movement, jumping, landing).
 - Satisfying collection mechanics.
 - Smooth performance.
+- Engaging barrel mechanic: Player can enter barrels and be launched in a specific direction, adding a new layer of traversal and puzzle potential.

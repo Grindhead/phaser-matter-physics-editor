@@ -1,5 +1,5 @@
 import { Scene, GameObjects } from "phaser";
-import { getLevel } from "../helpers/levelManager";
+import { getLevel } from "../helpers/level-generation/levelManager";
 
 /**
  * A stateless UI component that displays a level count using the Roboto font.

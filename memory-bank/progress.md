@@ -29,6 +29,13 @@
 
 ## What's Left to Build
 
+- Implement Donkey Kong Country-style barrel mechanic:
+  - Player-barrel collision detection and entry (in `Game.ts`).
+  - Player state management while inside barrel (in `Player.ts`).
+  - Input handling for launching (in `Player.ts` or `Game.ts`).
+  - Barrel animation triggers (enter, launch) (in `Barrel.ts` / `Game.ts`).
+  - Player launch physics (in `Player.ts` / `Game.ts`).
+  - Define barrel properties (e.g., launch direction/strength) (in `Barrel.ts` and potentially set by `LevelGenerator`).
 - Integrate `FXLand` instantiation into the player's landing logic.
 - Implement mobile controls (`createMobileControls` is empty).
 - Define level completion logic/trigger.
@@ -53,6 +60,8 @@
 ## Known Issues
 
 - `CameraManager.update()` call in `Game.ts` is commented out due to potential signature mismatch or missing implementation error during integration.
+- Barrel interaction logic (collision, entry, launch) is not implemented.
+- **New:** `Barrel.ts` entity exists, but interaction logic is not implemented.
 - Idle animation doesn't always play immediately upon landing. (Fixed: Added explicit idle animation check in `Player.ts::handleCollisionStart`)
 
 ## Evolution of Project Decisions
@@ -65,3 +74,6 @@
 - **Added Culling:** Introduced bounds checking in `Game.ts` to disable rendering and physics processing for off-screen coins and enemies, improving performance.
 - **Refactored Item Placement:** Changed level generation (`LevelGenerator.ts`) to place enemies and crates _after_ all platforms are created using a shuffled list of eligible platforms. This ensures they don't share a platform and allows better control over total counts.
 - Landing effect (`FXLand`) is triggered within the `Player`'s `handleCollisionStart` method for immediate feedback upon landing.
+- **Added Barrel Entity:** Introduced `Barrel.ts` as a new interactive element.
+- **Added Barrel Spawning:** Updated `LevelGenerator.ts` to procedurally place `Barrel` instances.
+- **Guaranteed Barrel Spawn Chance:** Updated `LevelGenerator.ts` to calculate a minimum required platform count based on target item counts (enemies, crates, barrel) to ensure enough eligible platforms exist, guaranteeing at least one barrel can be placed. (Verified implementation)

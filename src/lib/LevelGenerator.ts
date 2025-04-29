@@ -9,12 +9,34 @@ import {
 import { CrateBig } from "../entities/CrateBig/CrateBig";
 import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
 import { Finish } from "../entities/Finish/Finish";
+import { Barrel } from "../entities/Barrel/Barrel";
 import { WORLD_HEIGHT } from "./constants";
 import { setTotalCoinsInLevel } from "./helpers/coinManager"; // Added import
+// Import the new configuration interface and constants
+import {
+  LevelGenerationParams,
+  MAX_JUMP_DISTANCE_X,
+  MAX_JUMP_HEIGHT_UP,
+  MAX_FALL_HEIGHT,
+  // COIN_HEIGHT, // No longer needed here
+  // ENEMY_HEIGHT, // No longer needed here
+  // CRATE_SMALL_HEIGHT, // No longer needed here
+  // CRATE_BIG_HEIGHT, // No longer needed here
+  // BARREL_HEIGHT, // No longer needed here
+  // MIN_PLATFORM_LENGTH_WITH_ENEMY, // No longer needed here
+  // MIN_COIN_SPACING, // No longer needed here
+  MIN_ABS_VERTICAL_GAP,
+  PLATFORM_SEGMENT_WIDTH,
+} from "./interfaces/LevelGenerationConfig";
+// Import the item placement helpers
+import {
+  populatePlatformWithCoins,
+  placeItemsOnPlatforms,
+} from "./helpers/level-generation/itemPlacementHelper";
 
 // Simple Pseudo-Random Number Generator (PRNG) using Mulberry32 algorithm
 // Provides deterministic random numbers based on an initial seed.
-class SimplePRNG {
+export class SimplePRNG {
   private seed: number;
 
   constructor(seed: number) {
@@ -51,9 +73,11 @@ interface PlatformGenerationParams {
   maxVerticalGap: number;
   enemyProbability: number;
   crateProbability: number;
+  barrelProbability: number;
   requiredCoins: number;
   targetEnemies: number;
   targetCrates: number;
+  targetBarrels: number;
 }
 
 interface PlacementPosition {
@@ -72,6 +96,7 @@ export class LevelGenerator {
   private coins: Coin[] = [];
   private enemies: Enemy[] = [];
   private crates: (CrateBig | CrateSmall)[] = [];
+  private barrels: Barrel[] = [];
   private player: Player;
 
   // Calculated bounds after generation
@@ -79,21 +104,11 @@ export class LevelGenerator {
   private levelMaxX: number = 0;
   private levelLowestY: number = 0;
 
-  // --- Configuration (Defaults & Constants) ---
-  // Estimated player jump capabilities (tune these based on actual player physics)
-  private readonly MAX_JUMP_DISTANCE_X = 200; // Max horizontal pixels player can jump
-  private readonly MAX_JUMP_HEIGHT_UP = 120; // Max vertical pixels player can jump upwards
-  private readonly MAX_FALL_HEIGHT = 400; // Max safe falling distance (downward vertical gap)
+  // --- Configuration Constants Moved to LevelGenerationConfig.ts ---
+  // Remove constants previously defined here
 
-  // Entity heights for placement (adjust if assets change)
-  private readonly COIN_HEIGHT = 28;
-  private readonly ENEMY_HEIGHT = 40;
-  private readonly CRATE_SMALL_HEIGHT = 32;
-  private readonly CRATE_BIG_HEIGHT = 64;
-  private readonly PLATFORM_DISPLAY_HEIGHT = 32;
-  private readonly MIN_PLATFORM_LENGTH_WITH_ENEMY = 10;
-  // --- New Constant for Coin Spacing ---
-  private readonly MIN_COIN_SPACING = 64; // Min horizontal pixels between coin centers (Increased from 32)
+  // --- Keep PLATFORM_DISPLAY_HEIGHT if still used directly for player offset
+  private readonly PLATFORM_DISPLAY_HEIGHT = 32; // Or import if moved
 
   constructor(scene: Scene, levelNumber: number) {
     this.scene = scene;
@@ -106,7 +121,9 @@ export class LevelGenerator {
    * Returns the created Player instance.
    */
   generateLevel(): Player {
-    const params = this.getLevelGenerationParams();
+    const params = LevelGenerator.calculateLevelGenerationParams(
+      this.levelNumber
+    );
     const numPlatforms = this.prng.nextInt(
       params.minPlatforms,
       params.maxPlatforms + 1
@@ -122,6 +139,7 @@ export class LevelGenerator {
     this.enemies = [];
     this.coins = [];
     this.crates = [];
+    this.barrels = [];
 
     this.createPlayerStart(currentPos);
 
@@ -142,8 +160,13 @@ export class LevelGenerator {
       );
       const platform = this.createPlatform(currentPos, platformLength, i);
 
-      // Populate only with coins now
-      totalCoins += this.populatePlatformWithCoins(platform);
+      // Populate with coins using the helper function
+      totalCoins += populatePlatformWithCoins(
+        this.scene,
+        platform,
+        this.prng,
+        this.coins // Pass the coins array to the helper
+      );
 
       // Add platform to potential item placement list (skip first platform)
       if (i > 0) {
@@ -158,14 +181,22 @@ export class LevelGenerator {
       (p) => p !== lastPlatform
     );
 
-    // --- New Item Placement Logic ---
-    this.placeEnemiesAndCrates(finalItemPlacementPlatforms, params); // Use filtered list
+    // --- Item Placement Logic (Use Helper) ---
+    placeItemsOnPlatforms(
+      this.scene,
+      finalItemPlacementPlatforms,
+      this.prng,
+      params,
+      this.enemies, // Pass the arrays to be populated
+      this.crates,
+      this.barrels
+    );
 
     this.createFinishPoint(lastPlatform);
     this.calculateOverallBounds(); // Calculate bounds after all platforms exist
 
     console.log(
-      `Level generated with ${this.platforms.length} platforms, ${this.enemies.length} enemies, ${this.crates.length} crates, ${totalCoins} coins.`
+      `Level generated with ${this.platforms.length} platforms, ${this.enemies.length} enemies, ${this.crates.length} crates, ${this.barrels.length} barrels, ${totalCoins} coins.`
     );
 
     if (!this.player) {
@@ -179,34 +210,60 @@ export class LevelGenerator {
 
   /**
    * Calculates parameters for level generation based on the level number.
+   * Moved to a static method.
    */
-  private getLevelGenerationParams(): PlatformGenerationParams {
-    const minPlatforms = 10 + this.levelNumber;
-    const maxPlatforms = 15 + this.levelNumber;
+  private static calculateLevelGenerationParams(
+    levelNumber: number
+  ): LevelGenerationParams {
+    const minPlatforms = 10 + levelNumber;
+    const maxPlatforms = 15 + levelNumber;
     const requiredCoins = 100;
-    const enemyProbability = 0.3 + Math.min(0.3, this.levelNumber * 0.02);
-    const crateProbability = 0.25 + Math.min(0.2, this.levelNumber * 0.01);
+    const enemyProbability = 0.3 + Math.min(0.3, levelNumber * 0.02);
+    const crateProbability = 0.25 + Math.min(0.2, levelNumber * 0.01);
+    const barrelProbability = 0.15 + Math.min(0.1, levelNumber * 0.01);
 
-    // Calculate target counts based on probabilities and available platforms
+    // Calculate target counts based on probabilities and average platform count
     // Use average platform count for estimation
-    const avgPlatforms = (minPlatforms + maxPlatforms) / 2;
-    const targetEnemies = Math.floor(avgPlatforms * enemyProbability);
-    const targetCrates = Math.floor(avgPlatforms * crateProbability);
+    const avgPlatformsForTargets = (minPlatforms + maxPlatforms) / 2;
+    const targetEnemies = Math.floor(avgPlatformsForTargets * enemyProbability);
+    const targetCrates = Math.floor(avgPlatformsForTargets * crateProbability);
+    let targetBarrels = Math.floor(avgPlatformsForTargets * barrelProbability);
+
+    // --- Ensure at least one barrel is targeted ---
+    targetBarrels = Math.max(1, targetBarrels);
+
+    // --- Calculate Minimum Required Platforms --- START
+    const minimumEligiblePlatformsNeeded =
+      targetEnemies + targetCrates + targetBarrels;
+    // Add 2 for the mandatory start and end platforms which are ineligible for items
+    const minimumTotalPlatformsNeeded = minimumEligiblePlatformsNeeded + 2;
+
+    // Determine the final minimum platform count
+    const finalMinPlatforms = Math.max(
+      minPlatforms, // The original level-based minimum
+      minimumTotalPlatformsNeeded // The item-based minimum
+    );
+
+    // Ensure maxPlatforms is at least the new minPlatforms
+    const finalMaxPlatforms = Math.max(finalMinPlatforms, maxPlatforms);
+    // --- Calculate Minimum Required Platforms --- END
 
     return {
-      minPlatforms,
-      maxPlatforms,
+      minPlatforms: finalMinPlatforms, // Use calculated final minimum
+      maxPlatforms: finalMaxPlatforms, // Use calculated final maximum
       minPlatformLength: 4,
       maxPlatformLength: 12,
       minHorizontalGap: 120,
-      maxHorizontalGap: this.MAX_JUMP_DISTANCE_X,
-      minVerticalGap: -this.MAX_JUMP_HEIGHT_UP, // Max upward jump
-      maxVerticalGap: this.MAX_FALL_HEIGHT, // Max downward jump/fall
+      maxHorizontalGap: MAX_JUMP_DISTANCE_X, // Use imported constant
+      minVerticalGap: -MAX_JUMP_HEIGHT_UP, // Use imported constant
+      maxVerticalGap: MAX_FALL_HEIGHT, // Use imported constant
       enemyProbability,
       crateProbability,
+      barrelProbability,
       requiredCoins,
       targetEnemies,
       targetCrates,
+      targetBarrels,
     };
   }
 
@@ -217,7 +274,7 @@ export class LevelGenerator {
     this.player = new Player(
       this.scene,
       startPos.x,
-      startPos.y - 50 - this.PLATFORM_DISPLAY_HEIGHT / 2
+      startPos.y - 50 - this.PLATFORM_DISPLAY_HEIGHT / 2 // Still using local/imported constant
     );
   }
 
@@ -232,7 +289,7 @@ export class LevelGenerator {
   ): PlacementPosition {
     let nextX = currentPos.x;
     let nextY = currentPos.y;
-    const estimatedHalfWidth = (platformLength * 16) / 2; // Use segment width (16px)
+    const estimatedHalfWidth = (platformLength * PLATFORM_SEGMENT_WIDTH) / 2; // Use imported constant
 
     if (lastPlatform) {
       const lastPlatformBounds = lastPlatform.getBounds();
@@ -246,15 +303,15 @@ export class LevelGenerator {
       );
 
       // Basic Solvability Adjustment (Clamp gaps to player jump limits)
-      horizontalGap = Math.min(horizontalGap, this.MAX_JUMP_DISTANCE_X); // Ensure horizontal gap is jumpable
+      horizontalGap = Math.min(horizontalGap, MAX_JUMP_DISTANCE_X); // Use imported constant
       if (verticalGap < 0) {
         // Jumping upwards
-        verticalGap = Math.max(verticalGap, -this.MAX_JUMP_HEIGHT_UP);
+        verticalGap = Math.max(verticalGap, -MAX_JUMP_HEIGHT_UP); // Use imported constant
       }
 
       // --- Ensure Minimum Absolute Vertical Gap ---
-      const MIN_ABS_VERTICAL_GAP = 20; // Increased from 10
       if (Math.abs(verticalGap) < MIN_ABS_VERTICAL_GAP) {
+        // Use imported constant
         // If the gap is too small, push it slightly away from zero
         verticalGap =
           verticalGap >= 0
@@ -293,115 +350,6 @@ export class LevelGenerator {
     );
     this.platforms.push(platform);
     return platform;
-  }
-
-  /**
-   * Populates a given platform with coins. Returns the number of coins added.
-   * Enemy and crate placement is now handled separately.
-   */
-  private populatePlatformWithCoins(platform: Platform): number {
-    const bounds = platform.getBounds();
-    const platformWidth = bounds.width;
-    let coinsAdded = 0;
-
-    // --- Coin Placement Logic ---
-    // Max coins based on spacing
-    const maxPossibleCoins = Math.floor(platformWidth / this.MIN_COIN_SPACING);
-
-    // Target coins for this platform (adjust randomness as needed)
-    // Example: Randomly decide to place 0 to maxPossibleCoins
-    const targetCoinsForPlatform = this.prng.nextInt(0, maxPossibleCoins + 1);
-
-    if (targetCoinsForPlatform > 0) {
-      // Calculate even spacing for the target number of coins
-      const startOffset =
-        (platformWidth - (targetCoinsForPlatform - 1) * this.MIN_COIN_SPACING) /
-        2;
-      const placeY = bounds.top - this.COIN_HEIGHT / 2 - 5; // Place slightly above platform
-
-      for (let i = 0; i < targetCoinsForPlatform; i++) {
-        const placeX = bounds.left + startOffset + i * this.MIN_COIN_SPACING;
-
-        // --- Avoid placing coins too close to the center ---
-        const centerBuffer = 16;
-        if (Math.abs(placeX - bounds.centerX) < centerBuffer) {
-          continue;
-        }
-
-        const coin = new Coin(this.scene, placeX, placeY);
-        this.coins.push(coin);
-        coinsAdded++;
-      }
-    }
-
-    return coinsAdded;
-  }
-
-  /**
-   * Places enemies and crates onto a shuffled list of eligible platforms.
-   * Ensures enemies and crates are not placed on the same platform.
-   */
-  private placeEnemiesAndCrates(
-    eligiblePlatforms: Platform[],
-    params: PlatformGenerationParams
-  ): void {
-    if (eligiblePlatforms.length === 0) return;
-
-    const shuffledPlatforms = this.shuffleArray([...eligiblePlatforms]); // Shuffle a copy
-
-    const numEnemiesToPlace = Math.min(
-      params.targetEnemies,
-      shuffledPlatforms.length
-    );
-    const numCratesToPlace = Math.min(
-      params.targetCrates,
-      shuffledPlatforms.length - numEnemiesToPlace // Ensure enough platforms remain
-    );
-
-    let platformIndex = 0;
-
-    // Place Enemies
-    for (
-      let i = 0;
-      i < numEnemiesToPlace && platformIndex < shuffledPlatforms.length;
-      i++
-    ) {
-      const platform = shuffledPlatforms[platformIndex++];
-      const bounds = platform.getBounds();
-      const placeX = bounds.centerX;
-      const placeY = bounds.top - this.ENEMY_HEIGHT / 2 - 14;
-
-      if (platform.segmentCount < this.MIN_PLATFORM_LENGTH_WITH_ENEMY) {
-        i--; // Decrement enemy counter since we didn't place one
-        continue; // Skip this platform, try the next shuffled one
-      }
-
-      const enemy = new Enemy(this.scene, placeX, placeY);
-      this.enemies.push(enemy);
-    }
-
-    // Place Crates
-    for (
-      let i = 0;
-      i < numCratesToPlace && platformIndex < shuffledPlatforms.length;
-      i++
-    ) {
-      const platform = shuffledPlatforms[platformIndex++];
-      const bounds = platform.getBounds();
-      const placeX = bounds.centerX; // Or random position on platform
-
-      // Randomly choose crate type
-      const isBigCrate = this.prng.next() < 0.5;
-      const crateHeight = isBigCrate
-        ? this.CRATE_BIG_HEIGHT
-        : this.CRATE_SMALL_HEIGHT;
-      const placeY = bounds.top - crateHeight / 2;
-
-      const crate = isBigCrate
-        ? new CrateBig(this.scene, placeX, placeY)
-        : new CrateSmall(this.scene, placeX, placeY);
-      this.crates.push(crate);
-    }
   }
 
   /**
@@ -476,6 +424,13 @@ export class LevelGenerator {
   }
 
   /**
+   * Returns the array of generated Barrel instances.
+   */
+  getBarrels(): Barrel[] {
+    return this.barrels;
+  }
+
+  /**
    * Returns the calculated overall bounds of the generated level.
    * Call this *after* generateLevel().
    */
@@ -485,14 +440,5 @@ export class LevelGenerator {
       maxX: this.levelMaxX,
       lowestY: this.levelLowestY,
     };
-  }
-
-  // Fisher-Yates (aka Knuth) Shuffle algorithm
-  private shuffleArray<T>(array: T[]): T[] {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = this.prng.nextInt(0, i + 1);
-      [array[i], array[j]] = [array[j], array[i]]; // Swap elements
-    }
-    return array;
   }
 }

@@ -369,7 +369,7 @@ export class LevelGenerator {
       const platform = shuffledPlatforms[platformIndex++];
       const bounds = platform.getBounds();
       const placeX = bounds.centerX;
-      const placeY = bounds.top - this.ENEMY_HEIGHT / 2;
+      const placeY = bounds.top - this.ENEMY_HEIGHT / 2 - 14;
 
       if (platform.segmentCount < this.MIN_PLATFORM_LENGTH_WITH_ENEMY) {
         i--; // Decrement enemy counter since we didn't place one

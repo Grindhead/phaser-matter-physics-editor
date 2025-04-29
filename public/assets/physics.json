@@ -246,7 +246,7 @@
 	"barrel": {
 		"type": "fromPhysicsEditor",
 		"label": "barrel",
-		"isStatic": false,
+		"isStatic": true,
 		"density": 0.1,
 		"restitution": 0,
 		"friction": 0.1,
@@ -259,8 +259,8 @@
 		},
 		"fixtures": [
 			{
-				"label": "",
-				"isSensor": false,
+				"label": "barrel",
+				"isSensor": true,
 				"vertices": [
 					[ { "x":67, "y":53 }, { "x":67, "y":13 }, { "x":48, "y":7 }, { "x":21, "y":7 }, { "x":8, "y":10 }, { "x":4, "y":13 }, { "x":21, "y":58 }, { "x":48, "y":58 } ],
 					[ { "x":4, "y":53 }, { "x":21, "y":58 }, { "x":4, "y":13 } ]

@@ -1,5 +1,5 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
-import { BARREL_ANIMATION_KEYS, BARREL_ANIMATIONS } from "./barrelAnimations";
+import { BARREL_ANIMATION_KEYS } from "./barrelAnimations";
 
 export class Barrel extends Phaser.Physics.Matter.Sprite {
   constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -10,6 +10,8 @@ export class Barrel extends Phaser.Physics.Matter.Sprite {
       isSensor: true,
     });
 
+    this.angle = -90;
+    this.setOrigin(0.5, 0.5);
     this.play(BARREL_ANIMATION_KEYS.BARREL_IDLE);
 
     scene.add.existing(this);

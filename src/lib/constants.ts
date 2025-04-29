@@ -18,6 +18,7 @@ export const PHYSICS_ENTITIES = {
   CRATE_SMALL: "crate-small",
   CRATE_BIG: "crate-big",
   PLATFORM: "platform",
+  BARREL: "barrel",
 } as const;
 
 export const TEXTURE_ATLAS = "assets" as const;

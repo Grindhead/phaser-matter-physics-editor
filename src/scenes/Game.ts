@@ -60,9 +60,22 @@ export class Game extends Scene {
   private culledBarrelsCount: number = 0;
   private physicsDebugActive: boolean = false; // Track the state
   private debugGraphics: Phaser.GameObjects.Graphics; // Graphics object for debug drawing
+  private initialPhysicsDebugState: boolean = false; // Store state passed via init
 
   constructor() {
     super(SCENES.GAME);
+  }
+
+  /**
+   * Scene lifecycle hook. Receives data passed from scene.restart().
+   * @param data Data object possibly containing the physics debug state from the previous run.
+   */
+  init(data: { physicsDebugWasActive?: boolean }): void {
+    // Store the passed state, default to false if not provided
+    this.initialPhysicsDebugState = data.physicsDebugWasActive ?? false;
+    console.log(
+      `[Game Init] Received initial physics debug state: ${this.initialPhysicsDebugState}`
+    ); // Added log
   }
 
   /**
@@ -75,16 +88,36 @@ export class Game extends Scene {
     this.initGame();
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
 
-    // Configure Matter debug rendering, initially off
-    this.debugGraphics = this.add.graphics().setAlpha(1).setDepth(9999); // Use full alpha and high depth
-    this.matter.world.debugGraphic = this.debugGraphics; // Correctly assign the property
-    this.matter.world.drawDebug = false; // Reverted: Initially off
-    this.physicsDebugActive = false; // Reverted: Initially false
+    // --- BEGIN REVISED MODIFICATION: Use initial state passed via init ---
+    // Configure Matter debug rendering based on the state stored in init()
+    if (this.debugGraphics) {
+      this.debugGraphics.destroy(); // Destroy previous instance if any
+    }
+    this.debugGraphics = this.add.graphics().setAlpha(1).setDepth(9999);
+    this.matter.world.debugGraphic = this.debugGraphics;
+
+    // Use the initial state received from init()
+    this.matter.world.drawDebug = this.initialPhysicsDebugState;
+    this.physicsDebugActive = this.initialPhysicsDebugState;
+    this.debugGraphics.setVisible(this.initialPhysicsDebugState); // Set visibility accordingly
+    console.log(
+      `[Game Create] Set physics debug state based on init: ${this.physicsDebugActive}`
+    ); // Added log
+    // --- END REVISED MODIFICATION ---
 
     // Listen for the event from DebugUIScene
     this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
-    this.scene.launch(SCENES.DEBUG_UI);
+    // Conditionally launch DebugUI only in development
+    if (import.meta.env.DEV) {
+      // Check if it's already running (e.g., from a previous restart that wasn't cleaned up?)
+      if (!this.scene.isActive(SCENES.DEBUG_UI)) {
+        this.scene.launch(SCENES.DEBUG_UI);
+        console.log("[Game Create] Launched Debug UI scene."); // Added log
+      } else {
+        console.log("[Game Create] Debug UI scene already active."); // Added log
+      }
+    }
   }
 
   /**
@@ -239,13 +272,18 @@ export class Game extends Scene {
     );
     // Use the built-in drawDebug flag
     this.matter.world.drawDebug = this.physicsDebugActive;
+    // Ensure the graphics object is available
+    if (!this.debugGraphics) {
+      // This case shouldn't happen if create runs correctly, but added as a safeguard
+      console.warn("[Game] Debug graphics object not found during toggle.");
+      this.debugGraphics = this.add.graphics().setAlpha(1).setDepth(9999);
+      this.matter.world.debugGraphic = this.debugGraphics;
+    }
     console.log(
       `[Game] Matter world drawDebug set to: ${this.matter.world.drawDebug}`
     );
     // Also toggle the visibility of the graphics object itself
-    // No need to toggle visibility if drawDebug handles it and it starts visible
-    // this.debugGraphics.setVisible(this.physicsDebugActive);
-    this.debugGraphics.setVisible(this.physicsDebugActive); // Reverted: Toggle visibility
+    this.debugGraphics.setVisible(this.physicsDebugActive); // Corrected: Toggle visibility based on state
     console.log(`[Game] Debug graphics visible: ${this.debugGraphics.visible}`);
   }
 
@@ -533,17 +571,27 @@ export class Game extends Scene {
   private restartLevel(): void {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
-    this.physicsEnabled = false;
+    const currentDebugState = this.physicsDebugActive; // Capture state BEFORE stopping/restarting
+    console.log(
+      `[Game] Restarting level. Passing debug state: ${currentDebugState}`
+    ); // Added log
 
     // Explicitly remove world collision listener before restart
-    this.matter.world.off("collisionstart", this.handleCollisionStart);
+    if (this.matter.world) {
+      this.matter.world.off("collisionstart", this.handleCollisionStart);
+    } else {
+      console.warn("[Game] Matter world not found during restart cleanup."); // Added log
+    }
+    // Also remove the debug toggle listener to prevent duplicates on restart
+    this.game.events.off("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
-    // Stop the debug UI scene if it's active
+    // Shut down the DebugUI scene if it's active
     if (this.scene.isActive(SCENES.DEBUG_UI)) {
+      console.log("[Game Restart] Stopping Debug UI scene."); // Added log
       this.scene.stop(SCENES.DEBUG_UI);
     }
-
-    this.scene.restart();
+    // Restart this scene, passing the captured debug state
+    this.scene.restart({ physicsDebugWasActive: currentDebugState });
   }
 
   /**

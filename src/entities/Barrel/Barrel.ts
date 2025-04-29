@@ -32,15 +32,12 @@ export class Barrel extends Phaser.Physics.Matter.Sprite {
   }
 
   public enter() {
-    console.log("[Barrel] Enter called, isEntered = true");
-
     this.play(BARREL_ANIMATION_KEYS.BARREL_ENTER);
     this.isEntered = true;
   }
 
   public launch(): Phaser.Math.Vector2 | null {
     if (!this.isEntered) {
-      console.log("[Barrel] Launch called, but isEntered = false");
       return null;
     }
 

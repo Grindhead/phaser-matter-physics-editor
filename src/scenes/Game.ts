@@ -258,17 +258,15 @@ export class Game extends Scene {
   private handleCollisionStart = ({
     pairs,
   }: Phaser.Physics.Matter.Events.CollisionStartEvent): void => {
-    if (!this.physicsEnabled || this.gameState !== GAME_STATE.PLAYING) return;
+    if (!this.physicsEnabled) return; // Ignore collisions before game starts
 
-    for (const pair of pairs) {
-      const { bodyA, bodyB } = pair;
-
+    for (const { bodyA, bodyB } of pairs) {
       if (this.checkFallSensorCollision(bodyA, bodyB)) return;
       if (this.checkEnemyCollision(bodyA, bodyB)) return;
       if (this.checkFinishCollision(bodyA, bodyB)) return;
-
-      this.checkCoinCollision(bodyA, bodyB);
-      this.checkBarrelCollision(bodyA, bodyB);
+      if (this.checkCoinCollision(bodyA, bodyB)) return;
+      // Add call to check barrel collision
+      if (this.checkBarrelCollision(bodyA, bodyB)) return;
     }
   };
 
@@ -515,17 +513,6 @@ export class Game extends Scene {
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
-    // If the player is already in a barrel OR just exited one, ignore collision
-    if (this.player?.isInBarrel || this.player?.recentlyExitedBarrel) {
-      // Add log if blocked by the cooldown flag
-      if (this.player?.recentlyExitedBarrel) {
-        console.log(
-          `[Game] Barrel collision blocked by recentlyExitedBarrel flag at ${this.time.now}`
-        );
-      }
-      return false;
-    }
-
     let playerBody: MatterJS.BodyType | null = null;
     let barrelBody: MatterJS.BodyType | null = null;
 
@@ -538,19 +525,19 @@ export class Game extends Scene {
     }
 
     if (playerBody && barrelBody) {
-      const barrelInstance = barrelBody.gameObject as Barrel;
-
-      if (barrelInstance.isEntered) {
-        return false;
-      }
-      // Ensure player exists and is not already in a barrel
-      if (this.player && !this.player.isInBarrel && barrelInstance) {
-        console.log("[Game] checkBarrelCollision calling player.enterBarrel");
-        this.player.enterBarrel(barrelInstance);
+      // Get the corresponding Barrel sprite
+      const barrelSprite = barrelBody.gameObject as Barrel;
+      if (
+        barrelSprite &&
+        !this.player.isInBarrel &&
+        !this.player.recentlyExitedBarrel
+      ) {
+        console.log("[Game] Player collided with barrel", barrelSprite);
+        this.player.enterBarrel(barrelSprite);
         return true; // Collision handled
       }
     }
 
-    return false; // No relevant collision handled
+    return false; // No relevant collision
   }
 }

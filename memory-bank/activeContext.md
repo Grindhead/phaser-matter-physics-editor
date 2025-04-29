@@ -110,14 +110,14 @@ Implement the Donkey Kong Country-style barrel mechanic interaction logic:
   - Check for jump input while `isInBarrel` is true.
   - Trigger barrel launch sequence.
 - **Define barrel launch trajectory/velocity:**
-  - Add properties to `Barrel.ts` (e.g., `launchAngle`, `launchSpeed`). These could be set in the constructor or potentially randomized/configured by `LevelGenerator` later.
-  - Implement launch logic in `Player.ts` (applying velocity) triggered by `Barrel`.
+  - **Implement launch logic in `Player.ts` (`launchFromBarrel(vector: Phaser.Math.Vector2)`) triggered by `Barrel` via `Game.ts`. The launch direction \_must\* be based on the barrel's current rotation (`Barrel.angle`) and a defined launch speed.**
+  - Add properties to `Barrel.ts` (e.g., `launchSpeed`). These could be set in the constructor or potentially randomized/configured by `LevelGenerator` later.
 - **Connect barrel animations:**
   - Call `barrel.enter()` and `barrel.launch()` methods from the collision/input logic.
 
 ## Active Decisions & Considerations
 
-- Determine how barrel launch direction/speed is defined (fixed per barrel instance? random? based on player input?). Start with fixed values on the `Barrel` class.
+- Determine how barrel launch speed is defined (fixed per barrel instance? random? based on player input?). Start with fixed values on the `Barrel` class. Launch angle is determined by the barrel's current rotation.
 - How exactly to handle player physics while inside (disable body? set static? just control position?). Simplest might be to disable the player's body and manually set position.
 - Player control over launch: For DKC style, typically player input triggers launch. Let's stick with that.
 

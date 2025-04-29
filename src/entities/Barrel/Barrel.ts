@@ -3,6 +3,7 @@ import {
   PHYSICS,
   TEXTURE_ATLAS,
   BARREL_ROTATION_SPEED,
+  BARREL_LAUNCH_SPEED,
 } from "../../lib/constants";
 import { BARREL_ANIMATION_KEYS } from "./barrelAnimations";
 
@@ -37,14 +38,25 @@ export class Barrel extends Phaser.Physics.Matter.Sprite {
     this.isEntered = true;
   }
 
-  public launch() {
+  public launch(): Phaser.Math.Vector2 | null {
     if (!this.isEntered) {
       console.log("[Barrel] Launch called, but isEntered = false");
-      return;
+      return null;
     }
 
     this.play(BARREL_ANIMATION_KEYS.BARREL_LAUNCH);
     this.isEntered = false;
     console.log("[Barrel] Launch called, isEntered = false");
+
+    const launchAngleRadians = Phaser.Math.DegToRad(this.angle);
+    const launchVector = new Phaser.Math.Vector2(
+      Math.cos(launchAngleRadians) * BARREL_LAUNCH_SPEED,
+      Math.sin(launchAngleRadians) * BARREL_LAUNCH_SPEED
+    );
+
+    console.log(
+      `[Barrel] Calculated launch vector: (${launchVector.x}, ${launchVector.y})`
+    );
+    return launchVector;
   }
 }

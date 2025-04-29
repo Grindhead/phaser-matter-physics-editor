@@ -27,11 +27,17 @@ export const PHYSICS = "physics" as const;
 export const WORLD_WIDTH = Infinity;
 export const WORLD_HEIGHT = Infinity;
 
-export const BARREL_ROTATION_SPEED = 0.5;
+export const BARREL_ROTATION_SPEED = 2;
+export const BARREL_LAUNCH_SPEED = 15;
 
 export const GAME_STATE = {
   WAITING_TO_START: "waiting_to_start",
   PLAYING: "playing",
   GAME_OVER: "game_over",
   LEVEL_COMPLETE: "level_complete",
+} as const;
+
+// Animation keys
+export const ANIMATION_KEYS = {
+  // ... existing code ...
 } as const;

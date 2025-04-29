@@ -9,8 +9,8 @@ import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 const JUMP_VELOCITY = -8;
 const WALK_VELOCITY = 3;
 const FALL_DELAY_MS = 150;
-const BARREL_LAUNCH_VELOCITY_X = 5;
-const BARREL_LAUNCH_VELOCITY_Y = -10;
+const BARREL_LAUNCH_IMPULSE = 0.05;
+const BARREL_EXIT_COOLDOWN_MS = 200;
 
 export class Player extends Phaser.Physics.Matter.Sprite {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -23,7 +23,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private isAlive = true;
   private isLevelComplete = false;
   private justLanded = false;
-  private isLaunching = false;
   public recentlyExitedBarrel: boolean = false;
 
   // Store original collision filter
@@ -57,6 +56,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isAlive = true;
     this.isInBarrel = false;
     this.currentBarrel = null;
+    this.recentlyExitedBarrel = false;
 
     createAnimationChain(this, PLAYER_ANIMATIONS);
 
@@ -105,7 +105,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       }
       this.setVelocityX(targetVelocityX);
 
-      if (up && this.isGrounded) {
+      if (up && this.isGrounded && !this.isInBarrel) {
         this.setVelocityY(JUMP_VELOCITY);
         this.jumpInProgress = true;
         this.lastJumpTime = this.scene.time.now;
@@ -207,7 +207,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     const up = this.cursors?.up?.isDown || this.wasd?.W?.isDown;
     if (up) {
       console.log("[Player] 'Up' detected in barrel state");
-      this.launchFromBarrel();
+      this.currentBarrel.launch();
+      this.exitBarrel();
     }
   }
 
@@ -232,68 +233,38 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     );
   }
 
-  private launchFromBarrel(): void {
-    console.log("[Player] launchFromBarrel called");
-    if (!this.isInBarrel || !this.currentBarrel || this.isLaunching) return;
-
-    this.isLaunching = true;
-
-    const launchVelX =
-      BARREL_LAUNCH_VELOCITY_X * (this.currentBarrel.flipX ? -1 : 1);
-    const launchVelY = BARREL_LAUNCH_VELOCITY_Y;
-
-    console.log(
-      `Launching from barrel with Vel: (${launchVelX}, ${launchVelY})`
-    );
-
-    this.currentBarrel.launch();
-
-    this.exitBarrel();
-
-    this.scene.time.delayedCall(10, () => {
-      if (this.isAlive) {
-        this.setVelocity(launchVelX, launchVelY);
-        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
-      }
-      this.isLaunching = false;
-    });
-  }
-
   private exitBarrel(): void {
-    if (!this.isInBarrel || !this.body) return;
+    console.log("[Player] exitBarrel called");
+    if (!this.isInBarrel || !this.currentBarrel || !this.body) return;
 
-    const wasInBarrel = this.isInBarrel;
+    if (this.recentlyExitedBarrel) return;
+
+    const launchAngle = this.currentBarrel.angle;
 
     this.isInBarrel = false;
     this.currentBarrel = null;
-
     this.setStatic(false);
     this.setVisible(true);
 
-    if (wasInBarrel) {
-      this.recentlyExitedBarrel = true;
-      console.log(
-        `[Player] Setting recentlyExitedBarrel = true at ${this.scene.time.now}`
-      );
-      this.scene.time.delayedCall(1000, () => {
-        this.recentlyExitedBarrel = false;
-        console.log(
-          `[Player] Clearing recentlyExitedBarrel = false at ${this.scene.time.now}`
-        );
-      });
-    }
+    const impulseVector = Phaser.Math.Vector2.UP.clone()
+      .rotate(Phaser.Math.DegToRad(launchAngle))
+      .scale(BARREL_LAUNCH_IMPULSE);
 
-    if (
-      this.originalCollisionCategory !== undefined &&
-      this.originalCollisionMask !== undefined
-    ) {
-      this.setCollisionCategory(this.originalCollisionCategory);
-      this.setCollidesWith(this.originalCollisionMask);
-    }
-    this.originalCollisionCategory = undefined;
-    this.originalCollisionMask = undefined;
+    console.log(
+      `[Player] Applying launch impulse. Angle: ${launchAngle}, Vector: (${impulseVector.x.toFixed(
+        3
+      )}, ${impulseVector.y.toFixed(3)})`
+    );
 
-    console.log("Player exited barrel");
+    this.applyForce(impulseVector);
+
+    this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
+
+    this.recentlyExitedBarrel = true;
+    this.scene.time.delayedCall(BARREL_EXIT_COOLDOWN_MS, () => {
+      this.recentlyExitedBarrel = false;
+      console.log("[Player] Barrel exit cooldown finished.");
+    });
   }
 
   public finishLevel() {

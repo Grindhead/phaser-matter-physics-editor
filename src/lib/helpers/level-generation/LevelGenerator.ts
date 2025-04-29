@@ -215,11 +215,8 @@ export class LevelGenerator {
               0
             )}. Placing platform instead.`
           );
-          // Do not set placeBridgeBarrel = true
-          // Let code fall through to platform placement
         }
       }
-      // --- Barrel Substitution Logic --- END
 
       // --- Placement Decision ---
       if (placeBridgeBarrel) {
@@ -472,9 +469,9 @@ export class LevelGenerator {
     if (!lastPlatform) return;
     const lastPlatformBounds = lastPlatform.getBounds();
     // Place finish X at the right edge of the last platform
-    const finishX = lastPlatformBounds.right - 16;
+    const finishX = lastPlatformBounds.right - 40;
     // Place finish Y 100px above the top surface of the last platform
-    const finishY = lastPlatformBounds.top - 60; // Increased from 50
+    const finishY = lastPlatformBounds.top - 110; // Increased from 50
     new Finish(this.scene, finishX, finishY);
   }
 

@@ -9,7 +9,7 @@ import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 const JUMP_VELOCITY = -8;
 const WALK_VELOCITY = 3;
 const FALL_DELAY_MS = 150;
-const BARREL_LAUNCH_IMPULSE = 0.05;
+const BARREL_LAUNCH_VELOCITY = 12;
 const BARREL_EXIT_COOLDOWN_MS = 200;
 
 export class Player extends Phaser.Physics.Matter.Sprite {
@@ -103,7 +103,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         targetVelocityX = WALK_VELOCITY;
         this.flipX = false;
       }
-      this.setVelocityX(targetVelocityX);
+      if (!this.recentlyExitedBarrel) {
+        this.setVelocityX(targetVelocityX);
+      }
 
       if (up && this.isGrounded && !this.isInBarrel) {
         this.setVelocityY(JUMP_VELOCITY);
@@ -246,17 +248,37 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.setStatic(false);
     this.setVisible(true);
 
-    const impulseVector = Phaser.Math.Vector2.UP.clone()
+    const launchVector = Phaser.Math.Vector2.RIGHT.clone()
       .rotate(Phaser.Math.DegToRad(launchAngle))
-      .scale(BARREL_LAUNCH_IMPULSE);
+      .scale(BARREL_LAUNCH_VELOCITY);
 
     console.log(
-      `[Player] Applying launch impulse. Angle: ${launchAngle}, Vector: (${impulseVector.x.toFixed(
+      `[Player] Barrel Angle: ${launchAngle}, Radian: ${Phaser.Math.DegToRad(
+        launchAngle
+      ).toFixed(3)}`
+    );
+    console.log(
+      `[Player] Calculated Launch Vector: (${launchVector.x.toFixed(
         3
-      )}, ${impulseVector.y.toFixed(3)})`
+      )}, ${launchVector.y.toFixed(3)})`
+    );
+    console.log(
+      `[Player] Current Velocity BEFORE setVelocity: (${this.body?.velocity.x.toFixed(
+        3
+      )}, ${this.body?.velocity.y.toFixed(3)})`
     );
 
-    this.applyForce(impulseVector);
+    this.setVelocity(launchVector.x, launchVector.y);
+
+    // Add a small delay to check velocity *after* physics engine step
+    this.scene.time.delayedCall(10, () => {
+      if (!this.body) return;
+      console.log(
+        `[Player] Velocity AFTER setVelocity (delayed): (${this.body.velocity.x.toFixed(
+          3
+        )}, ${this.body.velocity.y.toFixed(3)})`
+      );
+    });
 
     this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
 

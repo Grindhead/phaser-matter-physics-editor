@@ -48,6 +48,8 @@ export class UIScene extends Phaser.Scene {
     // Setup Q key listener within this scene
     this.input.keyboard?.on("keydown-Q", () => {
       this.debugPanel.toggle();
+      // Emit event to toggle physics debug in Game scene
+      this.game.events.emit("togglePhysicsDebug");
     });
   }
 

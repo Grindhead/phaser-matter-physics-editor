@@ -22,7 +22,7 @@ export function createAnimations<T extends string>(
         anims.create({
           key,
           frames: [
-            { key: atlasKey, frame: config.prefix }, // Full image path for single frame
+            { key: atlasKey, frame: `${config.prefix}.png` }, // Append .png for single frame
           ],
           repeat: 0,
         });

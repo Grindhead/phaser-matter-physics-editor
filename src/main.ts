@@ -1,6 +1,5 @@
 import { Boot } from "./scenes/Boot";
 import { Game as MainGame } from "./scenes/Game";
-import { GameOver } from "./scenes/GameOver";
 import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 import { UIScene } from "./scenes/DebugUIScene";
@@ -26,9 +25,29 @@ const config: Types.Core.GameConfig = {
         x: 0,
         y: 1,
       },
+      debug: {
+        showAxes: false,
+        showAngleIndicator: true,
+        showBounds: false,
+        showCollisions: true,
+        showConvexHulls: true,
+        showInternalEdges: false,
+        showPositions: true,
+        showSeparation: false,
+        showVelocity: true,
+        renderFill: true,
+        renderLine: true,
+        lineColor: 0x00ff00,
+        fillColor: 0x00ff00,
+        fillOpacity: 0.1,
+        lineOpacity: 1,
+        lineThickness: 1,
+        staticFillColor: 0x0000ff,
+        staticLineColor: 0x0000ff,
+      },
     },
   },
-  scene: [Boot, Preloader, MainMenu, MainGame, UIScene, GameOver],
+  scene: [Boot, Preloader, MainMenu, MainGame, UIScene],
 };
 
 export default new Game(config);

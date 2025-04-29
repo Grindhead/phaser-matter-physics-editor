@@ -3,7 +3,7 @@ import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
 import { ENEMY_ANIMATION_KEYS, ENEMY_ANIMATIONS } from "./enemyAnimations";
 
 export class Enemy extends Phaser.Physics.Matter.Sprite {
-  private speed = 2;
+  private speed = 1.4;
   private direction: 1 | -1 = 1;
   private platformBounds?: { left: number; right: number };
 

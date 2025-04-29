@@ -18,6 +18,7 @@ export const PHYSICS_ENTITIES = {
   CRATE_SMALL: "crate-small",
   CRATE_BIG: "crate-big",
   PLATFORM: "platform",
+  BARREL: "barrel",
 } as const;
 
 export const TEXTURE_ATLAS = "assets" as const;
@@ -25,6 +26,9 @@ export const PHYSICS = "physics" as const;
 
 export const WORLD_WIDTH = Infinity;
 export const WORLD_HEIGHT = Infinity;
+
+export const BARREL_ROTATION_SPEED = 2;
+export const BARREL_LAUNCH_SPEED = 15;
 
 export const GAME_STATE = {
   WAITING_TO_START: "waiting_to_start",

@@ -4,7 +4,7 @@
         <key>fileFormatVersion</key>
         <int>6</int>
         <key>texturePackerVersion</key>
-        <string>7.6.2</string>
+        <string>7.6.3</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -50,7 +50,7 @@
         <key>dxtCompressionMode</key>
         <enum type="SettingsBase::DxtCompressionMode">DXT_PERCEPTUAL</enum>
         <key>ditherType</key>
-        <enum type="SettingsBase::DitherType">PngQuantLow</enum>
+        <enum type="SettingsBase::DitherType">PngQuantHigh</enum>
         <key>backgroundColor</key>
         <uint>0</uint>
         <key>libGdx</key>
@@ -128,7 +128,7 @@
             </struct>
         </map>
         <key>multiPackMode</key>
-        <enum type="SettingsBase::MultiPackMode">MultiPackOff</enum>
+        <enum type="SettingsBase::MultiPackMode">MultiPackAuto</enum>
         <key>forceIdenticalLayout</key>
         <false/>
         <key>outputFormat</key>
@@ -155,7 +155,7 @@
             <key>scaleMode</key>
             <enum type="ScaleMode">Smooth</enum>
             <key>extrude</key>
-            <uint>1</uint>
+            <uint>0</uint>
             <key>trimThreshold</key>
             <uint>1</uint>
             <key>trimMargin</key>
@@ -173,6 +173,81 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
+            <key type="filename">barrel/enter/barrel-enter-0001.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0002.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0003.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0004.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0005.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0006.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0007.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0008.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0009.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0010.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0011.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0012.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0013.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0014.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0015.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0016.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0017.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0018.png</key>
+            <key type="filename">barrel/enter/barrel-enter-0019.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>24,16,47,33</rect>
+                <key>scale9Paddings</key>
+                <rect>24,16,47,33</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">barrel/launch/barrel-launch-0001.png</key>
+            <key type="filename">barrel/launch/barrel-launch-0002.png</key>
+            <key type="filename">barrel/launch/barrel-launch-0003.png</key>
+            <key type="filename">barrel/launch/barrel-launch-0004.png</key>
+            <key type="filename">barrel/launch/barrel-launch-0005.png</key>
+            <key type="filename">barrel/launch/barrel-launch-0006.png</key>
+            <key type="filename">barrel/launch/barrel-launch-0007.png</key>
+            <key type="filename">barrel/launch/barrel-launch-0008.png</key>
+            <key type="filename">barrel/launch/barrel-launch-0009.png</key>
+            <key type="filename">barrel/launch/barrel-launch-0010.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>33,28,66,55</rect>
+                <key>scale9Paddings</key>
+                <rect>33,28,66,55</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">bg/background.png</key>
+            <key type="filename">bg/foreground.png</key>
+            <key type="filename">bg/middle-ground.png</key>
+            <key type="filename">ui/main-menu/background.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>512,256,1024,512</rect>
+                <key>scale9Paddings</key>
+                <rect>512,256,1024,512</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">coin/coin-collect/coin-collect-0001.png</key>
             <key type="filename">coin/coin-collect/coin-collect-0002.png</key>
             <key type="filename">coin/coin-collect/coin-collect-0003.png</key>
@@ -330,6 +405,38 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">fx-land/fx-land-0001.png</key>
+            <key type="filename">fx-land/fx-land-0002.png</key>
+            <key type="filename">fx-land/fx-land-0003.png</key>
+            <key type="filename">fx-land/fx-land-0004.png</key>
+            <key type="filename">fx-land/fx-land-0005.png</key>
+            <key type="filename">fx-land/fx-land-0006.png</key>
+            <key type="filename">fx-land/fx-land-0007.png</key>
+            <key type="filename">fx-land/fx-land-0008.png</key>
+            <key type="filename">fx-land/fx-land-0009.png</key>
+            <key type="filename">fx-land/fx-land-0010.png</key>
+            <key type="filename">fx-land/fx-land-0011.png</key>
+            <key type="filename">fx-land/fx-land-0012.png</key>
+            <key type="filename">fx-land/fx-land-0013.png</key>
+            <key type="filename">fx-land/fx-land-0014.png</key>
+            <key type="filename">fx-land/fx-land-0015.png</key>
+            <key type="filename">fx-land/fx-land-0016.png</key>
+            <key type="filename">fx-land/fx-land-0017.png</key>
+            <key type="filename">fx-land/fx-land-0018.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>64,64,128,128</rect>
+                <key>scale9Paddings</key>
+                <rect>64,64,128,128</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">platforms/platform-left.png</key>
             <key type="filename">platforms/platform-right.png</key>
             <struct type="IndividualSpriteSettings">
@@ -358,6 +465,39 @@
                 <rect>7,6,13,12</rect>
                 <key>scale9Paddings</key>
                 <rect>7,6,13,12</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">player/blast/Duck Blast0001.png</key>
+            <key type="filename">player/blast/Duck Blast0002.png</key>
+            <key type="filename">player/blast/Duck Blast0003.png</key>
+            <key type="filename">player/blast/Duck Blast0004.png</key>
+            <key type="filename">player/blast/Duck Blast0005.png</key>
+            <key type="filename">player/blast/Duck Blast0006.png</key>
+            <key type="filename">player/blast/Duck Blast0007.png</key>
+            <key type="filename">player/blast/Duck Blast0008.png</key>
+            <key type="filename">player/blast/Duck Blast0009.png</key>
+            <key type="filename">player/blast/Duck Blast0010.png</key>
+            <key type="filename">player/blast/Duck Blast0011.png</key>
+            <key type="filename">player/blast/Duck Blast0012.png</key>
+            <key type="filename">player/blast/Duck Blast0013.png</key>
+            <key type="filename">player/blast/Duck Blast0014.png</key>
+            <key type="filename">player/blast/Duck Blast0015.png</key>
+            <key type="filename">player/blast/Duck Blast0016.png</key>
+            <key type="filename">player/blast/Duck Blast0017.png</key>
+            <key type="filename">player/blast/Duck Blast0018.png</key>
+            <key type="filename">player/blast/Duck Blast0019.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>34,17,69,33</rect>
+                <key>scale9Paddings</key>
+                <rect>34,17,69,33</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -459,6 +599,76 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">player/land/Duck land cool0001.png</key>
+            <key type="filename">player/land/Duck land cool0002.png</key>
+            <key type="filename">player/land/Duck land cool0003.png</key>
+            <key type="filename">player/land/Duck land cool0004.png</key>
+            <key type="filename">player/land/Duck land cool0005.png</key>
+            <key type="filename">player/land/Duck land cool0006.png</key>
+            <key type="filename">player/land/Duck land cool0007.png</key>
+            <key type="filename">player/land/Duck land cool0008.png</key>
+            <key type="filename">player/land/Duck land cool0009.png</key>
+            <key type="filename">player/land/Duck land cool0010.png</key>
+            <key type="filename">player/land/Duck land cool0011.png</key>
+            <key type="filename">player/land/Duck land cool0012.png</key>
+            <key type="filename">player/land/Duck land cool0013.png</key>
+            <key type="filename">player/land/Duck land cool0014.png</key>
+            <key type="filename">player/land/Duck land cool0015.png</key>
+            <key type="filename">player/land/Duck land cool0016.png</key>
+            <key type="filename">player/land/Duck land cool0017.png</key>
+            <key type="filename">player/land/Duck land cool0018.png</key>
+            <key type="filename">player/land/Duck land cool0019.png</key>
+            <key type="filename">player/land/Duck land cool0020.png</key>
+            <key type="filename">player/land/Duck land cool0021.png</key>
+            <key type="filename">player/land/Duck land cool0022.png</key>
+            <key type="filename">player/land/Duck land cool0023.png</key>
+            <key type="filename">player/land/Duck land cool0024.png</key>
+            <key type="filename">player/land/Duck land cool0025.png</key>
+            <key type="filename">player/land/Duck land cool0026.png</key>
+            <key type="filename">player/land/Duck land cool0027.png</key>
+            <key type="filename">player/land/Duck land cool0028.png</key>
+            <key type="filename">player/land/Duck land cool0029.png</key>
+            <key type="filename">player/land/Duck land cool0030.png</key>
+            <key type="filename">player/land/Duck land cool0031.png</key>
+            <key type="filename">player/land/Duck land cool0032.png</key>
+            <key type="filename">player/land/Duck land cool0033.png</key>
+            <key type="filename">player/land/Duck land cool0034.png</key>
+            <key type="filename">player/land/Duck land cool0035.png</key>
+            <key type="filename">player/land/Duck land cool0036.png</key>
+            <key type="filename">player/land/Duck land cool0037.png</key>
+            <key type="filename">player/land/Duck land cool0038.png</key>
+            <key type="filename">player/land/Duck land cool0039.png</key>
+            <key type="filename">player/land/Duck land cool0040.png</key>
+            <key type="filename">player/land/Duck land cool0041.png</key>
+            <key type="filename">player/land/Duck land cool0042.png</key>
+            <key type="filename">player/land/Duck land cool0043.png</key>
+            <key type="filename">player/land/Duck land cool0044.png</key>
+            <key type="filename">player/land/Duck land cool0045.png</key>
+            <key type="filename">player/land/Duck land cool0046.png</key>
+            <key type="filename">player/land/Duck land cool0047.png</key>
+            <key type="filename">player/land/Duck land cool0048.png</key>
+            <key type="filename">player/land/Duck land cool0049.png</key>
+            <key type="filename">player/land/Duck land cool0050.png</key>
+            <key type="filename">player/land/Duck land cool0051.png</key>
+            <key type="filename">player/land/Duck land cool0052.png</key>
+            <key type="filename">player/land/Duck land cool0053.png</key>
+            <key type="filename">player/land/Duck land cool0054.png</key>
+            <key type="filename">player/land/Duck land cool0055.png</key>
+            <key type="filename">player/land/Duck land cool0056.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>19,17,37,33</rect>
+                <key>scale9Paddings</key>
+                <rect>19,17,37,33</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">player/run/duck-run-0001.png</key>
             <key type="filename">player/run/duck-run-0002.png</key>
             <key type="filename">player/run/duck-run-0003.png</key>
@@ -487,6 +697,42 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">player/wobble/Duck Wobble0001.png</key>
+            <key type="filename">player/wobble/Duck Wobble0002.png</key>
+            <key type="filename">player/wobble/Duck Wobble0003.png</key>
+            <key type="filename">player/wobble/Duck Wobble0004.png</key>
+            <key type="filename">player/wobble/Duck Wobble0005.png</key>
+            <key type="filename">player/wobble/Duck Wobble0006.png</key>
+            <key type="filename">player/wobble/Duck Wobble0007.png</key>
+            <key type="filename">player/wobble/Duck Wobble0008.png</key>
+            <key type="filename">player/wobble/Duck Wobble0009.png</key>
+            <key type="filename">player/wobble/Duck Wobble0010.png</key>
+            <key type="filename">player/wobble/Duck Wobble0011.png</key>
+            <key type="filename">player/wobble/Duck Wobble0012.png</key>
+            <key type="filename">player/wobble/Duck Wobble0013.png</key>
+            <key type="filename">player/wobble/Duck Wobble0014.png</key>
+            <key type="filename">player/wobble/Duck Wobble0015.png</key>
+            <key type="filename">player/wobble/Duck Wobble0016.png</key>
+            <key type="filename">player/wobble/Duck Wobble0017.png</key>
+            <key type="filename">player/wobble/Duck Wobble0018.png</key>
+            <key type="filename">player/wobble/Duck Wobble0019.png</key>
+            <key type="filename">player/wobble/Duck Wobble0020.png</key>
+            <key type="filename">player/wobble/Duck Wobble0021.png</key>
+            <key type="filename">player/wobble/Duck Wobble0022.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>14,15,28,29</rect>
+                <key>scale9Paddings</key>
+                <rect>14,15,28,29</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">ui/game-over.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -499,6 +745,36 @@
                 <rect>70,35,139,70</rect>
                 <key>scale9Paddings</key>
                 <rect>70,35,139,70</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">ui/main-menu/play-game.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>132,29,264,57</rect>
+                <key>scale9Paddings</key>
+                <rect>132,29,264,57</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">ui/main-menu/title.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>200,50,400,100</rect>
+                <key>scale9Paddings</key>
+                <rect>200,50,400,100</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>

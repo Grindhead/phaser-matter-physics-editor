@@ -2,11 +2,15 @@ import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
 import { createAnimationChain } from "../../lib/helpers/createAnimations";
 import { isGroundBody } from "../../lib/helpers/isGroundBody";
 import { isPlayerBody } from "../../lib/helpers/isPlayerBody";
+import { FXLand } from "../fx-land/FxLand";
+import { Barrel } from "../Barrel/Barrel";
 import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 
-const JUMP_VELOCITY = -8;
+const JUMP_VELOCITY = -9;
 const WALK_VELOCITY = 3;
 const FALL_DELAY_MS = 150;
+const BARREL_LAUNCH_VELOCITY = 12;
+const BARREL_EXIT_COOLDOWN_MS = 200;
 
 export class Player extends Phaser.Physics.Matter.Sprite {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -19,6 +23,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private isAlive = true;
   private isLevelComplete = false;
   private justLanded = false;
+  private currentBarrel: Barrel | null = null;
+  public recentlyExitedBarrel: boolean = false;
+  public isInBarrel = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -42,6 +49,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, true);
 
     this.isAlive = true;
+    this.isInBarrel = false;
+    this.currentBarrel = null;
+    this.recentlyExitedBarrel = false;
 
     createAnimationChain(this, PLAYER_ANIMATIONS);
 
@@ -63,8 +73,13 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
   private createMobileControls() {}
 
-  update(_time: number, _delta: number): void {
+  update(): void {
     if (!this.isAlive) {
+      return;
+    }
+
+    if (this.isInBarrel && this.currentBarrel) {
+      this.handleInBarrelState();
       return;
     }
 
@@ -74,7 +89,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     const right = this.cursors.right?.isDown || this.wasd.D?.isDown;
     const up = this.cursors.up?.isDown || this.wasd.W?.isDown;
 
-    // --- Control Handling (Movement & Jump - only if level NOT complete) ---
     if (!this.isLevelComplete) {
       let targetVelocityX = 0;
       if (left) {
@@ -84,29 +98,26 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         targetVelocityX = WALK_VELOCITY;
         this.flipX = false;
       }
-      this.setVelocityX(targetVelocityX);
+      if (!this.recentlyExitedBarrel) {
+        this.setVelocityX(targetVelocityX);
+      }
 
-      // Jump
-      if (up && this.isGrounded) {
+      if (up && this.isGrounded && !this.isInBarrel) {
         this.setVelocityY(JUMP_VELOCITY);
         this.jumpInProgress = true;
         this.lastJumpTime = this.scene.time.now;
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_JUMP, true);
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-          // Transition to fall anim after jump completes if still airborne
           if (!this.isGrounded) {
             this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
           }
         });
-        return; // Exit early if we just jumped
+        return;
       }
     }
 
-    // In air logic
     if (!this.isGrounded) {
-      // If jump is not in progress (i.e., we are falling)
       if (!this.jumpInProgress) {
-        // Play fall animation if not already playing and enough time has passed since last jump
         if (
           this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_FALL &&
           this.scene.time.now - this.lastJumpTime > FALL_DELAY_MS
@@ -114,24 +125,18 @@ export class Player extends Phaser.Physics.Matter.Sprite {
           this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
         }
       }
-    }
-    // On ground logic
-    else if (this.isGrounded && !this.jumpInProgress) {
-      // Check if this is the exact frame we landed
+    } else if (this.isGrounded && !this.jumpInProgress) {
       if (this.justLanded) {
         const left = this.cursors?.left?.isDown || this.wasd?.A?.isDown;
         const right = this.cursors?.right?.isDown || this.wasd?.D?.isDown;
 
-        // Prioritize input check on landing frame
         if (!left && !right) {
           this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
         } else {
-          // Assume running if input is held on landing
           this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
         }
-        this.justLanded = false; // Consume the flag
+        this.justLanded = false;
       } else {
-        // On subsequent grounded frames, use velocity (unless level complete)
         if (this.isLevelComplete) {
           this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
         } else {
@@ -143,8 +148,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         }
       }
     }
-
-    // --- End Control Handling ---
   }
 
   private playAnimation(key: string, force = false) {
@@ -160,8 +163,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     event: Phaser.Physics.Matter.Events.CollisionStartEvent
   ) {
     for (const { bodyA, bodyB } of event.pairs) {
-      // Log involved bodies
-
       if (isPlayerBody(bodyA) && isGroundBody(bodyB)) {
         this.groundContacts.add(bodyB);
       } else if (isPlayerBody(bodyB) && isGroundBody(bodyA)) {
@@ -174,7 +175,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     if (this.isGrounded && !wasGrounded) {
       this.jumpInProgress = false;
-      this.justLanded = true; // Set flag when landing occurs
+      this.justLanded = true;
+
+      new FXLand(this.scene, this.x, this.getBounds().bottom);
     }
   }
 
@@ -192,13 +195,79 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isGrounded = this.groundContacts.size > 0;
   }
 
+  private handleInBarrelState(): void {
+    if (!this.currentBarrel) return;
+
+    this.setPosition(this.currentBarrel.x, this.currentBarrel.y);
+    this.setVelocity(0, 0);
+
+    const up = this.cursors?.up?.isDown || this.wasd?.W?.isDown;
+    if (up) {
+      this.currentBarrel.launch();
+      this.exitBarrel();
+    }
+  }
+
+  public enterBarrel(barrel: Barrel): void {
+    if (this.isInBarrel || !this.body) return;
+
+    this.isInBarrel = true;
+    this.currentBarrel = barrel;
+    this.isGrounded = false;
+    this.jumpInProgress = false;
+
+    this.setStatic(true);
+    this.setVisible(false);
+
+    this.currentBarrel.enter();
+  }
+
+  private exitBarrel(): void {
+    console.log("[Player] exitBarrel called");
+    if (!this.isInBarrel || !this.currentBarrel || !this.body) return;
+
+    if (this.recentlyExitedBarrel) return;
+
+    const launchAngle = this.currentBarrel.angle;
+
+    this.isInBarrel = false;
+    this.currentBarrel = null;
+    this.setStatic(false);
+    this.setVisible(true);
+
+    const launchVector = Phaser.Math.Vector2.RIGHT.clone()
+      .rotate(Phaser.Math.DegToRad(launchAngle))
+      .scale(BARREL_LAUNCH_VELOCITY);
+
+    console.log(
+      `[Player] Barrel Angle: ${launchAngle}, Radian: ${Phaser.Math.DegToRad(
+        launchAngle
+      ).toFixed(3)}`
+    );
+
+    this.setVelocity(launchVector.x, launchVector.y);
+    this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
+
+    this.recentlyExitedBarrel = true;
+    this.scene.time.delayedCall(BARREL_EXIT_COOLDOWN_MS, () => {
+      this.recentlyExitedBarrel = false;
+      console.log("[Player] Barrel exit cooldown finished.");
+    });
+  }
+
   public finishLevel() {
     this.isLevelComplete = true;
     this.setVelocityX(0);
+    if (this.isInBarrel) {
+      this.exitBarrel();
+    }
   }
 
   public kill() {
     this.isAlive = false;
+    if (this.isInBarrel) {
+      this.exitBarrel();
+    }
     this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_DEAD);
     this.setVelocityX(0);
     this.setVelocityY(0);

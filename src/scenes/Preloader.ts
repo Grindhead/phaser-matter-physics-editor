@@ -4,6 +4,8 @@ import { createAnimations } from "../lib/helpers/createAnimations";
 import { PLAYER_ANIMATIONS } from "../entities/Player/playerAnimations";
 import { COIN_ANIMATIONS } from "../entities/Coin/coinAnimations";
 import { FINISH_ANIMATIONS } from "../entities/Finish/finishAnimations";
+import { FX_ANIMATIONS } from "../entities/fx-land/fxAnimations";
+import { BARREL_ANIMATIONS } from "../entities/Barrel/barrelAnimations";
 
 export class Preloader extends Scene {
   constructor() {
@@ -28,26 +30,24 @@ export class Preloader extends Scene {
   }
 
   preload() {
-    //  Load the assets for the game - Replace with your own assets
+    //  Load the assets for the game
     this.load.setPath("assets");
-    this.load.atlas(TEXTURE_ATLAS, "assets.png", "assets.json");
+    this.load.multiatlas(TEXTURE_ATLAS, "assets.json");
     this.load.json(PHYSICS, "physics.json");
-    this.load.image("background", "background.png");
-    this.load.image("middleground", "middle.png");
-    this.load.image("foreground", "foreground.png");
   }
 
   create() {
-    //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
-    //  For example, you can define global animations here, so we can use them in other scenes.
     this.setupAnimations();
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
     this.scene.start(SCENES.MAIN_MENU);
   }
 
   setupAnimations() {
+    // Create animations using the correct atlas key 'assets-1'
     createAnimations(this.game.anims, TEXTURE_ATLAS, PLAYER_ANIMATIONS);
     createAnimations(this.game.anims, TEXTURE_ATLAS, COIN_ANIMATIONS);
     createAnimations(this.game.anims, TEXTURE_ATLAS, FINISH_ANIMATIONS);
+    createAnimations(this.game.anims, TEXTURE_ATLAS, FX_ANIMATIONS);
+    createAnimations(this.game.anims, TEXTURE_ATLAS, BARREL_ANIMATIONS);
   }
 }

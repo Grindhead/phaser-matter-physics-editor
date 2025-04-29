@@ -1,30 +1,56 @@
 import { Scene, GameObjects } from "phaser";
-import { SCENES } from "../lib/constants";
+import { SCENES, TEXTURE_ATLAS } from "../lib/constants";
 
 export class MainMenu extends Scene {
   background: GameObjects.Image;
   logo: GameObjects.Image;
-  title: GameObjects.Text;
+  playButton: GameObjects.Image;
 
   constructor() {
     super(SCENES.MAIN_MENU);
   }
 
   create() {
-    this.background = this.add.image(512, 384, "background");
+    const { width, height } = this.scale;
 
-    this.title = this.add
-      .text(512, 460, "Main Menu", {
-        fontFamily: "Arial Black",
-        fontSize: 38,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 8,
-        align: "center",
-      })
-      .setOrigin(0.5);
+    this.background = this.add.image(
+      width / 2,
+      height / 2,
+      TEXTURE_ATLAS,
+      "ui/main-menu/background.png"
+    );
 
-    this.input.once("pointerdown", () => {
+    const screenAspectRatio = width / height;
+    const imageAspectRatio = this.background.width / this.background.height;
+
+    let scale: number;
+    if (screenAspectRatio > imageAspectRatio) {
+      // Screen is wider than image
+      scale = width / this.background.width;
+    } else {
+      // Screen is taller than (or same aspect ratio as) image
+      scale = height / this.background.height;
+    }
+
+    this.background.setScale(scale).setScrollFactor(0);
+
+    this.logo = this.add.image(
+      width / 2,
+      height * 0.4,
+      TEXTURE_ATLAS,
+      "ui/main-menu/title.png"
+    );
+
+    this.playButton = this.add
+      .image(
+        width / 2,
+        height * 0.6,
+        TEXTURE_ATLAS,
+        "ui/main-menu/play-game.png"
+      )
+      .setInteractive({ useHandCursor: true });
+
+    this.playButton.on("pointerdown", () => {
       this.scene.start(SCENES.GAME);
     });
   }

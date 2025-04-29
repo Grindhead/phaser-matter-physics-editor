@@ -2,6 +2,210 @@
 
 ## Current Focus
 
+**Fixed:** Physics debug rendering state persistence across level restarts (corrected approach).
+
+Ready for next task. Potential areas include:
+
+- Implementing mobile controls (`createMobileControls` is empty).
+- Defining level completion logic/trigger.
+- Implementing player death sequence.
+- Investigating `CameraManager.update` issue.
+
+## Recent Changes
+
+- **Corrected Physics Debug Persistence:** Reworked the fix. The `Game` scene now explicitly passes the current debug state (`physicsDebugActive`) as data during `scene.restart()`. The scene's `init()` method receives this data, and `create()` uses the received state to initialize the debug view correctly, avoiding issues where the state might be reset by Phaser before `create` runs.
+- **Barrel Interaction Completed:** Implemented full player-barrel interaction (entry, rotation, launch) and updated memory bank.
+- Overlap check added for bridge barrels in `LevelGenerator.ts`.
+- Reverted `MAX_JUMP_DISTANCE_X` to 200.
+- Re-enabled optional barrel placement (`placeBarrelsBetweenPlatforms`).
+
+## Next Steps
+
+- Address one of the items listed under "What's Left to Build" in `progress.md`.
+
+## Active Decisions & Considerations
+
+- **Passing State on Restart:** Explicitly passing necessary state (like debug flags) via `scene.restart(data)` and reading it in `init(data)` is a robust way to handle state persistence across scene restarts, especially when the engine might reset underlying properties based on initial configurations.
+
+## Important Patterns & Preferences
+
+- **State Persistence Across Restarts (Revised):** When state needs to persist across `scene.restart()`, explicitly pass the state as data (`scene.restart({ key: value })`) and retrieve it in the scene's `init(data)` method. Relying on reading the state from engine objects at the start of `create()` can be unreliable if the engine resets those objects based on initial configurations before `create` executes.
+- **Event Listener Cleanup:** Removing event listeners (e.g., `this.game.events.off(...)`) before restarting a scene or destroying an object is crucial to prevent memory leaks and duplicate listeners.
+- **State Tracking during Generation:** Maintaining state (occupied ranges) within the generation loop to inform subsequent placement decisions.
+- Leveraging Matter.js collision events.
+- Encapsulating entity-specific logic within the entity class (`Player`, `Barrel`).
+- Using state machines or flags within entities to manage behavior.
+- **State Management for Interaction:** Using boolean flags and methods across interacting entities to manage complex interaction flows.
+
+## Learnings & Project Insights
+
+- **Scene Restart Lifecycle:** Understanding that `scene.restart()` might reset certain engine states based on initial configuration _before_ `create()` runs is crucial for reliable state persistence. Explicitly passing state via `restart` data is safer than trying to read potentially reset state in `create`.
+- Implementing interactive mechanics often involves coordinating state changes across multiple entities (`Player`, `Barrel`, `Game`).
+- Animation events or delays can be crucial for correct state synchronization during interactions.
+- Visual asset origins might not align with geometric centers.
+- Adding new generation features can introduce conflicts requiring explicit checks.
+
+## _Previous Context Entries Below_
+
+## Current Focus
+
+Preventing overlap between consecutively generated bridge barrels.
+
+- **Status:** Bridge barrel substitution logic is working (barrels generate when `dX > maxHorizontalGap` with reduced jump distance). Enemy spawning is fixed.
+- **Issue:** Bridge barrels generated in the main loop can overlap horizontally if impossible gaps occur close together, as there's no overlap check in that specific logic path.
+- **Goal:** Prevent bridge barrels from overlapping horizontally.
+- **Approach:**
+  1.  **Track Bridge Barrel Ranges:** In `generateLevel`, maintain a list (`bridgeBarrelRanges`) of horizontal extents occupied by already-placed bridge barrels.
+  2.  **Add Overlap Check:** Inside the `if (dX > params.maxHorizontalGap)` block:
+      - Calculate the potential range of the new barrel.
+      - Check this range against `bridgeBarrelRanges`.
+      - **If Overlap:** Log a warning, skip barrel placement, and allow the code to fall through to place a normal (but distant) platform instead.
+      - **If No Overlap:** Place the barrel, add its range to `bridgeBarrelRanges`, adjust `currentPlatformX` for the next iteration, and `continue` the loop (skipping platform placement).
+  3.  **Keep Jump Distance Reduced:** Keep `MAX_JUMP_DISTANCE_X` temporarily at 150 for testing.
+  4.  **Keep Optional Barrels Disabled:** Keep `placeBarrelsBetweenPlatforms` commented out.
+
+## Recent Changes
+
+- Confirmed bridge barrel substitution logic triggers with reduced `MAX_JUMP_DISTANCE_X` (150).
+- Temporarily reduced `MAX_JUMP_DISTANCE_X`.
+- Reduced `MIN_PLATFORM_LENGTH_WITH_ENEMY` to 6, fixing enemy spawning.
+
+## Next Steps
+
+- Implement the overlap check for bridge barrels in `LevelGenerator.ts`.
+- Test level generation, checking console logs and visually inspecting barrel placement for overlaps.
+- If overlap is prevented, revert `MAX_JUMP_DISTANCE_X` to 200.
+- Then, uncomment `placeBarrelsBetweenPlatforms`.
+- Perform final test.
+
+## Active Decisions & Considerations
+
+- Choosing to place a platform instead of an overlapping barrel simplifies the logic, although it removes the mandatory jump for that specific gap.
+- This overlap check is separate from the one in `placeBarrelsBetweenPlatforms`, which handles optional barrels.
+
+## Important Patterns & Preferences
+
+- **State Tracking during Generation:** Maintaining state (occupied ranges) within the generation loop to inform subsequent placement decisions.
+
+## Learnings & Project Insights
+
+- Adding new generation features can introduce conflicts (like overlaps) with existing or similar features placed nearby, requiring explicit checks.
+
+## _Previous Context Entries Below_
+
+## Current Focus
+
+Ensuring barrels always have a chance to spawn in `LevelGenerator.ts`.
+
+- **Requirement:** Guarantee that enough platforms are generated to accommodate the targeted number of enemies, crates, and at least one barrel, considering the start/end platforms are ineligible for item placement.
+- **Approach:** Modify `getLevelGenerationParams` to calculate a minimum required platform count based on `targetEnemies`, `targetCrates`, and the guaranteed barrel. Use this calculated minimum if it's higher than the level-based minimum.
+
+## Recent Changes
+
+- Updated `DebugUIScene` (`src/scenes/DebugUIScene.ts`), `Game.ts` (`src/scenes/Game.ts`), and `DebugPanel.ts` (`src/lib/ui/DebugPanel.ts`) to track and display the total number of generated barrels and the number currently culled due to being off-screen.
+- Corrected `update` method signatures in `Game.ts` for various entities (`Player`, `ParallaxManager`, `Coin`, `Barrel`).
+
+## Next Steps
+
+- Implement the minimum platform count logic in `LevelGenerator.ts::getLevelGenerationParams`.
+- Test level generation to ensure barrels appear consistently, even on early levels.
+- Continue implementing barrel interaction logic (player entry, launch).
+
+## Active Decisions & Considerations
+
+- Calculating the minimum required platforms dynamically based on target item counts ensures scalability if item probabilities change.
+- Using `Math.max` provides a simple way to enforce the higher minimum platform count when necessary.
+
+## Important Patterns & Preferences
+
+- **Procedural Generation Safeguards:** Adding logic to procedural generation to guarantee certain outcomes or prevent undesirable edge cases (like no barrels spawning).
+
+## Learnings & Project Insights
+
+- Simple procedural rules can sometimes lead to edge cases (e.g., not enough platforms for all desired items) that require explicit checks or adjustments.
+
+## Current Focus
+
+Implement the Donkey Kong Country-style barrel mechanic interaction logic:
+
+- Player collision with a `Barrel` entity (in `Game.ts`).
+- Player enters the barrel (disabling player controls, potentially snapping position).
+- Player input (e.g., jump key) triggers the barrel launch.
+- Barrel plays entry and launch animations.
+- Player is launched from the barrel in a predetermined direction/velocity.
+
+**Verification:** Confirmed that the logic in `LevelGenerator.ts::calculateLevelGenerationParams` correctly calculates a minimum required platform count to guarantee space for at least one barrel, as intended. No changes needed for barrel _creation_ guarantees.
+
+## Recent Changes
+
+- **Verified Barrel Generation Logic:** Confirmed `LevelGenerator.ts` correctly implements logic to ensure minimum platform count for target items, including at least one barrel.
+- Updated `DebugUIScene` (`src/scenes/DebugUIScene.ts`), `Game.ts` (`src/scenes/Game.ts`), and `DebugPanel.ts` (`src/lib/ui/DebugPanel.ts`) to track and display the total number of generated barrels and the number currently culled due to being off-screen.
+- Corrected `update` method signatures in `Game.ts` for various entities (`Player`, `ParallaxManager`, `Coin`, `Barrel`).
+
+## Next Steps
+
+- **Implement collision detection between Player and Barrel in `Game.ts`:**
+  - Add barrels to the `allEntities` group for updates/culling (if applicable).
+  - Modify `handleCollisionStart` (or `handleCollisionActive`) to detect `Player` vs `Barrel` collisions.
+  - Trigger player entry logic.
+- **Add state management to the `Player` class:**
+  - Add a state/flag like `isInBarrel`.
+  - Add reference to the current barrel (`currentBarrel: Barrel | null`).
+  - Modify `update` or input handling to disable normal controls when `isInBarrel` is true.
+  - Add methods like `enterBarrel(barrel: Barrel)` and `exitBarrel()`.
+- **Implement input handling for launching:**
+  - Check for jump input while `isInBarrel` is true.
+  - Trigger barrel launch sequence.
+- **Define barrel launch trajectory/velocity:**
+  - **Implement launch logic in `Player.ts` (`launchFromBarrel(vector: Phaser.Math.Vector2)`) triggered by `Barrel` via `Game.ts`. The launch direction \_must\* be based on the barrel's current rotation (`Barrel.angle`) and a defined launch speed.**
+  - Add properties to `Barrel.ts` (e.g., `launchSpeed`). These could be set in the constructor or potentially randomized/configured by `LevelGenerator` later.
+- **Connect barrel animations:**
+  - Call `barrel.enter()` and `barrel.launch()` methods from the collision/input logic.
+
+## Active Decisions & Considerations
+
+- Determine how barrel launch speed is defined (fixed per barrel instance? random? based on player input?). Start with fixed values on the `Barrel` class. Launch angle is determined by the barrel's current rotation.
+- How exactly to handle player physics while inside (disable body? set static? just control position?). Simplest might be to disable the player's body and manually set position.
+- Player control over launch: For DKC style, typically player input triggers launch. Let's stick with that.
+
+## Important Patterns & Preferences
+
+- Leveraging Matter.js collision events.
+- Encapsulating entity-specific logic within the entity class (`Player`, `Barrel`).
+- Using state machines or flags within entities to manage behavior (e.g., `player.isInBarrel`).
+
+## Learnings & Project Insights
+
+- Adding interactive objects often requires modifications to both the object's class and the systems handling interactions (like the main game scene's collision logic).
+
+## Current Focus
+
+Loading both texture atlases in the Preloader.
+
+## Recent Changes
+
+- **Updated `Preloader.ts`:** Added a line to load the second texture atlas (`assets2.png`, `assets2.json`) using the key `texturePack2`.
+
+## Next Steps
+
+- Verify that animations or entities using the second atlas work correctly.
+- Update animation creation if necessary to use the second atlas.
+- Continue with other tasks listed in `progress.md`.
+
+## Active Decisions & Considerations
+
+- Using the base constant `TEXTURE_ATLAS` and appending `"2"` maintains a consistent naming convention.
+
+## Important Patterns & Preferences
+
+- Loading all necessary atlases during the preloading phase.
+
+## Learnings & Project Insights
+
+- Ensure all required asset packs are loaded before scenes that depend on them start.
+
+## Current Focus
+
 Preventing enemy placement on the final platform.
 
 ## Recent Changes
@@ -241,140 +445,167 @@ Implementing and integrating a conditional debug panel UI.
 - **Integrated `DebugPanel` into `Game.ts`:**
   - Conditionally creates `DebugPanel` instance if `import.meta.env.DEV` is true.
   - Added a keyboard listener ('Q') to toggle the panel's visibility.
-  - Stores the `LevelGenerator` instance to access generated entities.
-  - Passes entity counts (platforms, enemies, coins, crates) to `DebugPanel.update()`.
-  - Ensures `DebugPanel` is destroyed on scene restart (`restartLevel`).
-- **Updated `LevelGenerator.ts`:**
-  - Added internal arrays `coins` and `crates` to track generated entities.
-  - Added public getter methods `getCoins()` and `getCrates()`.
-  - Clears internal entity arrays at the start of `generateLevel`.
-- **Refactored `Game.ts` Update Loop:** Adjusted arguments for `player.update`, `enemy.update`, and `background.update` based on linter feedback. Commented out `cameraManager.update()` due to persistent linter errors.
-- **Updated Memory Bank:** Modified `systemPatterns.md` and `progress.md` to reflect the addition of the debug panel and associated changes/issues.
-
-## Next Steps
-
-- Test the debug panel functionality in a development build.
-- Investigate the issue with the `CameraManager.update()` call.
-- Implement the display of culling information in the debug panel.
-- Continue with tasks listed in `progress.md` (tuning generation, level progression etc.).
-
-## Active Decisions & Considerations
-
-- Using `import.meta.env.DEV` (provided by Vite) is a standard way to include development-only features.
-- Fetching entity data via getters on `LevelGenerator` keeps the debug panel decoupled from the specific generation logic.
-- Displaying entity counts is a first step; more detailed info (positions, states) could be added later.
-- Culling information display needs investigation (Phaser camera culling API or visual representation).
-- The `CameraManager.update` issue needs debugging to understand if the method exists and what its expected signature is.
-
-## Important Patterns & Preferences
-
-- **Conditional Compilation/Features:** Using build flags (`import.meta.env.DEV`) to include/exclude code blocks for different environments (dev vs. production).
-- **Decoupled Debug Info:** Accessing data for debug displays through well-defined interfaces (getters) rather than directly accessing internal state of other classes.
-
-## Learnings & Project Insights
-
-- Integrating new UI elements requires careful handling of instantiation, updates, and cleanup (especially during scene restarts).
-- Linter feedback is crucial but sometimes requires iterative refinement or temporary workarounds (like commenting out problematic code) when the exact cause isn't immediately clear.
-- Assumptions about method signatures or existence based on documentation or previous context can be wrong; direct code checking or targeted debugging is sometimes necessary.
+  - Stores the `
 
 ## Current Focus
 
-Testing fall sensor placement using post-generation minimum Y calculation.
+Investigating the rapid toggling of the `Barrel.isEntered` flag during gameplay.
+
+- **Observed Behavior:** The `console.log` in `Barrel.update()` shows the `isEntered` property flipping between `true` and `false` frequently when the player interacts with a barrel.
+- **Current Hypothesis:** The toggling likely stems from the interplay between the player entering the barrel (`player.enterBarrel()` called on collision), the barrel's state update (`barrel.isEntered` set to `true` only _after_ the enter animation completes), the player attempting to launch (`player.launchFromBarrel()` calls `barrel.launch()`), and the barrel's state being immediately set to `false` by `barrel.launch()`. Rapid re-collision after launching might restart this cycle.
 
 ## Recent Changes
 
-- **Revised Fall Sensor Placement Logic:**
+- Investigation into `Barrel.isEntered` toggling.
+- **Rejected:** A proposed solution involving removing `Barrel.isEntered`, adding a new `isRotating` flag to `Barrel.ts`, and adding a collision cooldown to `Player.ts` after exiting a barrel was rejected by the user. The physics collision filtering is handled by `physics.json`.
 
-  - Removed lowest Y tracking from `LevelGenerator.ts`.
-  - Added `getPlatforms()` method to `LevelGenerator.ts`.
-  - Updated `Game.ts::generateLevelEntities` to call `getPlatforms()`, iterate through the results to find the minimum `platform.getBounds().bottom`, and then call `createFallSensor` with that value. This ensures the calculation happens after all platforms are created.
+## Next Steps
 
-- **Increased Coin Spacing in `LevelGenerator.ts`:**
+- Continue debugging the barrel interaction logic based on the current hypothesis, focusing on the existing state management in `Player.ts` and `Barrel.ts` and the collision handling in `Game.ts`.
+- Analyze the sequence of events: player collision -> `player.enterBarrel` -> `barrel.enter` -> animation delay -> `barrel.isEntered = true` -> player input -> `player.launchFromBarrel` -> `barrel.launch` -> `barrel.isEntered = false` -> `player.exitBarrel`. Determine if/where immediate re-collision occurs.
 
-  - Increased `MIN_COIN_SPACING` constant from 32 to 64 to enforce a larger gap between coin centers, aiming to resolve collection issues.
+## Active Decisions & Considerations
 
-- **Refined Coin Placement in `LevelGenerator.ts`:**
+- Stick to the existing state flags (`player.isInBarrel`, `barrel.isEntered`) and animation-driven logic in `Barrel.ts`.
+- Verify if the launch mechanism provides enough separation or if a different approach to prevent immediate re-collision (without changing collision filters) is needed.
 
-  - Logic updated to distribute the target number of coins evenly across the platform's width.
-  - It first calculates the max coins that fit with `MIN_COIN_SPACING`, caps the random target by this max, then calculates the `evenSpacing` required for the final `numCoins` and places them accordingly.
+## Important Patterns & Preferences
 
-- **Further Refined `LevelGenerator.ts`:**
+- Relying on `physics.json` for collision filter definitions.
+- Debugging complex interactions by analyzing state changes and event sequences across multiple entities (`Player`, `Barrel`, `Game`).
 
-  - **Finish Height:** Increased vertical offset to 100px above the last platform's top surface (`bounds.top - 100`).
-  - **Crate Placement Fix:** Corrected logic to check if an enemy was _actually_ placed on the platform (using a local flag) before placing a crate, instead of just checking the initial placement _intent_.
+## Learnings & Project Insights
 
-- **Adjusted Finish Line Placement in `LevelGenerator.ts`:**
+- State synchronization between interacting entities, especially when involving animation delays, can lead to complex debugging scenarios.
+- Understanding the exact sequence and timing of events (collisions, state changes, animation completion) is crucial.
 
-  - ~~`createFinishPoint` now places the finish line 50px above the _top-right edge_ of the last platform's surface (using `bounds.right` for X and `bounds.top - 50` for Y).~~ (Superseded by above change)
+## Current Focus
 
-- **Updated `LevelGenerator.ts` for Infinite Bounds & New Rules:**
+Adjusting barrel vertical placement for player accessibility.
 
-  - Removed platform position clamping based on world bounds (now Infinity).
-  - Modified `populatePlatform` to prevent enemy placement on the _last_ platform.
-
-- **Dynamic Fall Sensor Placement:**
-
-  - Modified `LevelGenerator.ts` to track the bottom Y coordinate of the lowest platform (`lowestPlatformBottomY`) and added `getLowestPlatformBottomY()`.
-  - Modified `Game.ts`:
-    - `generateLevelEntities` now gets the lowest Y from the generator and calls `createFallSensor` with this value.
-    - Removed `createFallSensor` call from `startGame`.
-    - `createFallSensor` now accepts `lowestPlatformBottomY` and calculates its Y position dynamically (500px below the lowest platform bottom).
-
-- **Added Enemy Platform Length Constraint to `src/lib/LevelGenerator.ts`:**
-
-  - Platforms intended to have an enemy are now generated with a minimum length of 14 segments (`MIN_PLATFORM_LENGTH_WITH_ENEMY`).
-  - The decision to _potentially_ place an enemy is made _before_ platform length is finalized.
-  - `populatePlatform` now receives the enemy placement decision as a parameter, removing the redundant internal probability check.
-
-- **Refactored and Refined `src/lib/LevelGenerator.ts`:**
-
-  - **Structure:** Broke down `generateLevel` into smaller private methods (`getLevelGenerationParams`, `createPlayerStart`, `calculateNextPlatformPosition`, `createPlatform`, `populatePlatform`, `createFinishPoint`, `checkCoinCount`) for improved readability and maintainability.
-  - **Solvability:** Added basic solvability checks in `calculateNextPlatformPosition`. Platform gaps (horizontal and upward vertical) are clamped based on player jump constants (`MAX_JUMP_DISTANCE_X`, `MAX_JUMP_HEIGHT_UP`) to ensure platforms are generally reachable.
-  - **Configuration:** Centralized parameter calculation (gaps, probabilities) in `getLevelGenerationParams`, deriving max gaps from player jump constants.
-  - Added placeholder constants for player jump capabilities (require tuning).
-  - Added simple interfaces (`PlatformGenerationParams`, `PlacementPosition`).
-
-- **Refined `src/lib/LevelGenerator.ts` (Previous):**
-
-  - **Platform Placement:** Ensure guaranteed horizontal gaps (`minHorizontalGap`) between platforms by calculating the next platform's position based on the previous one's right edge plus a random gap. Added edge clamping.
-  - **Coin Placement:** Coins are now placed directly _on_ the platform surface (using platform bounds and estimated coin height). Removed random air coin generation. Dynamically calculate `minCoinsPerPlatform` to improve chances of hitting the 100-coin target, log warning if missed.
-  - **Crate Placement:** Crates are now placed only on platforms that do _not_ have an enemy placed on them.
-  - Added constants for estimated entity heights to aid placement.
-  - Adjusted player/finish placement relative to platform surfaces.
-
-- Created `src/lib/LevelGenerator.ts` containing:
-  - `LevelGenerator` class.
-  - `SimplePRNG` (Mulberry32) for deterministic generation based on level number seed.
-  - `generateLevel()` method to procedurally place platforms, player start, finish, enemies, crates, and coins (ensuring >= 100 coins).
-  - `getEnemies()` method to provide generated enemies to the `Game` scene.
-- Modified `src/scenes/Game.ts`:
-  - Imported `LevelGenerator` and `getLevel`.
-  - Created `generateLevelEntities()` method to orchestrate level generation using `LevelGenerator`.
-  - Updated `initGame()` to call `generateLevelEntities()` instead of static spawning, handle level initialization, clear previous enemies, and ensure `CameraManager` is created after the player exists.
-  - Removed old static `spawnEntities()` and `createEnemies()` methods.
-  - Removed redundant enemy cleanup from `restartLevel()`.
-
-Refactoring camera logic into a dedicated `CameraManager` class.
-
-Adding dynamic zoom behavior to `CameraManager`.
-
-Fixing bug where entities were created twice.
-
-Inverting camera zoom behavior in `CameraManager`.
-
-Adding camera zoom-in effect on player death.
-
-Refactoring `GameState` enum to a `GAME_STATE` constant object.
+- **Problem:** Barrels placed at a fixed ground level were often unreachable from adjacent platforms.
+- **Requirement:** Position barrels vertically so the player can drop onto them from platforms.
+- **Approach:** Modified `placeBarrelsBetweenPlatforms` in `itemPlacementHelper.ts`. Instead of a fixed `groundY`, the `placeY` is now calculated for each barrel. It's positioned slightly below the top edge of the _lower_ of the two platforms defining the gap, clamped to prevent falling below the world floor. This ensures barrels are always reachable by dropping down.
 
 ## Recent Changes
 
-- Created `src/entities/ui/CameraManager.ts`.
-- Moved camera setup logic (bounds, follow, lerp) from `Game.ts` to `CameraManager`.
-- Added initial zoom functionality to `CameraManager`.
-- Refactored `Game.ts` to instantiate and use `CameraManager`.
-- Removed redundant camera methods (`setupCamera`) from `Game.ts`.
-- Updated `systemPatterns.md`.
-- Added an `update` method to `CameraManager.ts`.
-- Implemented logic in `CameraManager.update` to smoothly adjust camera zoom based on the player's vertical velocity (zooming out slightly when jumping).
-- Stored a reference to the `Player` instance within `CameraManager`.
-- Called `cameraManager.update()`
+- **Updated Barrel Y-Placement in `itemPlacementHelper.ts`:**
+  - `availableGaps` now stores the `top` Y-coordinate of adjacent platforms.
+  - Removed static `groundY` calculation.
+  - Barrel `placeY` is calculated dynamically: `Math.max(platformATop, platformBTop) + BARREL_HEIGHT / 2 + buffer`.
+  - `placeY` is clamped using `Math.min` against `WORLD_HEIGHT - BARREL_HEIGHT / 2 - buffer` to stay above the absolute bottom.
+
+## Next Steps
+
+- Test level generation to confirm barrels are now positioned at reachable heights below platforms.
+- Continue implementing barrel interaction logic (player entry, launch) as per `progress.md`.
+
+## Active Decisions & Considerations
+
+- Placing barrels relative to the lower adjacent platform guarantees accessibility _to_ the barrel via dropping.
+- Accessibility _from_ the barrel (jumping back up) will depend on the height difference and the eventual barrel launch mechanics.
+- Clamping the Y position prevents barrels from being generated below the playable area.
+
+## Important Patterns & Preferences
+
+- **Context-Aware Placement:** Adjusting procedural placement logic based on the local environment (adjacent platform heights) rather than global coordinates.
+
+## Learnings & Project Insights
+
+- Reachability is a key constraint in procedural generation for platformers. Placement must consider player movement capabilities relative to surrounding structures.
+
+## Current Focus
+
+Debugging level generation: 0 enemies and 0 barrels spawning.
+
+- **Issue:** Level generation results in 0 enemies and 0 barrels.
+- **Analysis (based on logs):**
+  - `Platforms available for item placement: 12`. This count seems sufficient, indicating the primary issue isn't the number of platforms available _after_ the loop.
+  - `0 barrels`: The condition for placing bridge barrels (`dX > params.maxHorizontalGap`) was not met in the test run. Random gaps generated were all jumpable.
+  - `0 enemies`: With 12 available platforms, the most likely cause is that none met the `platform.segmentCount >= MIN_PLATFORM_LENGTH_WITH_ENEMY` (currently 10) requirement within `placeItemsOnPlatforms`.
+- **Debugging Strategy:**
+  1.  **Address Enemy Spawning:** Reduce the minimum platform length required for enemy placement. Lower `MIN_PLATFORM_LENGTH_WITH_ENEMY` in `LevelGenerationConfig.ts` from 10 to 6.
+  2.  **Monitor Bridge Barrels:** Observe if bridge barrels appear in future runs now that the primary enemy bug is addressed. If they remain absent, we may need to adjust gap parameters to make impossible gaps more likely.
+  3.  **Isolate Bridge Barrels:** Keep the call to `placeBarrelsBetweenPlatforms` commented out for now.
+
+## Recent Changes
+
+- Added logging for platform count before item placement.
+- Commented out optional barrel placement (`placeBarrelsBetweenPlatforms`).
+- Implemented barrel-platform substitution logic in `LevelGenerator.ts` loop.
+
+## Next Steps
+
+- Modify `MIN_PLATFORM_LENGTH_WITH_ENEMY` in `LevelGenerationConfig.ts` to 6.
+- Test level generation and report entity counts (platforms, enemies, crates, barrels).
+- If enemies spawn but bridge barrels still don't, consider adjusting gap generation parameters (`minHorizontalGap`, `maxHorizontalGap`) or temporarily reducing `MAX_JUMP_DISTANCE_X` to force the condition.
+- Once bridge barrels and enemies work reliably, re-enable optional barrel placement.
+
+## Active Decisions & Considerations
+
+- Prioritizing fixing the enemy spawn issue by adjusting the platform length constraint.
+- Deferring adjustments to gap generation parameters until the enemy issue is resolved.
+
+## Important Patterns & Preferences
+
+- **Constraint Tuning:** Adjusting specific constraints (like minimum platform length for items) based on observed generation results.
+
+## Learnings & Project Insights
+
+- Item placement functions can fail silently if none of the potential locations meet the required conditions (e.g., platform length).
+- Debugging procedural generation often involves isolating different components and checking intermediate results and conditions.
+
+## Current Focus
+
+- **Current Focus:** Refining the behavior of the `Barrel` entity.
+- **Task:** Adjust the rotation origin of the barrel sprite to be the center (0.5, 0.5).
+- **Recent Changes:** Initial creation of the `Barrel` class and its associated animations.
+- **Next Steps:** Implement player interaction with the barrel (entering, launching).
+
+## Current Focus
+
+Implementing player-barrel interaction logic.
+
+- **Status:** Barrel rotation origin confirmed and maintained at `(0.22, 0.5)` based on sprite visual.
+- **Goal:** Allow the player to enter and be launched from barrels.
+- **Approach:**
+  1. Implement collision detection between Player and Barrel in `Game.ts`.
+  2. Add state management to `Player.ts` (`isInBarrel`, `currentBarrel`).
+  3. Add methods to `Player.ts` (`enterBarrel`, `exitBarrel`, `launchFromBarrel`).
+  4. Implement input handling (e.g., jump key) in `Player.ts` or `Game.ts` to trigger `launchFromBarrel`.
+  5. Connect `Barrel` animations (`enter`, `launch`) via the interaction logic.
+  6. Ensure `Barrel.launch()` returns the correct launch vector based on its angle.
+
+## Recent Changes
+
+- **Corrected Barrel Rotation Origin:** Verified and kept the origin at `(0.22, 0.5)` in `Barrel.ts` after confirming the visual center differed from the geometric center.
+- Confirmed bridge barrel substitution logic triggers with reduced `MAX_JUMP_DISTANCE_X` (150).
+- Temporarily reduced `MAX_JUMP_DISTANCE_X`.
+- Reduced `MIN_PLATFORM_LENGTH_WITH_ENEMY` to 6, fixing enemy spawning.
+
+## Next Steps
+
+- Implement Player-Barrel collision detection in `Game.ts::handleCollisionStart`.
+- Add `isInBarrel` state and related methods to `Player.ts`.
+
+## Active Decisions & Considerations
+
+- Collision logic will trigger `player.enterBarrel(barrel)` and `barrel.enter()`.
+- Player input (jump) will trigger `player.launchFromBarrel()` which in turn calls `barrel.launch()` and uses the returned vector.
+- Choosing to place a platform instead of an overlapping barrel simplifies the logic, although it removes the mandatory jump for that specific gap.
+- This overlap check is separate from the one in `placeBarrelsBetweenPlatforms`, which handles optional barrels.
+
+## Important Patterns & Preferences
+
+- State tracking during generation.
+- Leveraging Matter.js collision events.
+- Encapsulating entity-specific logic within the entity class (`Player`, `Barrel`).
+- Using state machines or flags within entities to manage behavior.
+
+## Learnings & Project Insights
+
+- Visual asset origins might not align with geometric centers; always verify against the visual representation if available.
+- Adding new generation features can introduce conflicts requiring explicit checks.
+- State synchronization between interacting entities, especially with animation delays, can be complex.
+
+## _Previous Context Entries Below_

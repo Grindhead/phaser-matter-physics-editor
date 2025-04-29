@@ -7,18 +7,15 @@ export class Finish extends Phaser.Physics.Matter.Sprite {
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
-    super(
-      scene.matter.world,
-      x,
-      y,
-      TEXTURE_ATLAS,
-      FINISH_ANIMATIONS[FINISH_ANIMATION_KEYS.FINISH_IDLE].prefix,
-      {
-        shape: shapes[PHYSICS_ENTITIES.FINISH],
-        isStatic: true,
-        isSensor: true,
-      }
-    );
+    super(scene.matter.world, x, y, TEXTURE_ATLAS, undefined, {
+      shape: shapes[PHYSICS_ENTITIES.FINISH],
+      isStatic: true,
+      isSensor: true,
+    });
+
+    this.setOrigin(0.3, 0.5);
+
+    this.play(FINISH_ANIMATION_KEYS.FINISH_IDLE);
 
     createAnimationChain(this, FINISH_ANIMATIONS);
 

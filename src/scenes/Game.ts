@@ -35,6 +35,13 @@ import { Geom } from "phaser";
 import { ParallaxManager } from "../lib/helpers/parralax/ParallaxManager";
 import { Barrel } from "../entities/Barrel/Barrel";
 
+// Define a type for the debug renderer config for clarity
+type MatterDebugConfig = {
+  renderFill?: boolean;
+  renderLine?: boolean;
+  // Add other Matter debug config properties if needed
+};
+
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
  */
@@ -51,6 +58,8 @@ export class Game extends Scene {
   private parallaxManager: ParallaxManager;
   private totalBarrelsGenerated: number = 0;
   private culledBarrelsCount: number = 0;
+  private physicsDebugActive: boolean = false; // Track the state
+  private debugGraphics: Phaser.GameObjects.Graphics; // Graphics object for debug drawing
 
   constructor() {
     super(SCENES.GAME);
@@ -65,6 +74,16 @@ export class Game extends Scene {
     this.setupWorldBounds();
     this.initGame();
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
+
+    // Configure Matter debug rendering, initially off
+    this.debugGraphics = this.add.graphics().setAlpha(1).setDepth(9999); // Use full alpha and high depth
+    this.matter.world.debugGraphic = this.debugGraphics; // Correctly assign the property
+    this.matter.world.drawDebug = false; // Reverted: Initially off
+    this.physicsDebugActive = false; // Reverted: Initially false
+
+    // Listen for the event from DebugUIScene
+    this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
+
     this.scene.launch(SCENES.DEBUG_UI);
   }
 
@@ -208,6 +227,26 @@ export class Game extends Scene {
 
     this.overlayButton.on("pointerup", callback);
     this.gameState = state;
+  }
+
+  /**
+   * Toggles the Matter.js debug rendering graphics on or off.
+   */
+  private togglePhysicsDebug(): void {
+    this.physicsDebugActive = !this.physicsDebugActive;
+    console.log(
+      `[Game] Toggling physics debug. Active: ${this.physicsDebugActive}`
+    );
+    // Use the built-in drawDebug flag
+    this.matter.world.drawDebug = this.physicsDebugActive;
+    console.log(
+      `[Game] Matter world drawDebug set to: ${this.matter.world.drawDebug}`
+    );
+    // Also toggle the visibility of the graphics object itself
+    // No need to toggle visibility if drawDebug handles it and it starts visible
+    // this.debugGraphics.setVisible(this.physicsDebugActive);
+    this.debugGraphics.setVisible(this.physicsDebugActive); // Reverted: Toggle visibility
+    console.log(`[Game] Debug graphics visible: ${this.debugGraphics.visible}`);
   }
 
   /**
@@ -518,6 +557,7 @@ export class Game extends Scene {
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
+    // Reverted to original logic to fix unrelated linter error
     let playerBody: MatterJS.BodyType | null = null;
     let barrelBody: MatterJS.BodyType | null = null;
 

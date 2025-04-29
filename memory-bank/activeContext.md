@@ -2,6 +2,53 @@
 
 ## Current Focus
 
+**Fixed:** Physics debug rendering state persistence across level restarts (corrected approach).
+
+Ready for next task. Potential areas include:
+
+- Implementing mobile controls (`createMobileControls` is empty).
+- Defining level completion logic/trigger.
+- Implementing player death sequence.
+- Investigating `CameraManager.update` issue.
+
+## Recent Changes
+
+- **Corrected Physics Debug Persistence:** Reworked the fix. The `Game` scene now explicitly passes the current debug state (`physicsDebugActive`) as data during `scene.restart()`. The scene's `init()` method receives this data, and `create()` uses the received state to initialize the debug view correctly, avoiding issues where the state might be reset by Phaser before `create` runs.
+- **Barrel Interaction Completed:** Implemented full player-barrel interaction (entry, rotation, launch) and updated memory bank.
+- Overlap check added for bridge barrels in `LevelGenerator.ts`.
+- Reverted `MAX_JUMP_DISTANCE_X` to 200.
+- Re-enabled optional barrel placement (`placeBarrelsBetweenPlatforms`).
+
+## Next Steps
+
+- Address one of the items listed under "What's Left to Build" in `progress.md`.
+
+## Active Decisions & Considerations
+
+- **Passing State on Restart:** Explicitly passing necessary state (like debug flags) via `scene.restart(data)` and reading it in `init(data)` is a robust way to handle state persistence across scene restarts, especially when the engine might reset underlying properties based on initial configurations.
+
+## Important Patterns & Preferences
+
+- **State Persistence Across Restarts (Revised):** When state needs to persist across `scene.restart()`, explicitly pass the state as data (`scene.restart({ key: value })`) and retrieve it in the scene's `init(data)` method. Relying on reading the state from engine objects at the start of `create()` can be unreliable if the engine resets those objects based on initial configurations before `create` executes.
+- **Event Listener Cleanup:** Removing event listeners (e.g., `this.game.events.off(...)`) before restarting a scene or destroying an object is crucial to prevent memory leaks and duplicate listeners.
+- **State Tracking during Generation:** Maintaining state (occupied ranges) within the generation loop to inform subsequent placement decisions.
+- Leveraging Matter.js collision events.
+- Encapsulating entity-specific logic within the entity class (`Player`, `Barrel`).
+- Using state machines or flags within entities to manage behavior.
+- **State Management for Interaction:** Using boolean flags and methods across interacting entities to manage complex interaction flows.
+
+## Learnings & Project Insights
+
+- **Scene Restart Lifecycle:** Understanding that `scene.restart()` might reset certain engine states based on initial configuration _before_ `create()` runs is crucial for reliable state persistence. Explicitly passing state via `restart` data is safer than trying to read potentially reset state in `create`.
+- Implementing interactive mechanics often involves coordinating state changes across multiple entities (`Player`, `Barrel`, `Game`).
+- Animation events or delays can be crucial for correct state synchronization during interactions.
+- Visual asset origins might not align with geometric centers.
+- Adding new generation features can introduce conflicts requiring explicit checks.
+
+## _Previous Context Entries Below_
+
+## Current Focus
+
 Preventing overlap between consecutively generated bridge barrels.
 
 - **Status:** Bridge barrel substitution logic is working (barrels generate when `dX > maxHorizontalGap` with reduced jump distance). Enemy spawning is fixed.
@@ -507,3 +554,58 @@ Debugging level generation: 0 enemies and 0 barrels spawning.
 
 - Item placement functions can fail silently if none of the potential locations meet the required conditions (e.g., platform length).
 - Debugging procedural generation often involves isolating different components and checking intermediate results and conditions.
+
+## Current Focus
+
+- **Current Focus:** Refining the behavior of the `Barrel` entity.
+- **Task:** Adjust the rotation origin of the barrel sprite to be the center (0.5, 0.5).
+- **Recent Changes:** Initial creation of the `Barrel` class and its associated animations.
+- **Next Steps:** Implement player interaction with the barrel (entering, launching).
+
+## Current Focus
+
+Implementing player-barrel interaction logic.
+
+- **Status:** Barrel rotation origin confirmed and maintained at `(0.22, 0.5)` based on sprite visual.
+- **Goal:** Allow the player to enter and be launched from barrels.
+- **Approach:**
+  1. Implement collision detection between Player and Barrel in `Game.ts`.
+  2. Add state management to `Player.ts` (`isInBarrel`, `currentBarrel`).
+  3. Add methods to `Player.ts` (`enterBarrel`, `exitBarrel`, `launchFromBarrel`).
+  4. Implement input handling (e.g., jump key) in `Player.ts` or `Game.ts` to trigger `launchFromBarrel`.
+  5. Connect `Barrel` animations (`enter`, `launch`) via the interaction logic.
+  6. Ensure `Barrel.launch()` returns the correct launch vector based on its angle.
+
+## Recent Changes
+
+- **Corrected Barrel Rotation Origin:** Verified and kept the origin at `(0.22, 0.5)` in `Barrel.ts` after confirming the visual center differed from the geometric center.
+- Confirmed bridge barrel substitution logic triggers with reduced `MAX_JUMP_DISTANCE_X` (150).
+- Temporarily reduced `MAX_JUMP_DISTANCE_X`.
+- Reduced `MIN_PLATFORM_LENGTH_WITH_ENEMY` to 6, fixing enemy spawning.
+
+## Next Steps
+
+- Implement Player-Barrel collision detection in `Game.ts::handleCollisionStart`.
+- Add `isInBarrel` state and related methods to `Player.ts`.
+
+## Active Decisions & Considerations
+
+- Collision logic will trigger `player.enterBarrel(barrel)` and `barrel.enter()`.
+- Player input (jump) will trigger `player.launchFromBarrel()` which in turn calls `barrel.launch()` and uses the returned vector.
+- Choosing to place a platform instead of an overlapping barrel simplifies the logic, although it removes the mandatory jump for that specific gap.
+- This overlap check is separate from the one in `placeBarrelsBetweenPlatforms`, which handles optional barrels.
+
+## Important Patterns & Preferences
+
+- State tracking during generation.
+- Leveraging Matter.js collision events.
+- Encapsulating entity-specific logic within the entity class (`Player`, `Barrel`).
+- Using state machines or flags within entities to manage behavior.
+
+## Learnings & Project Insights
+
+- Visual asset origins might not align with geometric centers; always verify against the visual representation if available.
+- Adding new generation features can introduce conflicts requiring explicit checks.
+- State synchronization between interacting entities, especially with animation delays, can be complex.
+
+## _Previous Context Entries Below_

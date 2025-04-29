@@ -45,14 +45,14 @@
 - `LevelGenerator` creates instances of various entity classes (`Player`, `Platform`, `Enemy`, `Coin`, `Crate`, `Finish`, `Barrel`), places them in the scene using helper functions (`populatePlatformWithCoins`, `placeItemsOnPlatforms`, `placeBarrelsBetweenPlatforms`), and provides getters (`getPlatforms`, `getEnemies`, `getCoins`, `getCrates`, `getBarrels`).
   - `placeBarrelsBetweenPlatforms`: Handles positioning barrels. Ensures they are placed **between** platforms (not on them), are not placed directly **below** a platform edge, are reachable by the player (typically by dropping), and can be strategically positioned in gaps necessary for level completion. Avoids horizontal overlap.
 - `ParallaxManager` now uses `ParallaxBackground` instances to manage background layers.
-- Entities interact via Matter.js physics collisions detected in `Game.ts`. Collisions with `Barrel` entities will need specific handling for player entry/launch.
+- Entities interact via Matter.js physics collisions detected in `Game.ts`. Player-Barrel collisions trigger the specific interaction flow described below.
 - UI elements (`CoinUI`) are managed by the `Game` scene. `DebugPanel` is managed by `DebugUIScene`.
 - `CameraManager` controls the `Game` scene's camera bounds, follow, and dynamic zoom.
 
 ## Critical Implementation Paths
 
 - Player movement and input handling (`Player.ts`).
-- Collision detection and handling (`Game.ts` collision methods, helper functions like `isPlayerBody`). Needs update for player-barrel interaction.
+- Collision detection and handling (`Game.ts` collision methods, helper functions like `isPlayerBody`, specific Player-Barrel logic).
 - Scene transitions and state management (`Game.ts`).
 - Asset loading (`Preloader.ts`).
 - Procedural level generation logic (`LevelGenerator.ts` and `itemPlacementHelper.ts`).
@@ -70,3 +70,4 @@
 - **Camera Management:** A dedicated `CameraManager` class (`src/lib/ui/CameraManager.ts`) handles camera setup (bounds, follow, lerp) and effects like death zoom, separating camera logic from the main `Game` scene.
 - **Constants for States:** Using a `const` object (`GAME_STATE`) instead of an `enum` for defining fixed state values, providing string-based values and potentially simpler integration in some contexts.
 - **Conditional Debug UI (Separate Scene):** A `DebugPanel` class (`src/lib/ui/DebugPanel.ts`) displays runtime information. It is managed by a dedicated `DebugUIScene` (`src/scenes/DebugUIScene.ts`) which runs in parallel to the main `Game` scene. `DebugUIScene` is launched conditionally in development builds (`import.meta.env.DEV`) by the `Game` scene. Communication uses Phaser's event emitter (`Game` emits `updateDebugData`, `DebugUIScene` listens and updates the panel). The panel is toggled via 'Q' key handled within `DebugUIScene`.
+- **State Management for Interaction:** Using boolean flags (`isInBarrel`, `isEntered`) and references (`currentBarrel`) in interacting entities (`Player`, `Barrel`) along with methods (`enterBarrel`, `exitBarrel`, `launchFromBarrel`, `enter`, `launch`) to manage the multi-step barrel interaction flow, coordinated by the main `Game` scene's collision handler.

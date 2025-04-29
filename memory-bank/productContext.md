@@ -1,14 +1,5 @@
 # Product Context
 
-**Problem:** Lack of a simple, engaging 2D platformer example built with Phaser and Matter.js demonstrating core mechanics and effects.
-
-**Solution:** Develop a game featuring a player character navigating levels, collecting items, and interacting with the environment, showcasing common platformer features and visual feedback like landing effects.
-
-**User Experience:**
-
-- Intuitive controls (keyboard/potentially mobile).
-- Clear visual feedback for player actions (movement, jumping, landing).
-- Satisfying collection mechanics.
-- Smooth performance.
-- Engaging barrel mechanic: Player can enter barrels and be launched in a specific direction, adding a new layer of traversal and puzzle potential.
-  - Barrels should be strategically placed in gaps between platforms, potentially being required to bridge larger gaps and complete the level.
+- **Problem:** Create an engaging 2D platformer experience.
+- **Solution:** Develop a game with responsive controls, interesting level mechanics (like barrels), and clear objectives.
+- **User Experience:** Smooth gameplay, intuitive interactions with game elements.

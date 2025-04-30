@@ -2,26 +2,24 @@
 
 ## Current Focus
 
-**Implement Mobile Responsiveness and UI Scaling:** Adapt the game's UI and layout to work effectively across different screen sizes, particularly targeting mobile devices. This involves making UI elements scale and reposition correctly and potentially adjusting game camera behavior.
+**Finalize Scaling Strategy (`FIT`):** Reverted the scaling mode from `ENVELOP` back to `FIT` after observing that `ENVELOP` caused entity cropping issues due to the game world extending beyond the viewport on some aspect ratios. `FIT` ensures all game elements remain visible, accepting potential letterboxing.
 
 ## Recent Changes
 
-- **Physics Debug State Persistence:** Confirmed the fix for physics debug state persistence across level restarts is working correctly. Project is stable and ready for the next feature.
+- **Attempted `ENVELOP` Mode:** Changed scale mode to `ENVELOP` to test full-screen coverage.
+- **UI Responsiveness Implemented:** Adapted `CoinUI`, `LevelUI`, and `DebugPanel` for responsive positioning and font scaling.
+- **Initial Scaling Configured:** Set Scale Manager mode to `FIT` and `CENTER_BOTH` in `main.ts` initially.
 
 ## Next Steps
 
-- **Develop Responsiveness Strategy:** Analyze Phaser's Scale Manager capabilities and decide on the best approach (e.g., `FIT`, `RESIZE`, `ENVELOP`, custom logic).
-- **Implement UI Scaling:** Adapt existing UI elements (`CoinUI`, `DebugPanel` (if kept for mobile debug), game state overlays) to scale and position correctly based on screen size.
-- **Test on Different Resolutions:** Verify the implementation on various simulated device resolutions and aspect ratios.
-- Implement mobile controls (`createMobileControls` is empty) as part of this effort.
+- **Confirm `FIT` Behavior:** Briefly test on various resolutions/aspect ratios to ensure `FIT` mode behaves as expected with the responsive UI elements.
+- Proceed with Mobile Controls implementation (Step 5 in `implementation-plan.mdc`).
 
 ## Active Decisions & Considerations
 
-- **Scale Manager Strategy:** Determine the primary scaling mode (e.g., `FIT` might be simplest initially, maintaining aspect ratio).
-- **UI Anchoring/Positioning:** How will UI elements be positioned? Relative to screen edges? Anchored to corners?
-- **Game World Scaling:** Does the game world itself need to scale, or just the camera view? How does the `CameraManager`'s zoom interact with the Scale Manager?
-- **Mobile Controls:** Integrate touch controls, likely using Phaser's input system and potentially visual buttons overlaid on the screen. These controls also need to be responsive.
-- **Performance:** Be mindful of performance implications when scaling complex scenes or UI elements.
+- **Scale Manager Strategy:** Finalized `FIT` as the scaling strategy. It preserves the aspect ratio and guarantees visibility of all game content, which is crucial given the entity placement. Letterboxing/pillarboxing is acceptable.
+- **UI Anchoring/Positioning:** Relative positioning (top-left, top-right, center) implemented in UI elements works well with `FIT` mode.
+- **`ENVELOP` Issues:** Determined that `ENVELOP` is unsuitable without redesigning levels/entity placement to account for potential cropping on different aspect ratios.
 
 ## Important Patterns & Preferences
 

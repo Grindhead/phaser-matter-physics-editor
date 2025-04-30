@@ -434,15 +434,7 @@ export class Game extends Scene {
     // Update main game elements
     this.player.update();
 
-    if (!this.player.isPlayingLandAnimation) {
-      this.enemies.forEach((enemy) => enemy.update());
-    } else {
-      this.enemies.forEach((enemy) => {
-        enemy.setVelocityX(0);
-        enemy.setVelocityY(0);
-        enemy.setActive(false);
-      });
-    }
+    this.enemies.forEach((enemy) => enemy.update());
 
     // --- Culling Logic ---
     const cam = this.cameras.main;
@@ -608,7 +600,7 @@ export class Game extends Scene {
       `[Game] Restarting level. Passing debug state: ${currentDebugState}`
     ); // Added log
 
-    // Explicitly remove world collision listener before restart
+    // Explicitly remove world collision listeners before restart
     if (this.matter.world) {
       this.matter.world.off("collisionstart", this.handleCollisionStart);
     } else {
@@ -655,7 +647,7 @@ export class Game extends Scene {
       if (
         barrelSprite &&
         !this.player.isInBarrel &&
-        !this.player.recentlyExitedBarrel
+        this.player.canEnterBarrels
       ) {
         console.log("[Game] Player collided with barrel", barrelSprite);
         this.player.enterBarrel(barrelSprite);

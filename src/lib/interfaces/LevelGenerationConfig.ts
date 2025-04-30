@@ -33,7 +33,7 @@ export const PLATFORM_DISPLAY_HEIGHT = 32; // May not be needed directly here bu
 
 // Generation constraints
 export const MIN_PLATFORM_LENGTH_WITH_ENEMY = 6;
-export const MIN_COIN_SPACING = 48;
+export const MIN_COIN_SPACING = 80;
 export const MIN_ABS_VERTICAL_GAP = 20;
 
 // Platform segment width (pixels)

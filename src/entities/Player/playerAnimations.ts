@@ -8,6 +8,7 @@ export const PLAYER_ANIMATION_KEYS = {
   DUCK_RUN: "DUCK_RUN",
   DUCK_LAND: "DUCK_LAND",
   DUCK_BLAST: "DUCK_BLAST",
+  DUCK_WOBBLE: "DUCK_WOBBLE",
 } as const;
 
 type AnimationKey = keyof typeof PLAYER_ANIMATION_KEYS;
@@ -53,6 +54,12 @@ export const PLAYER_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
     prefix: "player/blast/duck-blast-",
     frames: 19,
     loop: 0,
+    frameRate: 30,
+  },
+  DUCK_WOBBLE: {
+    prefix: "player/wobble/duck-wobble-",
+    frames: 22,
+    loop: -1,
     frameRate: 30,
   },
 };

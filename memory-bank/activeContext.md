@@ -2,22 +2,26 @@
 
 ## Current Focus
 
-**Finalize Scaling Strategy (`FIT`):** Reverted the scaling mode from `ENVELOP` back to `FIT` after observing that `ENVELOP` caused entity cropping issues due to the game world extending beyond the viewport on some aspect ratios. `FIT` ensures all game elements remain visible, accepting potential letterboxing.
+**Investigating `EXPAND` Scaling Mode:** Reverted the scaling mode to `EXPAND` (the original setting) to test if it achieves the goal of filling the screen adaptively while correctly positioning entities within the viewable area, avoiding the cropping seen with `ENVELOP` and the black bars from `FIT`.
 
 ## Recent Changes
 
+- **Reverted to `FIT` Mode:** Changed scale mode from `ENVELOP` back to `FIT` due to entity cropping issues.
 - **Attempted `ENVELOP` Mode:** Changed scale mode to `ENVELOP` to test full-screen coverage.
 - **UI Responsiveness Implemented:** Adapted `CoinUI`, `LevelUI`, and `DebugPanel` for responsive positioning and font scaling.
 - **Initial Scaling Configured:** Set Scale Manager mode to `FIT` and `CENTER_BOTH` in `main.ts` initially.
 
 ## Next Steps
 
-- **Confirm `FIT` Behavior:** Briefly test on various resolutions/aspect ratios to ensure `FIT` mode behaves as expected with the responsive UI elements.
-- Proceed with Mobile Controls implementation (Step 5 in `implementation-plan.mdc`).
+- **Test `EXPAND` Behavior:** Thoroughly test the game on various resolutions/aspect ratios to observe how `EXPAND` mode handles scaling, entity positioning, and potential distortion or cropping. Determine if it meets the requirements.
+- Based on testing, either finalize `EXPAND` or reconsider other strategies (like `FIT` or `ENVELOP` with camera adjustments/safe zones).
+- Proceed with Mobile Controls implementation (Step 5 in `implementation-plan.mdc`) once scaling is confirmed.
 
 ## Active Decisions & Considerations
 
-- **Scale Manager Strategy:** Finalized `FIT` as the scaling strategy. It preserves the aspect ratio and guarantees visibility of all game content, which is crucial given the entity placement. Letterboxing/pillarboxing is acceptable.
+- **Scale Manager Strategy:** Currently testing `EXPAND`. The goal is full-screen adaptive display without cropping critical elements. `FIT` remains the fallback if `EXPAND` is unsuitable.
+- **`EXPAND` Mode Theory:** `EXPAND` might resize the canvas to fill space but scale the internal game world like `FIT`, potentially offering the best visual compromise.
+- **UI Positioning:** Responsive UI logic should still work, but testing is needed to confirm positioning relative to the `EXPAND` mode's canvas/game size.
 - **UI Anchoring/Positioning:** Relative positioning (top-left, top-right, center) implemented in UI elements works well with `FIT` mode.
 - **`ENVELOP` Issues:** Determined that `ENVELOP` is unsuitable without redesigning levels/entity placement to account for potential cropping on different aspect ratios.
 

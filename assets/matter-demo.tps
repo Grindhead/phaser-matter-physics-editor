@@ -697,28 +697,28 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">player/wobble/Duck Wobble0001.png</key>
-            <key type="filename">player/wobble/Duck Wobble0002.png</key>
-            <key type="filename">player/wobble/Duck Wobble0003.png</key>
-            <key type="filename">player/wobble/Duck Wobble0004.png</key>
-            <key type="filename">player/wobble/Duck Wobble0005.png</key>
-            <key type="filename">player/wobble/Duck Wobble0006.png</key>
-            <key type="filename">player/wobble/Duck Wobble0007.png</key>
-            <key type="filename">player/wobble/Duck Wobble0008.png</key>
-            <key type="filename">player/wobble/Duck Wobble0009.png</key>
-            <key type="filename">player/wobble/Duck Wobble0010.png</key>
-            <key type="filename">player/wobble/Duck Wobble0011.png</key>
-            <key type="filename">player/wobble/Duck Wobble0012.png</key>
-            <key type="filename">player/wobble/Duck Wobble0013.png</key>
-            <key type="filename">player/wobble/Duck Wobble0014.png</key>
-            <key type="filename">player/wobble/Duck Wobble0015.png</key>
-            <key type="filename">player/wobble/Duck Wobble0016.png</key>
-            <key type="filename">player/wobble/Duck Wobble0017.png</key>
-            <key type="filename">player/wobble/Duck Wobble0018.png</key>
-            <key type="filename">player/wobble/Duck Wobble0019.png</key>
-            <key type="filename">player/wobble/Duck Wobble0020.png</key>
-            <key type="filename">player/wobble/Duck Wobble0021.png</key>
-            <key type="filename">player/wobble/Duck Wobble0022.png</key>
+            <key type="filename">player/wobble/duck-wobble-0001.png</key>
+            <key type="filename">player/wobble/duck-wobble-0002.png</key>
+            <key type="filename">player/wobble/duck-wobble-0003.png</key>
+            <key type="filename">player/wobble/duck-wobble-0004.png</key>
+            <key type="filename">player/wobble/duck-wobble-0005.png</key>
+            <key type="filename">player/wobble/duck-wobble-0006.png</key>
+            <key type="filename">player/wobble/duck-wobble-0007.png</key>
+            <key type="filename">player/wobble/duck-wobble-0008.png</key>
+            <key type="filename">player/wobble/duck-wobble-0009.png</key>
+            <key type="filename">player/wobble/duck-wobble-0010.png</key>
+            <key type="filename">player/wobble/duck-wobble-0011.png</key>
+            <key type="filename">player/wobble/duck-wobble-0012.png</key>
+            <key type="filename">player/wobble/duck-wobble-0013.png</key>
+            <key type="filename">player/wobble/duck-wobble-0014.png</key>
+            <key type="filename">player/wobble/duck-wobble-0015.png</key>
+            <key type="filename">player/wobble/duck-wobble-0016.png</key>
+            <key type="filename">player/wobble/duck-wobble-0017.png</key>
+            <key type="filename">player/wobble/duck-wobble-0018.png</key>
+            <key type="filename">player/wobble/duck-wobble-0019.png</key>
+            <key type="filename">player/wobble/duck-wobble-0020.png</key>
+            <key type="filename">player/wobble/duck-wobble-0021.png</key>
+            <key type="filename">player/wobble/duck-wobble-0022.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>

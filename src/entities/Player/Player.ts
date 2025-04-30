@@ -22,7 +22,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   public upIsDown = false;
   public rightIsDown = false;
   public leftIsDown = false;
-  private isPlayingLandAnimation = false;
+  public isPlayingLandAnimation = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);

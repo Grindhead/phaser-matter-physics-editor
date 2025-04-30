@@ -1,34 +1,28 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
-import { createAnimationChain } from "../../lib/helpers/createAnimations";
 import { isGroundBody } from "../../lib/helpers/isGroundBody";
 import { isPlayerBody } from "../../lib/helpers/isPlayerBody";
 import { FXLand } from "../fx-land/FxLand";
 import { Barrel } from "../Barrel/Barrel";
 import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 
-const JUMP_VELOCITY = -9;
+const JUMP_VELOCITY = -12;
 const WALK_VELOCITY = 3;
-const FALL_DELAY_MS = 150;
-const BARREL_LAUNCH_VELOCITY = 12;
-const BARREL_EXIT_COOLDOWN_MS = 200;
-
+const BARREL_LAUNCH_VELOCITY = 14;
 export class Player extends Phaser.Physics.Matter.Sprite {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<string, Phaser.Input.Keyboard.Key>;
   private isGrounded = false;
   private groundContacts = new Set<MatterJS.BodyType>();
   private currentAnimKey = "";
-  private jumpInProgress = false;
-  private lastJumpTime = 0;
   private isAlive = true;
   private isLevelComplete = false;
-  private justLanded = false;
   private currentBarrel: Barrel | null = null;
   public recentlyExitedBarrel: boolean = false;
   public isInBarrel = false;
   public upIsDown = false;
   public rightIsDown = false;
   public leftIsDown = false;
+  public isPlayingLandAnimation = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -55,9 +49,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isInBarrel = false;
     this.currentBarrel = null;
     this.recentlyExitedBarrel = false;
-
-    createAnimationChain(this, PLAYER_ANIMATIONS);
-
+    this.isPlayingLandAnimation = false;
     scene.add.existing(this);
   }
 
@@ -82,6 +74,12 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       return;
     }
 
+    // Skip animation updates if the land animation is playing
+    if (this.isPlayingLandAnimation) {
+      this.setVelocityX(0);
+      return;
+    }
+
     // Combine keyboard and mobile inputs
     const isMobileEnvironment = this.scene.sys.game.device.input.touch;
     if (!isMobileEnvironment) {
@@ -93,23 +91,23 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
 
     if (!this.isLevelComplete) {
-      let targetVelocityX = 0;
       if (this.leftIsDown) {
-        targetVelocityX = -WALK_VELOCITY;
+        this.setVelocity(-WALK_VELOCITY, this.body!.velocity.y);
         this.flipX = true;
-      } else if (this.rightIsDown) {
-        targetVelocityX = WALK_VELOCITY;
+      }
+      if (this.rightIsDown) {
+        this.setVelocity(WALK_VELOCITY, this.body!.velocity.y);
         this.flipX = false;
       }
-      if (!this.recentlyExitedBarrel) {
-        this.setVelocityX(targetVelocityX);
+
+      if (this.isGrounded && !this.leftIsDown && !this.rightIsDown) {
+        this.setVelocity(0, 0);
       }
 
-      if (this.upIsDown && this.isGrounded && !this.isInBarrel) {
+      if (this.upIsDown && !this.isInBarrel && this.isGrounded) {
         this.setVelocityY(JUMP_VELOCITY);
-        this.jumpInProgress = true;
-        this.lastJumpTime = this.scene.time.now;
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_JUMP, true);
+        console.log("[Player] Jumped");
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
           if (!this.isGrounded) {
             this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
@@ -119,32 +117,29 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       }
     }
 
-    if (!this.isGrounded) {
-      if (!this.jumpInProgress) {
-        if (
-          this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_FALL &&
-          this.scene.time.now - this.lastJumpTime > FALL_DELAY_MS
-        ) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
-        }
-      }
-    } else if (this.isGrounded && !this.jumpInProgress) {
-      if (this.justLanded) {
-        if (!this.leftIsDown && !this.rightIsDown) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-        } else {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
-        }
-        this.justLanded = false;
+    if (
+      !this.isGrounded &&
+      this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_JUMP
+    ) {
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
+    } else if (this.isGrounded) {
+      if (
+        !this.leftIsDown &&
+        !this.rightIsDown &&
+        this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_LAND
+      ) {
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
       } else {
-        if (this.isLevelComplete) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
+      }
+
+      if (this.isLevelComplete) {
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+      } else {
+        if (this.body && Math.abs(this.body.velocity.x) > 0.1) {
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
         } else {
-          if (this.body && Math.abs(this.body.velocity.x) > 0.1) {
-            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
-          } else {
-            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-          }
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
         }
       }
     }
@@ -164,21 +159,34 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   ) {
     for (const { bodyA, bodyB } of event.pairs) {
       if (isPlayerBody(bodyA) && isGroundBody(bodyB)) {
-        this.groundContacts.add(bodyB);
+        this.handleLanding(bodyB);
       } else if (isPlayerBody(bodyB) && isGroundBody(bodyA)) {
-        this.groundContacts.add(bodyA);
+        this.handleLanding(bodyA);
       }
     }
 
-    const wasGrounded = this.isGrounded;
     this.isGrounded = this.groundContacts.size > 0;
 
-    if (this.isGrounded && !wasGrounded) {
-      this.jumpInProgress = false;
-      this.justLanded = true;
-
+    if (this.isGrounded) {
       new FXLand(this.scene, this.x, this.getBounds().bottom);
     }
+  }
+
+  private handleLanding(target: MatterJS.BodyType) {
+    this.groundContacts.add(target);
+
+    if (this.recentlyExitedBarrel) {
+      this.isPlayingLandAnimation = true;
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, false);
+      this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+        this.isPlayingLandAnimation = false;
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+      });
+    } else {
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+    }
+
+    this.recentlyExitedBarrel = false;
   }
 
   private handleCollisionEnd(
@@ -215,7 +223,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isInBarrel = true;
     this.currentBarrel = barrel;
     this.isGrounded = false;
-    this.jumpInProgress = false;
 
     this.setStatic(true);
     this.setVisible(false);
@@ -250,10 +257,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
 
     this.recentlyExitedBarrel = true;
-    this.scene.time.delayedCall(BARREL_EXIT_COOLDOWN_MS, () => {
-      this.recentlyExitedBarrel = false;
-      console.log("[Player] Barrel exit cooldown finished.");
-    });
   }
 
   public finishLevel() {

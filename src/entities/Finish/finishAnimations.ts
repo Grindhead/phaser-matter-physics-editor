@@ -19,7 +19,6 @@ export const FINISH_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
     prefix: "finish/finish-activated/finish-activated-",
     frames: 19,
     loop: 0,
-    nextAnimation: FINISH_ANIMATION_KEYS.FINISH_ACTIVE,
     frameRate: 30,
   },
   FINISH_ACTIVE: {

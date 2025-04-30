@@ -57,7 +57,7 @@ export const PLAYER_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
     frameRate: 30,
   },
   DUCK_WOBBLE: {
-    prefix: "player/wooble/duck-wooble-",
+    prefix: "player/wobble/duck-wobble-",
     frames: 22,
     loop: -1,
     frameRate: 30,

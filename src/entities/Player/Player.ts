@@ -8,6 +8,7 @@ import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 const JUMP_VELOCITY = -12;
 const WALK_VELOCITY = 3;
 const BARREL_LAUNCH_VELOCITY = 14;
+const EDGE_DETECTION_DISTANCE = 15; // Distance from edge to trigger wobble
 export class Player extends Phaser.Physics.Matter.Sprite {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<string, Phaser.Input.Keyboard.Key>;
@@ -24,6 +25,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   public rightIsDown = false;
   public leftIsDown = false;
   public isPlayingLandAnimation = false;
+  private isNearEdge = false;
+  private isNearLeftEdge = false;
+  private isNearRightEdge = false;
+  private currentPlatformBounds: { left: number; right: number } | null = null;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -52,6 +57,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.recentlyExitedBarrel = false;
     this.canEnterBarrels = true;
     this.isPlayingLandAnimation = false;
+    this.isNearEdge = false;
+    this.isNearLeftEdge = false;
+    this.isNearRightEdge = false;
+    this.currentPlatformBounds = null;
     scene.add.existing(this);
   }
 
@@ -73,13 +82,22 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     if (this.getVelocity().x < 0) {
       this.flipX = true;
-    } else {
+    } else if (this.getVelocity().x > 0) {
       this.flipX = false;
     }
 
     if (this.isInBarrel) {
       this.handleInBarrelState();
       return;
+    }
+
+    // Check if player is near edge when grounded
+    if (this.isGrounded) {
+      this.checkIfNearEdge();
+    } else {
+      this.isNearEdge = false;
+      this.isNearLeftEdge = false;
+      this.isNearRightEdge = false;
     }
 
     // Combine keyboard and mobile inputs
@@ -126,7 +144,20 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     ) {
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
     } else if (this.isGrounded) {
-      if (
+      if (this.isNearEdge && !this.leftIsDown && !this.rightIsDown) {
+        // Play wobble animation when near edge and not moving
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_WOBBLE);
+
+        // Set flipX based on which edge the player is near
+        // If near left edge, face left (toward the drop-off) - flipX = true
+        // If near right edge, face right (toward the drop-off) - flipX = false
+        if (this.isNearLeftEdge && !this.isNearRightEdge) {
+          this.flipX = true; // Face left at left edge
+        } else if (this.isNearRightEdge && !this.isNearLeftEdge) {
+          this.flipX = false; // Face right at right edge
+        }
+        // If near both edges (small platform), keep current orientation
+      } else if (
         !this.leftIsDown &&
         !this.rightIsDown &&
         this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_LAND
@@ -139,6 +170,46 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       if (this.isLevelComplete) {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
       }
+    }
+  }
+
+  private checkIfNearEdge(): void {
+    if (!this.isGrounded || this.groundContacts.size === 0) {
+      this.isNearEdge = false;
+      this.isNearLeftEdge = false;
+      this.isNearRightEdge = false;
+      return;
+    }
+
+    // Get current platform bounds from the ground contact
+    if (!this.currentPlatformBounds && this.groundContacts.size > 0) {
+      // Get the first ground contact
+      const groundBody = Array.from(this.groundContacts)[0];
+      if (groundBody && groundBody.bounds) {
+        const { min, max } = groundBody.bounds;
+        this.currentPlatformBounds = { left: min.x, right: max.x };
+      }
+    }
+
+    if (this.currentPlatformBounds) {
+      const playerCenter = this.x;
+      const distanceToLeftEdge = Math.abs(
+        playerCenter - this.currentPlatformBounds.left
+      );
+      const distanceToRightEdge = Math.abs(
+        this.currentPlatformBounds.right - playerCenter
+      );
+
+      // Track which specific edge the player is near
+      this.isNearLeftEdge = distanceToLeftEdge < EDGE_DETECTION_DISTANCE;
+      this.isNearRightEdge = distanceToRightEdge < EDGE_DETECTION_DISTANCE;
+
+      // Near any edge
+      this.isNearEdge = this.isNearLeftEdge || this.isNearRightEdge;
+    } else {
+      this.isNearEdge = false;
+      this.isNearLeftEdge = false;
+      this.isNearRightEdge = false;
     }
   }
 
@@ -164,6 +235,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     this.isGrounded = this.groundContacts.size > 0;
 
+    // Reset platform bounds when landing on a new platform
+    this.currentPlatformBounds = null;
+
     if (this.isGrounded) {
       new FXLand(this.scene, this.x, this.getBounds().bottom);
     }
@@ -171,6 +245,12 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
   private handleLanding(target: MatterJS.BodyType) {
     this.groundContacts.add(target);
+
+    // Update platform bounds when landing
+    if (target && target.bounds) {
+      const { min, max } = target.bounds;
+      this.currentPlatformBounds = { left: min.x, right: max.x };
+    }
 
     if (this.isGrounded) {
       return;
@@ -182,13 +262,37 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
         this.isPlayingLandAnimation = false;
         if (!this.leftIsDown && !this.rightIsDown) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+          // Check if near edge after landing animation completes
+          this.checkIfNearEdge();
+          if (this.isNearEdge) {
+            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_WOBBLE, false);
+            // Set flipX based on which edge we're near
+            if (this.isNearLeftEdge && !this.isNearRightEdge) {
+              this.flipX = true; // Face left at left edge
+            } else if (this.isNearRightEdge && !this.isNearLeftEdge) {
+              this.flipX = false; // Face right at right edge
+            }
+          } else {
+            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+          }
         }
       });
     } else if (
       this.anims.currentAnim!.key !== PLAYER_ANIMATION_KEYS.DUCK_LAND
     ) {
-      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+      // Check if near edge when landing normally
+      this.checkIfNearEdge();
+      if (this.isNearEdge && !this.leftIsDown && !this.rightIsDown) {
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_WOBBLE, false);
+        // Set flipX based on which edge we're near
+        if (this.isNearLeftEdge && !this.isNearRightEdge) {
+          this.flipX = true; // Face left at left edge
+        } else if (this.isNearRightEdge && !this.isNearLeftEdge) {
+          this.flipX = false; // Face right at right edge
+        }
+      } else {
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+      }
     }
 
     this.recentlyExitedBarrel = false;
@@ -206,6 +310,14 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
 
     this.isGrounded = this.groundContacts.size > 0;
+
+    // Reset platform bounds if no longer grounded
+    if (!this.isGrounded) {
+      this.currentPlatformBounds = null;
+      this.isNearEdge = false;
+      this.isNearLeftEdge = false;
+      this.isNearRightEdge = false;
+    }
   }
 
   private handleInBarrelState(): void {
@@ -228,6 +340,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isInBarrel = true;
     this.currentBarrel = barrel;
     this.isGrounded = false;
+    this.isNearEdge = false;
+    this.isNearLeftEdge = false;
+    this.isNearRightEdge = false;
+    this.currentPlatformBounds = null;
 
     this.setStatic(true);
     this.setVisible(false);

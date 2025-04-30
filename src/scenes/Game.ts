@@ -60,15 +60,6 @@ export class Game extends Scene {
   }
 
   /**
-   * Scene lifecycle hook. Receives data passed from scene.restart().
-   * @param data Data object possibly containing the physics debug state from the previous run.
-   */
-  init(data: { physicsDebugWasActive?: boolean }): void {
-    // Store the passed state, default to false if not provided
-    this.initialPhysicsDebugState = data.physicsDebugWasActive ?? false;
-  }
-
-  /**
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
   create(): void {
@@ -251,11 +242,8 @@ export class Game extends Scene {
    */
   private togglePhysicsDebug(): void {
     this.physicsDebugActive = !this.physicsDebugActive;
-
-    // Use the built-in drawDebug flag
     this.matter.world.drawDebug = this.physicsDebugActive;
-    // Also toggle the visibility of the graphics object itself
-    this.debugGraphics.setVisible(this.physicsDebugActive); // Corrected: Toggle visibility based on state
+    this.debugGraphics.setVisible(this.physicsDebugActive);
   }
 
   /**

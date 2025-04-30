@@ -468,25 +468,25 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">player/blast/Duck Blast0001.png</key>
-            <key type="filename">player/blast/Duck Blast0002.png</key>
-            <key type="filename">player/blast/Duck Blast0003.png</key>
-            <key type="filename">player/blast/Duck Blast0004.png</key>
-            <key type="filename">player/blast/Duck Blast0005.png</key>
-            <key type="filename">player/blast/Duck Blast0006.png</key>
-            <key type="filename">player/blast/Duck Blast0007.png</key>
-            <key type="filename">player/blast/Duck Blast0008.png</key>
-            <key type="filename">player/blast/Duck Blast0009.png</key>
-            <key type="filename">player/blast/Duck Blast0010.png</key>
-            <key type="filename">player/blast/Duck Blast0011.png</key>
-            <key type="filename">player/blast/Duck Blast0012.png</key>
-            <key type="filename">player/blast/Duck Blast0013.png</key>
-            <key type="filename">player/blast/Duck Blast0014.png</key>
-            <key type="filename">player/blast/Duck Blast0015.png</key>
-            <key type="filename">player/blast/Duck Blast0016.png</key>
-            <key type="filename">player/blast/Duck Blast0017.png</key>
-            <key type="filename">player/blast/Duck Blast0018.png</key>
-            <key type="filename">player/blast/Duck Blast0019.png</key>
+            <key type="filename">player/blast/duck-blast-0001.png</key>
+            <key type="filename">player/blast/duck-blast-0002.png</key>
+            <key type="filename">player/blast/duck-blast-0003.png</key>
+            <key type="filename">player/blast/duck-blast-0004.png</key>
+            <key type="filename">player/blast/duck-blast-0005.png</key>
+            <key type="filename">player/blast/duck-blast-0006.png</key>
+            <key type="filename">player/blast/duck-blast-0007.png</key>
+            <key type="filename">player/blast/duck-blast-0008.png</key>
+            <key type="filename">player/blast/duck-blast-0009.png</key>
+            <key type="filename">player/blast/duck-blast-0010.png</key>
+            <key type="filename">player/blast/duck-blast-0011.png</key>
+            <key type="filename">player/blast/duck-blast-0012.png</key>
+            <key type="filename">player/blast/duck-blast-0013.png</key>
+            <key type="filename">player/blast/duck-blast-0014.png</key>
+            <key type="filename">player/blast/duck-blast-0015.png</key>
+            <key type="filename">player/blast/duck-blast-0016.png</key>
+            <key type="filename">player/blast/duck-blast-0017.png</key>
+            <key type="filename">player/blast/duck-blast-0018.png</key>
+            <key type="filename">player/blast/duck-blast-0019.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>

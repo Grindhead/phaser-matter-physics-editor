@@ -69,18 +69,14 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       return;
     }
 
-    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.DUCK_BLAST) {
-      return;
+    if (this.getVelocity().x < 0) {
+      this.flipX = true;
+    } else {
+      this.flipX = false;
     }
 
-    if (this.isInBarrel && this.currentBarrel) {
+    if (this.isInBarrel) {
       this.handleInBarrelState();
-      return;
-    }
-
-    // Skip animation updates if the land animation is playing
-    if (this.isPlayingLandAnimation) {
-      this.setVelocityX(0);
       return;
     }
 
@@ -94,14 +90,15 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       this.upIsDown = this.cursors!.up.isDown || this.wasd!.W.isDown || false;
     }
 
-    if (!this.isLevelComplete) {
+    if (
+      !this.isLevelComplete &&
+      this.anims.currentAnim?.key !== PLAYER_ANIMATION_KEYS.DUCK_BLAST
+    ) {
       if (this.leftIsDown) {
         this.setVelocity(-WALK_VELOCITY, this.body!.velocity.y);
-        this.flipX = true;
       }
       if (this.rightIsDown) {
         this.setVelocity(WALK_VELOCITY, this.body!.velocity.y);
-        this.flipX = false;
       }
 
       if (this.isGrounded && !this.leftIsDown && !this.rightIsDown) {
@@ -111,7 +108,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       if (this.upIsDown && !this.isInBarrel && this.isGrounded) {
         this.setVelocityY(JUMP_VELOCITY);
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_JUMP, true);
-        console.log("[Player] Jumped");
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
           if (!this.isGrounded) {
             this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
@@ -131,21 +127,19 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       if (
         !this.leftIsDown &&
         !this.rightIsDown &&
+        !this.isPlayingLandAnimation &&
         this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_LAND
       ) {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-      } else {
+      } else if (
+        !this.isPlayingLandAnimation &&
+        (this.leftIsDown || this.rightIsDown)
+      ) {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
       }
 
       if (this.isLevelComplete) {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-      } else {
-        if (this.body && Math.abs(this.body.velocity.x) > 0.1) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
-        } else {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-        }
       }
     }
   }
@@ -180,14 +174,22 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private handleLanding(target: MatterJS.BodyType) {
     this.groundContacts.add(target);
 
+    if (this.isGrounded) {
+      return;
+    }
+
     if (this.recentlyExitedBarrel) {
       this.isPlayingLandAnimation = true;
-      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, false);
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, true);
       this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
         this.isPlayingLandAnimation = false;
-        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+        if (!this.leftIsDown && !this.rightIsDown) {
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+        }
       });
-    } else {
+    } else if (
+      this.anims.currentAnim!.key !== PLAYER_ANIMATION_KEYS.DUCK_LAND
+    ) {
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
     }
 
@@ -253,15 +255,28 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       .scale(BARREL_LAUNCH_VELOCITY);
 
     this.setVelocity(launchVector.x, launchVector.y);
+
+    // Set flipX based on horizontal direction
+    this.flipX = launchVector.x < 0;
+
     this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_BLAST, true);
 
-    // Set rotation to match travel direction
-    this.setRotation(Phaser.Math.DegToRad(launchAngle));
+    // Normalize the angle to prevent upside-down animations
+    const normalizedAngle = ((launchAngle % 360) + 360) % 360;
+    const isUpsideDown = normalizedAngle > 90 && normalizedAngle < 270;
+
+    if (isUpsideDown) {
+      // Use an adjusted angle that gives same visual direction but right-side up
+      this.setRotation(Phaser.Math.DegToRad(launchAngle + 180));
+    } else {
+      this.setRotation(Phaser.Math.DegToRad(launchAngle));
+    }
 
     this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, false);
-      // Reset rotation when animation ends
+      // Reset rotation and flip when animation ends
       this.setRotation(0);
+      this.setFlipY(false);
     });
 
     this.recentlyExitedBarrel = true;

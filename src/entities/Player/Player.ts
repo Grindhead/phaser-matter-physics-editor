@@ -69,6 +69,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       return;
     }
 
+    if (this.anims.currentAnim?.key === PLAYER_ANIMATION_KEYS.DUCK_BLAST) {
+      return;
+    }
+
     if (this.isInBarrel && this.currentBarrel) {
       this.handleInBarrelState();
       return;
@@ -251,8 +255,13 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.setVelocity(launchVector.x, launchVector.y);
     this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_BLAST, true);
 
+    // Set rotation to match travel direction
+    this.setRotation(Phaser.Math.DegToRad(launchAngle));
+
     this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, false);
+      // Reset rotation when animation ends
+      this.setRotation(0);
     });
 
     this.recentlyExitedBarrel = true;

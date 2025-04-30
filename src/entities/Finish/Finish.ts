@@ -1,5 +1,4 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
-import { createAnimationChain } from "../../lib/helpers/createAnimations";
 import { FINISH_ANIMATION_KEYS, FINISH_ANIMATIONS } from "./finishAnimations";
 
 export class Finish extends Phaser.Physics.Matter.Sprite {
@@ -16,8 +15,6 @@ export class Finish extends Phaser.Physics.Matter.Sprite {
     this.setOrigin(0.3, 0.5);
 
     this.play(FINISH_ANIMATION_KEYS.FINISH_IDLE);
-
-    createAnimationChain(this, FINISH_ANIMATIONS);
 
     scene.add.existing(this);
   }

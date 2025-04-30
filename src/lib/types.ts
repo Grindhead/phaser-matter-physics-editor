@@ -4,7 +4,6 @@ export type AnimationDefinition = {
   prefix: string;
   frames: number;
   loop: number;
-  nextAnimation?: string;
   frameRate: number;
 };
 

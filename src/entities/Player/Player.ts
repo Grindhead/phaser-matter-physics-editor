@@ -1,5 +1,4 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
-import { createAnimationChain } from "../../lib/helpers/createAnimations";
 import { isGroundBody } from "../../lib/helpers/isGroundBody";
 import { isPlayerBody } from "../../lib/helpers/isPlayerBody";
 import { FXLand } from "../fx-land/FxLand";
@@ -8,7 +7,6 @@ import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
 
 const JUMP_VELOCITY = -9;
 const WALK_VELOCITY = 3;
-const FALL_DELAY_MS = 150;
 const BARREL_LAUNCH_VELOCITY = 12;
 const BARREL_EXIT_COOLDOWN_MS = 200;
 
@@ -18,11 +16,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private isGrounded = false;
   private groundContacts = new Set<MatterJS.BodyType>();
   private currentAnimKey = "";
-  private jumpInProgress = false;
-  private lastJumpTime = 0;
   private isAlive = true;
   private isLevelComplete = false;
-  private justLanded = false;
   private currentBarrel: Barrel | null = null;
   public recentlyExitedBarrel: boolean = false;
   public isInBarrel = false;
@@ -55,9 +50,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isInBarrel = false;
     this.currentBarrel = null;
     this.recentlyExitedBarrel = false;
-
-    createAnimationChain(this, PLAYER_ANIMATIONS);
-
     scene.add.existing(this);
   }
 
@@ -107,9 +99,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
       if (this.upIsDown && this.isGrounded && !this.isInBarrel) {
         this.setVelocityY(JUMP_VELOCITY);
-        this.jumpInProgress = true;
-        this.lastJumpTime = this.scene.time.now;
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_JUMP, true);
+        console.log("[Player] Jumped");
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
           if (!this.isGrounded) {
             this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
@@ -119,32 +110,25 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       }
     }
 
-    if (!this.isGrounded) {
-      if (!this.jumpInProgress) {
-        if (
-          this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_FALL &&
-          this.scene.time.now - this.lastJumpTime > FALL_DELAY_MS
-        ) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
-        }
-      }
-    } else if (this.isGrounded && !this.jumpInProgress) {
-      if (this.justLanded) {
-        if (!this.leftIsDown && !this.rightIsDown) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-        } else {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
-        }
-        this.justLanded = false;
+    if (
+      !this.isGrounded &&
+      this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_JUMP
+    ) {
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
+    } else if (this.isGrounded) {
+      if (!this.leftIsDown && !this.rightIsDown) {
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
       } else {
-        if (this.isLevelComplete) {
-          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
+      }
+
+      if (this.isLevelComplete) {
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+      } else {
+        if (this.body && Math.abs(this.body.velocity.x) > 0.1) {
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
         } else {
-          if (this.body && Math.abs(this.body.velocity.x) > 0.1) {
-            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
-          } else {
-            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-          }
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
         }
       }
     }
@@ -170,13 +154,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       }
     }
 
-    const wasGrounded = this.isGrounded;
     this.isGrounded = this.groundContacts.size > 0;
 
-    if (this.isGrounded && !wasGrounded) {
-      this.jumpInProgress = false;
-      this.justLanded = true;
-
+    if (this.isGrounded) {
       new FXLand(this.scene, this.x, this.getBounds().bottom);
     }
   }
@@ -215,7 +195,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isInBarrel = true;
     this.currentBarrel = barrel;
     this.isGrounded = false;
-    this.jumpInProgress = false;
 
     this.setStatic(true);
     this.setVisible(false);

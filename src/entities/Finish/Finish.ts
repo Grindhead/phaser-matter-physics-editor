@@ -1,5 +1,5 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
-import { FINISH_ANIMATION_KEYS, FINISH_ANIMATIONS } from "./finishAnimations";
+import { FINISH_ANIMATION_KEYS } from "./finishAnimations";
 
 export class Finish extends Phaser.Physics.Matter.Sprite {
   private isActivated: boolean = false;

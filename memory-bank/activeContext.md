@@ -2,10 +2,11 @@
 
 ## Current Focus
 
-**Investigating `EXPAND` Scaling Mode:** Reverted the scaling mode to `EXPAND` (the original setting) to test if it achieves the goal of filling the screen adaptively while correctly positioning entities within the viewable area, avoiding the cropping seen with `ENVELOP` and the black bars from `FIT`.
+**Conditionally Initialize Game Based on Orientation:** Modify `src/main.ts` to only initialize the Phaser `Game` instance when the screen is detected to be in a landscape orientation. Implement checks both on initial load and on orientation changes.
 
 ## Recent Changes
 
+- **Tested `EXPAND` Scaling Mode:** Reverted the scaling mode to `EXPAND` (the original setting) to test if it achieves the goal of filling the screen adaptively while correctly positioning entities within the viewable area, avoiding the cropping seen with `ENVELOP` and the black bars from `FIT`. Testing is ongoing (Step 5 in `implementation-plan.mdc`).
 - **Reverted to `FIT` Mode:** Changed scale mode from `ENVELOP` back to `FIT` due to entity cropping issues.
 - **Attempted `ENVELOP` Mode:** Changed scale mode to `ENVELOP` to test full-screen coverage.
 - **UI Responsiveness Implemented:** Adapted `CoinUI`, `LevelUI`, and `DebugPanel` for responsive positioning and font scaling.
@@ -13,13 +14,14 @@
 
 ## Next Steps
 
-- **Test `EXPAND` Behavior:** Thoroughly test the game on various resolutions/aspect ratios to observe how `EXPAND` mode handles scaling, entity positioning, and potential distortion or cropping. Determine if it meets the requirements.
-- Based on testing, either finalize `EXPAND` or reconsider other strategies (like `FIT` or `ENVELOP` with camera adjustments/safe zones).
-- Proceed with Mobile Controls implementation (Step 5 in `implementation-plan.mdc`) once scaling is confirmed.
+- **Implement Orientation Check:** Add the logic to `src/main.ts` to check `window.matchMedia('(orientation: landscape)')`.
+- **Test Orientation Logic:** Verify the game only loads in landscape and displays a message in portrait.
+- **Continue Responsiveness Testing:** Proceed with Step 5 (`Test EXPAND Mode`) and subsequent steps in `implementation-plan.mdc`.
 
 ## Active Decisions & Considerations
 
-- **Scale Manager Strategy:** Currently testing `EXPAND`. The goal is full-screen adaptive display without cropping critical elements. `FIT` remains the fallback if `EXPAND` is unsuitable.
+- **Display Message:** Show a simple message (e.g., "Please rotate your device to landscape mode") when in portrait orientation.
+- **Scale Manager Strategy:** Continue testing `EXPAND`. The goal is full-screen adaptive display without cropping critical elements. `FIT` remains the fallback if `EXPAND` is unsuitable.
 - **`EXPAND` Mode Theory:** `EXPAND` might resize the canvas to fill space but scale the internal game world like `FIT`, potentially offering the best visual compromise.
 - **UI Positioning:** Responsive UI logic should still work, but testing is needed to confirm positioning relative to the `EXPAND` mode's canvas/game size.
 - **UI Anchoring/Positioning:** Relative positioning (top-left, top-right, center) implemented in UI elements works well with `FIT` mode.
@@ -27,6 +29,7 @@
 
 ## Important Patterns & Preferences
 
+- **Orientation Check:** Use `window.matchMedia('(orientation: landscape)')` to check screen orientation both initially and via an event listener for changes.
 - **State Persistence Across Restarts (Revised):** When state needs to persist across `scene.restart()`, explicitly pass the state as data (`scene.restart({ key: value })`) and retrieve it in the scene's `init(data)` method. Relying on reading the state from engine objects at the start of `create()` can be unreliable if the engine resets those objects based on initial configurations before `create` executes.
 - **Event Listener Cleanup:** Removing event listeners (e.g., `this.game.events.off(...)`) before restarting a scene or destroying an object is crucial to prevent memory leaks and duplicate listeners.
 - **State Tracking during Generation:** Maintaining state (occupied ranges) within the generation loop to inform subsequent placement decisions.

@@ -1,15 +1,43 @@
 body {
-    margin: 0;
-    padding: 0;
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #000000;
+  margin: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #000000;
 }
 
 #app {
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#orientation-overlay {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 1);
+  color: white;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 1.5em;
+  z-index: 9999;
+}
+
+/* More specific media queries with width/height conditions */
+@media screen and (orientation: portrait) {
+  #orientation-overlay {
+    position: absolute;
     display: flex;
-    justify-content: center;
-    align-items: center;
+  }
+}
+
+@media screen and (orientation: landscape) {
+  #orientation-overlay {
+    display: none;
+  }
 }

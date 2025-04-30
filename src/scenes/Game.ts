@@ -60,18 +60,6 @@ export class Game extends Scene {
   }
 
   /**
-   * Scene lifecycle hook. Receives data passed from scene.restart().
-   * @param data Data object possibly containing the physics debug state from the previous run.
-   */
-  init(data: { physicsDebugWasActive?: boolean }): void {
-    // Store the passed state, default to false if not provided
-    this.initialPhysicsDebugState = data.physicsDebugWasActive ?? false;
-    console.log(
-      `[Game Init] Received initial physics debug state: ${this.initialPhysicsDebugState}`
-    ); // Added log
-  }
-
-  /**
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
   create(): void {
@@ -81,8 +69,16 @@ export class Game extends Scene {
     this.initGame();
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
 
-    // --- BEGIN REVISED MODIFICATION: Use initial state passed via init ---
-    // Configure Matter debug rendering based on the state stored in init()
+    this.createDebugUI();
+
+    // Check for touch support AND non-desktop OS to identify mobile/tablet (real or emulated)
+    const isMobileEnvironment = this.sys.game.device.input.touch;
+    if (isMobileEnvironment) {
+      this.createMobileControls();
+    }
+  }
+
+  private createDebugUI(): void {
     if (this.debugGraphics) {
       this.debugGraphics.destroy(); // Destroy previous instance if any
     }
@@ -93,23 +89,13 @@ export class Game extends Scene {
     this.matter.world.drawDebug = this.initialPhysicsDebugState;
     this.physicsDebugActive = this.initialPhysicsDebugState;
     this.debugGraphics.setVisible(this.initialPhysicsDebugState); // Set visibility accordingly
-    console.log(
-      `[Game Create] Set physics debug state based on init: ${this.physicsDebugActive}`
-    ); // Added log
-    // --- END REVISED MODIFICATION ---
 
     // Listen for the event from DebugUIScene
     this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
     // Conditionally launch DebugUI only in development
-    if (import.meta.env.DEV) {
-      // Check if it's already running (e.g., from a previous restart that wasn't cleaned up?)
-      if (!this.scene.isActive(SCENES.DEBUG_UI)) {
-        this.scene.launch(SCENES.DEBUG_UI);
-        console.log("[Game Create] Launched Debug UI scene."); // Added log
-      } else {
-        console.log("[Game Create] Debug UI scene already active."); // Added log
-      }
+    if (import.meta.env.DEV && !this.scene.isActive(SCENES.DEBUG_UI)) {
+      this.scene.launch(SCENES.DEBUG_UI);
     }
   }
 
@@ -260,24 +246,8 @@ export class Game extends Scene {
    */
   private togglePhysicsDebug(): void {
     this.physicsDebugActive = !this.physicsDebugActive;
-    console.log(
-      `[Game] Toggling physics debug. Active: ${this.physicsDebugActive}`
-    );
-    // Use the built-in drawDebug flag
     this.matter.world.drawDebug = this.physicsDebugActive;
-    // Ensure the graphics object is available
-    if (!this.debugGraphics) {
-      // This case shouldn't happen if create runs correctly, but added as a safeguard
-      console.warn("[Game] Debug graphics object not found during toggle.");
-      this.debugGraphics = this.add.graphics().setAlpha(1).setDepth(9999);
-      this.matter.world.debugGraphic = this.debugGraphics;
-    }
-    console.log(
-      `[Game] Matter world drawDebug set to: ${this.matter.world.drawDebug}`
-    );
-    // Also toggle the visibility of the graphics object itself
-    this.debugGraphics.setVisible(this.physicsDebugActive); // Corrected: Toggle visibility based on state
-    console.log(`[Game] Debug graphics visible: ${this.debugGraphics.visible}`);
+    this.debugGraphics.setVisible(this.physicsDebugActive);
   }
 
   /**
@@ -457,13 +427,12 @@ export class Game extends Scene {
    * Scene lifecycle hook. Called every frame, updates entities and checks game state.
    */
   update(): void {
-    // Update Parallax Background first, regardless of physics state
-    this.parallaxManager?.update();
+    this.parallaxManager.update();
 
     if (!this.physicsEnabled) return;
 
     // Update main game elements
-    this.player?.update();
+    this.player.update();
     this.enemies.forEach((enemy) => enemy.update());
 
     // --- Culling Logic ---
@@ -542,6 +511,67 @@ export class Game extends Scene {
 
     this.cameraManager.handleZoomIn();
     this.showUIOverlay(GAME_STATE.GAME_OVER);
+  }
+
+  private createMobileControls() {
+    const yPos = 800;
+    console.log("Creating mobile controls");
+    // Left Button
+    this.createMobileButton(
+      100,
+      yPos,
+      () => (this.player.leftIsDown = true),
+      () => (this.player.leftIsDown = false),
+      {
+        angle: 0,
+      }
+    );
+
+    // Right Button
+    this.createMobileButton(
+      300,
+      yPos,
+      () => (this.player.rightIsDown = true),
+      () => (this.player.rightIsDown = false),
+      {
+        angle: -180,
+      }
+    );
+
+    // Jump Button (Bottom Right)
+    this.createMobileButton(
+      1100,
+      yPos,
+      () => (this.player.upIsDown = true),
+      () => (this.player.upIsDown = false),
+      {
+        angle: 90, // Point up
+      }
+    );
+  }
+
+  private createMobileButton(
+    x: number,
+    y: number,
+    onDown: () => void,
+    onUp: () => void,
+    { angle }: { angle: number }
+  ): Phaser.GameObjects.Image {
+    const button = this.add
+      .image(x, y, TEXTURE_ATLAS, "ui/direction-button.png")
+      .setScrollFactor(1)
+      .setInteractive()
+      .setAngle(angle)
+      .setDepth(10000);
+
+    button.on("pointerdown", () => {
+      onDown();
+    });
+    button.on("pointerup", () => {
+      onUp();
+    });
+
+    return button;
   }
 
   /**

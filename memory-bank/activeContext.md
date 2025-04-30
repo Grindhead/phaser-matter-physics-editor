@@ -11,6 +11,9 @@
 - **Attempted `ENVELOP` Mode:** Changed scale mode to `ENVELOP` to test full-screen coverage.
 - **UI Responsiveness Implemented:** Adapted `CoinUI`, `LevelUI`, and `DebugPanel` for responsive positioning and font scaling.
 - **Initial Scaling Configured:** Set Scale Manager mode to `FIT` and `CENTER_BOTH` in `main.ts` initially.
+- **Test `EXPAND` Mode:**
+- **Implement Mobile Controls:**
+- **Update Memory Bank:** Document mobile control implementation.
 
 ## Next Steps
 
@@ -26,6 +29,7 @@
 - **UI Positioning:** Responsive UI logic should still work, but testing is needed to confirm positioning relative to the `EXPAND` mode's canvas/game size.
 - **UI Anchoring/Positioning:** Relative positioning (top-left, top-right, center) implemented in UI elements works well with `FIT` mode.
 - **`ENVELOP` Issues:** Determined that `ENVELOP` is unsuitable without redesigning levels/entity placement to account for potential cropping on different aspect ratios.
+- **Mobile Controls:** Add interactive UI elements (`Phaser.GameObjects.Image`) to the scene for touch input. Use `setInteractive()`, `setScrollFactor(0)`, and pointer events (`pointerdown`, `pointerup`, `pointerout`) to manage state flags (e.g., `mobileLeftActive`). Player logic reads these flags.
 
 ## Important Patterns & Preferences
 
@@ -37,6 +41,7 @@
 - Encapsulating entity-specific logic within the entity class (`Player`, `Barrel`).
 - Using state machines or flags within entities to manage behavior.
 - **State Management for Interaction:** Using boolean flags and methods across interacting entities to manage complex interaction flows.
+- **Mobile Controls:** Add interactive UI elements (`Phaser.GameObjects.Image`) to the scene for touch input. Use `setInteractive()`, `setScrollFactor(0)`, and pointer events (`pointerdown`, `pointerup`, `pointerout`) to manage state flags (e.g., `mobileLeftActive`). Player logic reads these flags.
 
 ## Learnings & Project Insights
 

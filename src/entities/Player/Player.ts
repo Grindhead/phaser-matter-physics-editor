@@ -26,6 +26,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private currentBarrel: Barrel | null = null;
   public recentlyExitedBarrel: boolean = false;
   public isInBarrel = false;
+  public upIsDown = false;
+  public rightIsDown = false;
+  public leftIsDown = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -66,12 +69,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         string,
         Phaser.Input.Keyboard.Key
       >;
-    } else {
-      this.createMobileControls();
     }
   }
-
-  private createMobileControls() {}
 
   update(): void {
     if (!this.isAlive) {
@@ -83,18 +82,20 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       return;
     }
 
-    if (!this.cursors || !this.wasd) return;
-
-    const left = this.cursors.left?.isDown || this.wasd.A?.isDown;
-    const right = this.cursors.right?.isDown || this.wasd.D?.isDown;
-    const up = this.cursors.up?.isDown || this.wasd.W?.isDown;
+    // Combine keyboard and mobile inputs
+    const isMobileEnvironment = this.scene.sys.game.device.input.touch;
+    if (!isMobileEnvironment) {
+      this.leftIsDown = this.cursors!.left.isDown || this.wasd!.A.isDown;
+      this.rightIsDown = this.cursors!.right.isDown || this.wasd!.D.isDown;
+      this.upIsDown = this.cursors!.up.isDown || this.wasd!.W.isDown;
+    }
 
     if (!this.isLevelComplete) {
       let targetVelocityX = 0;
-      if (left) {
+      if (this.leftIsDown) {
         targetVelocityX = -WALK_VELOCITY;
         this.flipX = true;
-      } else if (right) {
+      } else if (this.rightIsDown) {
         targetVelocityX = WALK_VELOCITY;
         this.flipX = false;
       }
@@ -102,7 +103,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         this.setVelocityX(targetVelocityX);
       }
 
-      if (up && this.isGrounded && !this.isInBarrel) {
+      if (this.upIsDown && this.isGrounded && !this.isInBarrel) {
         this.setVelocityY(JUMP_VELOCITY);
         this.jumpInProgress = true;
         this.lastJumpTime = this.scene.time.now;
@@ -127,10 +128,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       }
     } else if (this.isGrounded && !this.jumpInProgress) {
       if (this.justLanded) {
-        const left = this.cursors?.left?.isDown || this.wasd?.A?.isDown;
-        const right = this.cursors?.right?.isDown || this.wasd?.D?.isDown;
-
-        if (!left && !right) {
+        if (!this.leftIsDown && !this.rightIsDown) {
           this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
         } else {
           this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
@@ -201,7 +199,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.setPosition(this.currentBarrel.x, this.currentBarrel.y);
     this.setVelocity(0, 0);
 
-    const up = this.cursors?.up?.isDown || this.wasd?.W?.isDown;
+    const up =
+      this.cursors?.up?.isDown || this.wasd?.W?.isDown || this.mobileUpActive;
     if (up) {
       this.currentBarrel.launch();
       this.exitBarrel();

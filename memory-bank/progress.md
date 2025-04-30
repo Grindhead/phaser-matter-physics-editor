@@ -64,6 +64,7 @@
 - Basic culling implemented for coins and enemies.
 - **Preloader updated to load both `texturePack` and `texturePack2` atlases.**
 - **Physics debug rendering state is now correctly maintained across level restarts.**
+- **Mobile Controls Implemented:** On-screen touch buttons for left, right, and jump added via `Player.createMobileControls`. Player input logic updated to recognize both keyboard and touch input.
 
 ## Known Issues
 

@@ -35,56 +35,15 @@ export class ParallaxManager {
   }
 
   private createLayers(): void {
-    // Use stored levelWidth, not screenWidth for sprite creation
-    const screenHeight = this.scene.scale.height;
-
     // Store factors from user edits/defaults
     this.bgScrollFactorX = 0.2;
     this.midScrollFactorX = 1.5;
     this.fgScrollFactorX = 2.0;
 
     // Helper function to create a layer
-    const createLayer = (
-      atlasKey: string,
-      frameName: string,
-      depth: number,
-      verticalOffset: number,
-      scaleFactor: number,
-      scrollFactorX: number
-    ): ParallaxBackground => {
-      // Get frame dimensions from the atlas
-      const frame = this.scene.textures.getFrame(atlasKey, frameName);
-      if (!frame) {
-        console.error(`Frame '${frameName}' not found in atlas '${atlasKey}'`);
-      }
-      const frameHeight = frame.height;
-
-      // Calculate the visually scaled height of the texture
-      const scaledTextureHeight = frameHeight * scaleFactor;
-
-      // Calculate Y relative to screen bottom + offset
-      const layerY = screenHeight - scaledTextureHeight + verticalOffset;
-
-      // Instantiate ParallaxBackground
-      const layer = new ParallaxBackground(
-        this.scene,
-        atlasKey,
-        frameName,
-        this.levelWidth,
-        scaledTextureHeight,
-        scrollFactorX
-      );
-
-      layer.y = layerY; // Set Y position
-      layer.setDepth(depth); // Set depth
-
-      // No need to set origin, scrollFactor, tileScale as ParallaxBackground handles them
-
-      return layer;
-    };
 
     // Background
-    this.backgroundLayer = createLayer(
+    this.backgroundLayer = this.createLayer(
       TEXTURE_ATLAS,
       "bg/background.png",
       -3,
@@ -94,7 +53,7 @@ export class ParallaxManager {
     );
 
     // Middle layer
-    this.middleLayer = createLayer(
+    this.middleLayer = this.createLayer(
       TEXTURE_ATLAS,
       "bg/middle-ground.png",
       -2,
@@ -104,7 +63,7 @@ export class ParallaxManager {
     );
 
     // Foreground
-    this.foregroundLayer = createLayer(
+    this.foregroundLayer = this.createLayer(
       TEXTURE_ATLAS,
       "bg/foreground.png",
       3,
@@ -113,6 +72,46 @@ export class ParallaxManager {
       this.fgScrollFactorX
     );
   }
+
+  private createLayer = (
+    atlasKey: string,
+    frameName: string,
+    depth: number,
+    verticalOffset: number,
+    scaleFactor: number,
+    scrollFactorX: number
+  ): ParallaxBackground => {
+    const screenHeight = this.scene.scale.height;
+    // Get frame dimensions from the atlas
+    const frame = this.scene.textures.getFrame(atlasKey, frameName);
+    if (!frame) {
+      console.error(`Frame '${frameName}' not found in atlas '${atlasKey}'`);
+    }
+    const frameHeight = frame.height;
+
+    // Calculate the visually scaled height of the texture
+    const scaledTextureHeight = frameHeight * scaleFactor;
+
+    // Calculate Y relative to screen bottom + offset
+    const layerY = screenHeight - scaledTextureHeight + verticalOffset;
+
+    // Instantiate ParallaxBackground
+    const layer = new ParallaxBackground(
+      this.scene,
+      atlasKey,
+      frameName,
+      this.levelWidth,
+      scaledTextureHeight,
+      scrollFactorX
+    );
+
+    layer.y = layerY; // Set Y position
+    layer.setDepth(depth); // Set depth
+
+    // No need to set origin, scrollFactor, tileScale as ParallaxBackground handles them
+
+    return layer;
+  };
 
   /**
    * Updates the tilePositionX of each layer by calling its own update method.

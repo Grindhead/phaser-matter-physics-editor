@@ -3,7 +3,6 @@ import { Game as MainGame } from "./scenes/Game";
 import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 import { UIScene } from "./scenes/DebugUIScene";
-
 import { Game, Types } from "phaser";
 
 //  Find out more information about the Game Config at:
@@ -50,4 +49,21 @@ const config: Types.Core.GameConfig = {
   scene: [Boot, Preloader, MainMenu, MainGame, UIScene],
 };
 
-export default new Game(config);
+const checkOrientation = () => {
+  if (window.innerWidth < window.innerHeight) {
+    console.log("Portrait");
+    addEventListener("resize", checkOrientation);
+  } else {
+    removeEventListener("resize", checkOrientation);
+    console.log("Landscape");
+    new Game(config);
+  }
+};
+
+if (window.innerWidth < window.innerHeight) {
+  console.log("Portrait");
+  addEventListener("resize", checkOrientation);
+} else {
+  console.log("Landscape");
+  new Game(config);
+}

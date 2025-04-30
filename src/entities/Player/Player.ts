@@ -22,6 +22,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   public upIsDown = false;
   public rightIsDown = false;
   public leftIsDown = false;
+  private isPlayingLandAnimation = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -48,6 +49,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isInBarrel = false;
     this.currentBarrel = null;
     this.recentlyExitedBarrel = false;
+    this.isPlayingLandAnimation = false;
     scene.add.existing(this);
   }
 
@@ -69,6 +71,12 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     if (this.isInBarrel && this.currentBarrel) {
       this.handleInBarrelState();
+      return;
+    }
+
+    // Skip animation updates if the land animation is playing
+    if (this.isPlayingLandAnimation) {
+      this.setVelocityX(0);
       return;
     }
 
@@ -115,7 +123,11 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     ) {
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
     } else if (this.isGrounded) {
-      if (!this.leftIsDown && !this.rightIsDown) {
+      if (
+        !this.leftIsDown &&
+        !this.rightIsDown &&
+        this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_LAND
+      ) {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
       } else {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
@@ -162,8 +174,19 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
   private handleLanding(target: MatterJS.BodyType) {
     this.groundContacts.add(target);
+
+    if (this.recentlyExitedBarrel) {
+      this.isPlayingLandAnimation = true;
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, false);
+      this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+        this.isPlayingLandAnimation = false;
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+      });
+    } else {
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+    }
+
     this.recentlyExitedBarrel = false;
-    this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
   }
 
   private handleCollisionEnd(

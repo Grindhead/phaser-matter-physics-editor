@@ -41,6 +41,7 @@
 
 ## What's Left to Build
 
+- **Improve mobile responsiveness and UI scaling.**
 - Implement mobile controls (`createMobileControls` is empty).
 - Define level completion logic/trigger.
 - Implement player death sequence (`kill` method exists but needs trigger).

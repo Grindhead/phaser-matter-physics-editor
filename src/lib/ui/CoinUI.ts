@@ -1,6 +1,8 @@
 import { Scene, GameObjects } from "phaser";
 import { getCoins, getTotalCoinsInLevel } from "../helpers/coinManager";
 
+const PADDING = 16; // Define padding from screen edges
+
 /**
  * A stateless UI component that displays a coin count using the Roboto font.
  */
@@ -12,15 +14,28 @@ export class CoinUI {
     this.scene = scene;
 
     this.text = this.scene.add
-      .text(16, 16, "Coins: 0 / 0", {
+      .text(PADDING, PADDING, "Coins: 0 / 0", {
+        // Use PADDING for position
         fontFamily: "Roboto",
         fontSize: "36px",
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 3,
       })
+      .setOrigin(0, 0) // Set origin to top-left
       .setScrollFactor(0)
       .setDepth(100);
+
+    // Add a resize listener to reposition the text if the screen size changes
+    this.scene.scale.on("resize", this.handleResize, this);
+  }
+
+  /** Reposition text on resize */
+  private handleResize(): void {
+    this.text.setPosition(PADDING, PADDING);
+    // We could also scale font size here if needed:
+    // const scale = Math.min(this.scene.scale.displayScale.x, this.scene.scale.displayScale.y);
+    // this.text.setFontSize(36 * scale);
   }
 
   /**
@@ -32,9 +47,10 @@ export class CoinUI {
   }
 
   /**
-   * Destroys the UI element.
+   * Destroys the UI element and removes listeners.
    */
   destroy(): void {
+    this.scene.scale.off("resize", this.handleResize, this); // Remove listener
     this.text.destroy();
   }
 }

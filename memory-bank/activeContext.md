@@ -2,30 +2,28 @@
 
 ## Current Focus
 
-**Fixed:** Physics debug rendering state persistence across level restarts (corrected approach).
-
-Ready for next task. Potential areas include:
-
-- Implementing mobile controls (`createMobileControls` is empty).
-- Defining level completion logic/trigger.
-- Implementing player death sequence.
-- Investigating `CameraManager.update` issue.
+**Investigating `EXPAND` Scaling Mode:** Reverted the scaling mode to `EXPAND` (the original setting) to test if it achieves the goal of filling the screen adaptively while correctly positioning entities within the viewable area, avoiding the cropping seen with `ENVELOP` and the black bars from `FIT`.
 
 ## Recent Changes
 
-- **Corrected Physics Debug Persistence:** Reworked the fix. The `Game` scene now explicitly passes the current debug state (`physicsDebugActive`) as data during `scene.restart()`. The scene's `init()` method receives this data, and `create()` uses the received state to initialize the debug view correctly, avoiding issues where the state might be reset by Phaser before `create` runs.
-- **Barrel Interaction Completed:** Implemented full player-barrel interaction (entry, rotation, launch) and updated memory bank.
-- Overlap check added for bridge barrels in `LevelGenerator.ts`.
-- Reverted `MAX_JUMP_DISTANCE_X` to 200.
-- Re-enabled optional barrel placement (`placeBarrelsBetweenPlatforms`).
+- **Reverted to `FIT` Mode:** Changed scale mode from `ENVELOP` back to `FIT` due to entity cropping issues.
+- **Attempted `ENVELOP` Mode:** Changed scale mode to `ENVELOP` to test full-screen coverage.
+- **UI Responsiveness Implemented:** Adapted `CoinUI`, `LevelUI`, and `DebugPanel` for responsive positioning and font scaling.
+- **Initial Scaling Configured:** Set Scale Manager mode to `FIT` and `CENTER_BOTH` in `main.ts` initially.
 
 ## Next Steps
 
-- Address one of the items listed under "What's Left to Build" in `progress.md`.
+- **Test `EXPAND` Behavior:** Thoroughly test the game on various resolutions/aspect ratios to observe how `EXPAND` mode handles scaling, entity positioning, and potential distortion or cropping. Determine if it meets the requirements.
+- Based on testing, either finalize `EXPAND` or reconsider other strategies (like `FIT` or `ENVELOP` with camera adjustments/safe zones).
+- Proceed with Mobile Controls implementation (Step 5 in `implementation-plan.mdc`) once scaling is confirmed.
 
 ## Active Decisions & Considerations
 
-- **Passing State on Restart:** Explicitly passing necessary state (like debug flags) via `scene.restart(data)` and reading it in `init(data)` is a robust way to handle state persistence across scene restarts, especially when the engine might reset underlying properties based on initial configurations.
+- **Scale Manager Strategy:** Currently testing `EXPAND`. The goal is full-screen adaptive display without cropping critical elements. `FIT` remains the fallback if `EXPAND` is unsuitable.
+- **`EXPAND` Mode Theory:** `EXPAND` might resize the canvas to fill space but scale the internal game world like `FIT`, potentially offering the best visual compromise.
+- **UI Positioning:** Responsive UI logic should still work, but testing is needed to confirm positioning relative to the `EXPAND` mode's canvas/game size.
+- **UI Anchoring/Positioning:** Relative positioning (top-left, top-right, center) implemented in UI elements works well with `FIT` mode.
+- **`ENVELOP` Issues:** Determined that `ENVELOP` is unsuitable without redesigning levels/entity placement to account for potential cropping on different aspect ratios.
 
 ## Important Patterns & Preferences
 
@@ -329,34 +327,7 @@ Improving platform spacing and coin placement in level generation.
 
 ## Current Focus
 
-Refining level generation platform placement based on player jump capabilities.
-
-## Recent Changes
-
-- **Aligned `maxHorizontalGap` with Jump Capability in `LevelGenerator.ts`:**
-  - Modified `getLevelGenerationParams` to set `maxHorizontalGap` directly to the `MAX_JUMP_DISTANCE_X` constant, removing the previous `- 20` offset. This ensures the random generation range for horizontal platform gaps uses the player's maximum defined horizontal jump distance as its upper limit.
-
-## Next Steps
-
-- Test the level generation with the adjusted `maxHorizontalGap`.
-- Continue with other tasks listed in `progress.md`.
-
-## Active Decisions & Considerations
-
-- Setting `maxHorizontalGap` equal to `MAX_JUMP_DISTANCE_X` makes the generation parameters directly reflect the defined player capability.
-- The existing clamping in `calculateNextPlatformPosition` remains as a safeguard.
-
-## Important Patterns & Preferences
-
-- **Generation Tuning:** Aligning generation parameters directly with defined game constants (like player jump distance) for clarity and consistency.
-
-## Learnings & Project Insights
-
-- Ensuring generation parameters directly reflect player capabilities can make the generation logic clearer and easier to tune.
-
-## Current Focus
-
-Improving level generation logic, specifically enemy and crate placement.
+Refining level generation logic, specifically enemy and crate placement.
 
 ## Recent Changes
 

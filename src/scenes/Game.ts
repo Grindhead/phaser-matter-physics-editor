@@ -93,8 +93,7 @@ export class Game extends Scene {
     // Listen for the event from DebugUIScene
     this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
-    // Conditionally launch DebugUI only in development
-    if (import.meta.env.DEV && !this.scene.isActive(SCENES.DEBUG_UI)) {
+    if (!this.scene.isActive(SCENES.DEBUG_UI)) {
       this.scene.launch(SCENES.DEBUG_UI);
     }
   }
@@ -480,24 +479,22 @@ export class Game extends Scene {
       }
     });
 
-    // --- Debug Data Emission ---
-    if (import.meta.env.DEV) {
-      const debugData = {
-        PlayerPos: {
-          x: Math.round(this.player.x),
-          y: Math.round(this.player.y),
-        },
-        Platforms: this.levelGenerator.getPlatforms().length,
-        Enemies: this.enemies.length,
-        CulledEnemies: culledEnemies,
-        Coins: this.levelGenerator.getCoins().length,
-        CulledCoins: culledCoins,
-        Crates: this.levelGenerator.getCrates().length,
-        Barrels: this.totalBarrelsGenerated,
-        CulledBarrels: this.culledBarrelsCount,
-      };
-      this.events.emit("updateDebugData", debugData);
-    }
+    const debugData = {
+      PlayerPos: {
+        x: Math.round(this.player.x),
+        y: Math.round(this.player.y),
+      },
+      Platforms: this.levelGenerator.getPlatforms().length,
+      Enemies: this.enemies.length,
+      CulledEnemies: culledEnemies,
+      Coins: this.levelGenerator.getCoins().length,
+      CulledCoins: culledCoins,
+      Crates: this.levelGenerator.getCrates().length,
+      Barrels: this.totalBarrelsGenerated,
+      CulledBarrels: this.culledBarrelsCount,
+    };
+
+    this.events.emit("updateDebugData", debugData);
   }
 
   /**

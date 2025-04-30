@@ -85,9 +85,11 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     // Combine keyboard and mobile inputs
     const isMobileEnvironment = this.scene.sys.game.device.input.touch;
     if (!isMobileEnvironment) {
-      this.leftIsDown = this.cursors!.left.isDown || this.wasd!.A.isDown;
-      this.rightIsDown = this.cursors!.right.isDown || this.wasd!.D.isDown;
-      this.upIsDown = this.cursors!.up.isDown || this.wasd!.W.isDown;
+      this.leftIsDown =
+        this.cursors!.left.isDown || this.wasd!.A.isDown || false;
+      this.rightIsDown =
+        this.cursors!.right.isDown || this.wasd!.D.isDown || false;
+      this.upIsDown = this.cursors!.up.isDown || this.wasd!.W.isDown || false;
     }
 
     if (!this.isLevelComplete) {
@@ -200,7 +202,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.setVelocity(0, 0);
 
     const up =
-      this.cursors?.up?.isDown || this.wasd?.W?.isDown || this.mobileUpActive;
+      this.cursors?.up?.isDown || this.wasd?.W?.isDown || this.upIsDown;
     if (up) {
       this.currentBarrel.launch();
       this.exitBarrel();

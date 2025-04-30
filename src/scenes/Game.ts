@@ -71,9 +71,9 @@ export class Game extends Scene {
 
     this.createDebugUI();
 
-    const isDesktop = this.sys.game.device.os.desktop;
-
-    if (!isDesktop) {
+    // Check for touch support AND non-desktop OS to identify mobile/tablet (real or emulated)
+    const isMobileEnvironment = this.sys.game.device.input.touch;
+    if (isMobileEnvironment) {
       this.createMobileControls();
     }
   }
@@ -94,14 +94,8 @@ export class Game extends Scene {
     this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
     // Conditionally launch DebugUI only in development
-    if (import.meta.env.DEV) {
-      // Check if it's already running (e.g., from a previous restart that wasn't cleaned up?)
-      if (!this.scene.isActive(SCENES.DEBUG_UI)) {
-        this.scene.launch(SCENES.DEBUG_UI);
-        console.log("[Game Create] Launched Debug UI scene."); // Added log
-      } else {
-        console.log("[Game Create] Debug UI scene already active."); // Added log
-      }
+    if (import.meta.env.DEV && !this.scene.isActive(SCENES.DEBUG_UI)) {
+      this.scene.launch(SCENES.DEBUG_UI);
     }
   }
 
@@ -520,40 +514,38 @@ export class Game extends Scene {
   }
 
   private createMobileControls() {
-    const { width, height } = this.cameras.main;
-    const buttonSize = 64;
-    const padding = 20;
-
+    const yPos = 800;
+    console.log("Creating mobile controls");
     // Left Button
     this.createMobileButton(
-      padding + buttonSize / 2,
-      height - padding - buttonSize / 2,
+      100,
+      yPos,
       () => (this.player.leftIsDown = true),
       () => (this.player.leftIsDown = false),
-      {
-        angle: -180,
-      }
-    );
-
-    // Right Button
-    this.createMobileButton(
-      padding + buttonSize / 2 + buttonSize + padding,
-      height - padding - buttonSize / 2,
-      () => (this.player.rightIsDown = true),
-      () => (this.player.rightIsDown = false),
       {
         angle: 0,
       }
     );
 
+    // Right Button
+    this.createMobileButton(
+      300,
+      yPos,
+      () => (this.player.rightIsDown = true),
+      () => (this.player.rightIsDown = false),
+      {
+        angle: -180,
+      }
+    );
+
     // Jump Button (Bottom Right)
     this.createMobileButton(
-      width - padding - buttonSize / 2,
-      height - padding - buttonSize / 2,
+      1100,
+      yPos,
       () => (this.player.upIsDown = true),
       () => (this.player.upIsDown = false),
       {
-        angle: -90, // Point up
+        angle: 90, // Point up
       }
     );
   }
@@ -561,32 +553,26 @@ export class Game extends Scene {
   private createMobileButton(
     x: number,
     y: number,
-    onPointerDown: () => void,
-    onPointerUpOrOut: () => void,
-    options: { angle: number } = { angle: 0 }
+    onDown: () => void,
+    onUp: () => void,
+    { angle }: { angle: number }
   ): Phaser.GameObjects.Image {
-    const buttonSize = 64;
     const button = this.add
-      .image(x, y, TEXTURE_ATLAS, "direction-button.png")
+      .image(x, y, TEXTURE_ATLAS, "ui/direction-button.png")
+      .setScrollFactor(1)
       .setInteractive()
-      .setScrollFactor(0)
-      .setAlpha(0.7)
-      .setDisplaySize(buttonSize, buttonSize);
-
-    button.setAngle(options.angle);
+      .setAngle(angle)
+      .setDepth(10000);
 
     button.on("pointerdown", () => {
-      onPointerDown();
-      button.setAlpha(1.0);
+      onDown();
     });
     button.on("pointerup", () => {
-      onPointerUpOrOut();
-      button.setAlpha(0.7);
+      onUp();
     });
-    button.on("pointerout", () => {
-      onPointerUpOrOut();
-      button.setAlpha(0.7);
-    });
+
+    // Ensure it's the very last thing rendered
+    this.children.bringToTop(button);
 
     return button;
   }

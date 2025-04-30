@@ -108,7 +108,7 @@ export class ParallaxManager {
       TEXTURE_ATLAS,
       "bg/foreground.png",
       3,
-      -250,
+      -180,
       1,
       this.fgScrollFactorX
     );

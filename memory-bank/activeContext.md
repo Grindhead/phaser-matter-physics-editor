@@ -2,30 +2,26 @@
 
 ## Current Focus
 
-**Fixed:** Physics debug rendering state persistence across level restarts (corrected approach).
-
-Ready for next task. Potential areas include:
-
-- Implementing mobile controls (`createMobileControls` is empty).
-- Defining level completion logic/trigger.
-- Implementing player death sequence.
-- Investigating `CameraManager.update` issue.
+**Implement Mobile Responsiveness and UI Scaling:** Adapt the game's UI and layout to work effectively across different screen sizes, particularly targeting mobile devices. This involves making UI elements scale and reposition correctly and potentially adjusting game camera behavior.
 
 ## Recent Changes
 
-- **Corrected Physics Debug Persistence:** Reworked the fix. The `Game` scene now explicitly passes the current debug state (`physicsDebugActive`) as data during `scene.restart()`. The scene's `init()` method receives this data, and `create()` uses the received state to initialize the debug view correctly, avoiding issues where the state might be reset by Phaser before `create` runs.
-- **Barrel Interaction Completed:** Implemented full player-barrel interaction (entry, rotation, launch) and updated memory bank.
-- Overlap check added for bridge barrels in `LevelGenerator.ts`.
-- Reverted `MAX_JUMP_DISTANCE_X` to 200.
-- Re-enabled optional barrel placement (`placeBarrelsBetweenPlatforms`).
+- **Physics Debug State Persistence:** Confirmed the fix for physics debug state persistence across level restarts is working correctly. Project is stable and ready for the next feature.
 
 ## Next Steps
 
-- Address one of the items listed under "What's Left to Build" in `progress.md`.
+- **Develop Responsiveness Strategy:** Analyze Phaser's Scale Manager capabilities and decide on the best approach (e.g., `FIT`, `RESIZE`, `ENVELOP`, custom logic).
+- **Implement UI Scaling:** Adapt existing UI elements (`CoinUI`, `DebugPanel` (if kept for mobile debug), game state overlays) to scale and position correctly based on screen size.
+- **Test on Different Resolutions:** Verify the implementation on various simulated device resolutions and aspect ratios.
+- Implement mobile controls (`createMobileControls` is empty) as part of this effort.
 
 ## Active Decisions & Considerations
 
-- **Passing State on Restart:** Explicitly passing necessary state (like debug flags) via `scene.restart(data)` and reading it in `init(data)` is a robust way to handle state persistence across scene restarts, especially when the engine might reset underlying properties based on initial configurations.
+- **Scale Manager Strategy:** Determine the primary scaling mode (e.g., `FIT` might be simplest initially, maintaining aspect ratio).
+- **UI Anchoring/Positioning:** How will UI elements be positioned? Relative to screen edges? Anchored to corners?
+- **Game World Scaling:** Does the game world itself need to scale, or just the camera view? How does the `CameraManager`'s zoom interact with the Scale Manager?
+- **Mobile Controls:** Integrate touch controls, likely using Phaser's input system and potentially visual buttons overlaid on the screen. These controls also need to be responsive.
+- **Performance:** Be mindful of performance implications when scaling complex scenes or UI elements.
 
 ## Important Patterns & Preferences
 
@@ -329,34 +325,7 @@ Improving platform spacing and coin placement in level generation.
 
 ## Current Focus
 
-Refining level generation platform placement based on player jump capabilities.
-
-## Recent Changes
-
-- **Aligned `maxHorizontalGap` with Jump Capability in `LevelGenerator.ts`:**
-  - Modified `getLevelGenerationParams` to set `maxHorizontalGap` directly to the `MAX_JUMP_DISTANCE_X` constant, removing the previous `- 20` offset. This ensures the random generation range for horizontal platform gaps uses the player's maximum defined horizontal jump distance as its upper limit.
-
-## Next Steps
-
-- Test the level generation with the adjusted `maxHorizontalGap`.
-- Continue with other tasks listed in `progress.md`.
-
-## Active Decisions & Considerations
-
-- Setting `maxHorizontalGap` equal to `MAX_JUMP_DISTANCE_X` makes the generation parameters directly reflect the defined player capability.
-- The existing clamping in `calculateNextPlatformPosition` remains as a safeguard.
-
-## Important Patterns & Preferences
-
-- **Generation Tuning:** Aligning generation parameters directly with defined game constants (like player jump distance) for clarity and consistency.
-
-## Learnings & Project Insights
-
-- Ensuring generation parameters directly reflect player capabilities can make the generation logic clearer and easier to tune.
-
-## Current Focus
-
-Improving level generation logic, specifically enemy and crate placement.
+Refining level generation logic, specifically enemy and crate placement.
 
 ## Recent Changes
 

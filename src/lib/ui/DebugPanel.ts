@@ -1,5 +1,8 @@
 import Phaser from "phaser";
 
+const PADDING = 10;
+const BASE_FONT_SIZE = 24;
+
 export class DebugPanel {
   private scene: Phaser.Scene;
   private text: Phaser.GameObjects.Text;
@@ -8,18 +11,42 @@ export class DebugPanel {
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene = scene;
 
-    // Basic text setup
+    // Initial position based on constructor args (set by DebugUIScene)
     this.text = this.scene.add.text(x, y, "Debug Panel (Press Q)", {
-      fontSize: "24px",
+      fontSize: `${BASE_FONT_SIZE}px`, // Use base font size
       color: "#ffffff",
       backgroundColor: "rgba(0,0,0,0.7)",
       padding: { x: 8, y: 5 },
-      fixedWidth: 500,
+      // fixedWidth: 500, // Removed fixed width
     });
     this.text.setOrigin(1, 0); // Set origin to top-right
     this.text.setScrollFactor(0); // Keep it fixed on screen
     this.text.setDepth(100); // Ensure it's on top of other UI
     this.text.setVisible(this.active);
+
+    // Add resize listener
+    this.scene.scale.on("resize", this.handleResize, this);
+    // Call handleResize once initially to set position and scale
+    this.handleResize();
+  }
+
+  /** Reposition and scale text on resize */
+  private handleResize(): void {
+    const newX = this.scene.scale.width - PADDING;
+    const newY = PADDING;
+    this.text.setPosition(newX, newY);
+
+    // Scale font size based on display scale, clamped between 12 and BASE_FONT_SIZE
+    // Use displayScale as it reflects the actual CSS scaling applied by FIT/ENVELOP
+    const scale = Math.min(
+      this.scene.scale.displayScale.x,
+      this.scene.scale.displayScale.y
+    );
+    const newFontSize = Math.max(12, Math.round(BASE_FONT_SIZE * scale));
+    this.text.setFontSize(`${newFontSize}px`);
+
+    // // Optional: Adjust max width based on screen size - removed as setMaxWidth is invalid
+    // this.text.setMaxWidth(this.scene.scale.width - 2 * PADDING);
   }
 
   public toggle(): void {
@@ -81,6 +108,7 @@ export class DebugPanel {
   }
 
   public destroy(): void {
+    this.scene.scale.off("resize", this.handleResize, this); // Remove listener
     this.text.destroy();
   }
 }

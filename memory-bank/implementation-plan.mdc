@@ -1,5 +1,60 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Feature: Mobile Responsiveness and UI Scaling
+
+**Goal:** Ensure the game UI and layout adapt correctly to various screen sizes, especially mobile, and implement touch controls.
+
+## Implementation Steps
+
+1.  **Research Phaser Scale Manager:**
+    - Task: Investigate Phaser 3 Scale Manager modes (`NONE`, `FIT`, `ENVELOP`, `RESIZE`, `EXPAND`, `WIDTH_CONTROLS_HEIGHT`, `HEIGHT_CONTROLS_WIDTH`) and configuration options (`parent`, `width`, `height`, `zoom`, `autoCenter`).
+    - Outcome: Decided on `FIT` as the initial strategy to maintain aspect ratio and ensure full visibility, potentially exploring `ENVELOP` or `EXPAND` later. `CENTER_BOTH` will be used for centering.
+    - Status: Done
+    - Summary: Researched Scale Manager modes via web search. `FIT` ensures visibility while maintaining aspect ratio, suitable for platformers. `ENVELOP` fills space but may crop. `RESIZE` changes aspect ratio. `EXPAND` is a potential hybrid. Decided to start with `FIT` and `CENTER_BOTH`.
+
+2.  **Configure Scale Manager:**
+    - Task: Update the main Phaser game configuration (`src/main.ts`) to use `EXPAND` mode and `CENTER_BOTH` to test adaptive full-screen behavior.
+    - Outcome: Game canvas potentially scales using the EXPAND strategy.
+    - Status: Done
+    - Summary: Set `scale.mode` to `Phaser.Scale.EXPAND` in `src/main.ts` to test if it fills the screen adaptively without cropping issues seen in `ENVELOP`. Kept `autoCenter` as `CENTER_BOTH`.
+
+3.  **Adapt UI Elements (`CoinUI`, Overlays):**
+    - Task: Modify `CoinUI` and game state overlay logic (in `Game.ts`) to position elements relative to screen dimensions (e.g., using `scene.scale.width`, `scene.scale.height`) instead of fixed coordinates. Consider anchoring to corners or edges.
+    - Outcome: Core UI elements remain visible and reasonably positioned on different screen sizes.
+    - Status: Done
+    - Summary: Updated `CoinUI.ts` to position text using a `PADDING` constant relative to the top-left corner `(0,0)` and added a resize listener to handle dynamic scale changes. Overlays in `Game.ts` already used relative centering and required no changes.
+
+4.  **Adapt Debug UI (Optional):**
+    - Task: Decide if the `DebugUIScene` needs to be responsive for mobile debugging. If so, adapt `DebugPanel` positioning similar to other UI elements. Consider making it toggleable via a touch button instead of 'Q'. Also adapt other UI elements in `DebugUIScene` (`CoinUI`, `LevelUI`).
+    - Outcome: Debug panel, Coin UI, and Level UI (within `DebugUIScene`) are responsive, anchoring to corners and scaling font size.
+    - Status: Done
+    - Summary: Added resize listeners to `DebugPanel.ts` and `LevelUI.ts` to handle repositioning (anchoring top-right and top-left respectively) and font size scaling based on `scene.scale.displayScale`. Removed fixed width from `DebugPanel`. `CoinUI` was already updated in Step 3.
+
+5.  **Test `EXPAND` Mode:**
+    - Task: Thoroughly test the game on various resolutions/aspect ratios.
+    - Outcome: Determine if `EXPAND` mode successfully fills the screen, keeps entities within view, avoids distortion, and positions UI correctly.
+    - Status: Pending
+
+6.  **Implement Mobile Controls:**
+    - Task: Implement the `createMobileControls` function (likely in `Game.ts` or a dedicated UI scene). Add on-screen touch buttons for movement (left/right) and jump. Use Phaser's input system (`this.input.addPointer`, `pointer.isDown`) to detect touches on these buttons.
+    - Outcome: Player can be controlled via touch input on mobile devices.
+    - Status: Done
+    - Summary: Added mobile control state variables (`mobileLeftActive`, etc.) to `Player.ts`. Implemented `createMobileControls` to add interactive image buttons (left, right, jump) to the scene, anchored to the bottom corners with pointer events updating the state variables. Modified `Player.update` to use these states alongside keyboard input.
+
+7.  **Test Across Resolutions:**
+    - Task: Use browser developer tools to simulate various mobile device resolutions and aspect ratios. Test gameplay, UI visibility, and control responsiveness.
+    - Outcome: Identify and fix layout or scaling issues on common screen sizes.
+    - Status: Pending
+
+8.  **Refine Camera Behavior (If Needed):**
+    - Task: Evaluate if `CameraManager`'s dynamic zoom needs adjustment based on screen size or aspect ratio. Ensure the player remains clearly visible.
+    - Outcome: Camera behavior feels appropriate across different devices.
+    - Status: Pending
+
+9.  **Update Memory Bank:**
+    - Task: Document the chosen scaling strategy, UI positioning methods, and mobile control implementation in `systemPatterns.md` and `activeContext.md`.
+    - Outcome: Memory bank reflects the new responsive design patterns.
+    - Status: Pending

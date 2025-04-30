@@ -27,6 +27,15 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   public recentlyExitedBarrel: boolean = false;
   public isInBarrel = false;
 
+  // Mobile controls state
+  private mobileLeftActive = false;
+  private mobileRightActive = false;
+  private mobileUpActive = false;
+
+  public upIsDown = false;
+  public rightIsDown = false;
+  public leftIsDown = false;
+
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
 
@@ -71,7 +80,77 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
   }
 
-  private createMobileControls() {}
+  private createMobileControls() {
+    const { width, height } = this.scene.cameras.main;
+    const buttonSize = 64;
+    const padding = 20;
+
+    // Left Button
+    this.createMobileButton(
+      padding + buttonSize / 2,
+      height - padding - buttonSize / 2,
+      () => (this.mobileLeftActive = true),
+      () => (this.mobileLeftActive = false),
+      {
+        angle: -180,
+      }
+    );
+
+    // Right Button
+    this.createMobileButton(
+      padding + buttonSize / 2 + buttonSize + padding,
+      height - padding - buttonSize / 2,
+      () => (this.mobileRightActive = true),
+      () => (this.mobileRightActive = false),
+      {
+        angle: 0,
+      }
+    );
+
+    // Jump Button (Bottom Right)
+    this.createMobileButton(
+      width - padding - buttonSize / 2,
+      height - padding - buttonSize / 2,
+      () => (this.mobileUpActive = true),
+      () => (this.mobileUpActive = false),
+      {
+        angle: -90, // Point up
+      }
+    );
+  }
+
+  private createMobileButton(
+    x: number,
+    y: number,
+    onPointerDown: () => void,
+    onPointerUpOrOut: () => void,
+    options: { angle: number } = { angle: 0 }
+  ): Phaser.GameObjects.Image {
+    const buttonSize = 64;
+    const button = this.scene.add
+      .image(x, y, TEXTURE_ATLAS, "direction-button.png")
+      .setInteractive()
+      .setScrollFactor(0)
+      .setAlpha(0.7)
+      .setDisplaySize(buttonSize, buttonSize);
+
+    button.setAngle(options.angle);
+
+    button.on("pointerdown", () => {
+      onPointerDown();
+      button.setAlpha(1.0);
+    });
+    button.on("pointerup", () => {
+      onPointerUpOrOut();
+      button.setAlpha(0.7);
+    });
+    button.on("pointerout", () => {
+      onPointerUpOrOut();
+      button.setAlpha(0.7);
+    });
+
+    return button;
+  }
 
   update(): void {
     if (!this.isAlive) {
@@ -83,18 +162,24 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       return;
     }
 
-    if (!this.cursors || !this.wasd) return;
-
-    const left = this.cursors.left?.isDown || this.wasd.A?.isDown;
-    const right = this.cursors.right?.isDown || this.wasd.D?.isDown;
-    const up = this.cursors.up?.isDown || this.wasd.W?.isDown;
+    // Combine keyboard and mobile inputs
+    this.leftIsDown =
+      this.cursors?.left?.isDown ||
+      this.wasd?.A?.isDown ||
+      this.mobileLeftActive;
+    this.rightIsDown =
+      this.cursors?.right?.isDown ||
+      this.wasd?.D?.isDown ||
+      this.mobileRightActive;
+    this.upIsDown =
+      this.cursors?.up?.isDown || this.wasd?.W?.isDown || this.mobileUpActive;
 
     if (!this.isLevelComplete) {
       let targetVelocityX = 0;
-      if (left) {
+      if (this.leftIsDown) {
         targetVelocityX = -WALK_VELOCITY;
         this.flipX = true;
-      } else if (right) {
+      } else if (this.rightIsDown) {
         targetVelocityX = WALK_VELOCITY;
         this.flipX = false;
       }
@@ -102,7 +187,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         this.setVelocityX(targetVelocityX);
       }
 
-      if (up && this.isGrounded && !this.isInBarrel) {
+      if (this.upIsDown && this.isGrounded && !this.isInBarrel) {
         this.setVelocityY(JUMP_VELOCITY);
         this.jumpInProgress = true;
         this.lastJumpTime = this.scene.time.now;
@@ -127,10 +212,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       }
     } else if (this.isGrounded && !this.jumpInProgress) {
       if (this.justLanded) {
-        const left = this.cursors?.left?.isDown || this.wasd?.A?.isDown;
-        const right = this.cursors?.right?.isDown || this.wasd?.D?.isDown;
-
-        if (!left && !right) {
+        if (!this.leftIsDown && !this.rightIsDown) {
           this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
         } else {
           this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
@@ -201,7 +283,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.setPosition(this.currentBarrel.x, this.currentBarrel.y);
     this.setVelocity(0, 0);
 
-    const up = this.cursors?.up?.isDown || this.wasd?.W?.isDown;
+    const up =
+      this.cursors?.up?.isDown || this.wasd?.W?.isDown || this.mobileUpActive;
     if (up) {
       this.currentBarrel.launch();
       this.exitBarrel();

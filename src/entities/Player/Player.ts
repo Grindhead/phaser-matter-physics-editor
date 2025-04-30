@@ -26,12 +26,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private currentBarrel: Barrel | null = null;
   public recentlyExitedBarrel: boolean = false;
   public isInBarrel = false;
-
-  // Mobile controls state
-  private mobileLeftActive = false;
-  private mobileRightActive = false;
-  private mobileUpActive = false;
-
   public upIsDown = false;
   public rightIsDown = false;
   public leftIsDown = false;
@@ -89,16 +83,12 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
 
     // Combine keyboard and mobile inputs
-    this.leftIsDown =
-      this.cursors?.left?.isDown ||
-      this.wasd?.A?.isDown ||
-      this.mobileLeftActive;
-    this.rightIsDown =
-      this.cursors?.right?.isDown ||
-      this.wasd?.D?.isDown ||
-      this.mobileRightActive;
-    this.upIsDown =
-      this.cursors?.up?.isDown || this.wasd?.W?.isDown || this.mobileUpActive;
+    const isMobileEnvironment = this.scene.sys.game.device.input.touch;
+    if (!isMobileEnvironment) {
+      this.leftIsDown = this.cursors!.left.isDown || this.wasd!.A.isDown;
+      this.rightIsDown = this.cursors!.right.isDown || this.wasd!.D.isDown;
+      this.upIsDown = this.cursors!.up.isDown || this.wasd!.W.isDown;
+    }
 
     if (!this.isLevelComplete) {
       let targetVelocityX = 0;

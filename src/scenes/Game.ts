@@ -571,9 +571,6 @@ export class Game extends Scene {
       onUp();
     });
 
-    // Ensure it's the very last thing rendered
-    this.children.bringToTop(button);
-
     return button;
   }
 

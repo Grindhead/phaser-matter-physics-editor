@@ -129,14 +129,10 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       if (
         !this.leftIsDown &&
         !this.rightIsDown &&
-        !this.isPlayingLandAnimation &&
         this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_LAND
       ) {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-      } else if (
-        !this.isPlayingLandAnimation &&
-        (this.leftIsDown || this.rightIsDown)
-      ) {
+      } else if (this.leftIsDown || this.rightIsDown) {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
       }
 

@@ -18,6 +18,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private isLevelComplete = false;
   private currentBarrel: Barrel | null = null;
   public recentlyExitedBarrel: boolean = false;
+  public canEnterBarrels: boolean = true;
   public isInBarrel = false;
   public upIsDown = false;
   public rightIsDown = false;
@@ -49,6 +50,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isInBarrel = false;
     this.currentBarrel = null;
     this.recentlyExitedBarrel = false;
+    this.canEnterBarrels = true;
     this.isPlayingLandAnimation = false;
     scene.add.existing(this);
   }
@@ -225,7 +227,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   }
 
   public enterBarrel(barrel: Barrel): void {
-    if (this.isInBarrel || !this.body) return;
+    if (this.isInBarrel || !this.body || !this.canEnterBarrels) return;
 
     this.isInBarrel = true;
     this.currentBarrel = barrel;
@@ -279,7 +281,14 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       this.setFlipY(false);
     });
 
+    // Set flag for landing animation but prevent re-entry for a short time
     this.recentlyExitedBarrel = true;
+    this.canEnterBarrels = false;
+
+    // Allow re-entering barrels after a short delay
+    this.scene.time.delayedCall(300, () => {
+      this.canEnterBarrels = true;
+    });
   }
 
   public finishLevel() {

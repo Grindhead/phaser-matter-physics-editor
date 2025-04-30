@@ -434,15 +434,7 @@ export class Game extends Scene {
     // Update main game elements
     this.player.update();
 
-    if (!this.player.isPlayingLandAnimation) {
-      this.enemies.forEach((enemy) => enemy.update());
-    } else {
-      this.enemies.forEach((enemy) => {
-        enemy.setVelocityX(0);
-        enemy.setVelocityY(0);
-        enemy.setActive(false);
-      });
-    }
+    this.enemies.forEach((enemy) => enemy.update());
 
     // --- Culling Logic ---
     const cam = this.cameras.main;

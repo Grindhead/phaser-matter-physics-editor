@@ -59,7 +59,10 @@ export class DebugPanel {
       return;
     }
 
-    let debugContent = `Debug Panel (Q)\n-----------------\n`; // Use backticks for multi-line
+    // Get current FPS
+    const fps = Math.round(this.scene.game.loop.actualFps);
+
+    let debugContent = `FPS: ${fps}\nDebug Panel (Q)\n-----------------\n`; // Use backticks for multi-line
 
     // Define preferred display order
     const displayOrder = [

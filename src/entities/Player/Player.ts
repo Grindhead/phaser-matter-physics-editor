@@ -119,7 +119,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
     if (
       !this.isGrounded &&
-      this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_JUMP
+      this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_JUMP &&
+      this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_BLAST
     ) {
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
     } else if (this.isGrounded) {
@@ -247,14 +248,12 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       .rotate(Phaser.Math.DegToRad(launchAngle))
       .scale(BARREL_LAUNCH_VELOCITY);
 
-    console.log(
-      `[Player] Barrel Angle: ${launchAngle}, Radian: ${Phaser.Math.DegToRad(
-        launchAngle
-      ).toFixed(3)}`
-    );
-
     this.setVelocity(launchVector.x, launchVector.y);
-    this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
+    this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_BLAST, true);
+
+    this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, false);
+    });
 
     this.recentlyExitedBarrel = true;
   }

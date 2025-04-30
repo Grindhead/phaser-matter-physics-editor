@@ -50,8 +50,8 @@ export const PLAYER_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
     frameRate: 30,
   },
   DUCK_BLAST: {
-    prefix: "player/land/duck-land-",
-    frames: 56,
+    prefix: "player/blast/duck-blast-",
+    frames: 19,
     loop: 0,
     frameRate: 30,
   },

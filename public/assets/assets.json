@@ -714,7 +714,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0009.png",
+					"filename": "player/blast/duck-blast-0009.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -735,7 +735,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0010.png",
+					"filename": "player/blast/duck-blast-0010.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -756,7 +756,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0008.png",
+					"filename": "player/blast/duck-blast-0008.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -777,7 +777,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0011.png",
+					"filename": "player/blast/duck-blast-0011.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -798,7 +798,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0004.png",
+					"filename": "player/blast/duck-blast-0004.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -819,7 +819,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0007.png",
+					"filename": "player/blast/duck-blast-0007.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -840,7 +840,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0012.png",
+					"filename": "player/blast/duck-blast-0012.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -861,7 +861,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0006.png",
+					"filename": "player/blast/duck-blast-0006.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -882,7 +882,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0013.png",
+					"filename": "player/blast/duck-blast-0013.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -903,7 +903,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0016.png",
+					"filename": "player/blast/duck-blast-0016.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -924,7 +924,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0005.png",
+					"filename": "player/blast/duck-blast-0005.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -945,7 +945,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0014.png",
+					"filename": "player/blast/duck-blast-0014.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -966,7 +966,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0015.png",
+					"filename": "player/blast/duck-blast-0015.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -987,7 +987,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0003.png",
+					"filename": "player/blast/duck-blast-0003.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -1008,7 +1008,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0017.png",
+					"filename": "player/blast/duck-blast-0017.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -1050,7 +1050,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0002.png",
+					"filename": "player/blast/duck-blast-0002.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -1071,7 +1071,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0018.png",
+					"filename": "player/blast/duck-blast-0018.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -1176,7 +1176,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0001.png",
+					"filename": "player/blast/duck-blast-0001.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -1197,7 +1197,7 @@
 					}
 				},
 				{
-					"filename": "player/blast/Duck Blast0019.png",
+					"filename": "player/blast/duck-blast-0019.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -5990,6 +5990,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:6afe5112a77bec0fe769f87105e8bf29:a88b41fde4c4685d6d886f2880291bb8:3c0964389d78d2adb7a87b342b3489a2$"
+		"smartupdate": "$TexturePacker:SmartUpdate:f86b742aee5ef72972656760ba2685bf:a88b41fde4c4685d6d886f2880291bb8:3c0964389d78d2adb7a87b342b3489a2$"
 	}
 }

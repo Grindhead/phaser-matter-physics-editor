@@ -423,13 +423,12 @@ export class Game extends Scene {
    * Scene lifecycle hook. Called every frame, updates entities and checks game state.
    */
   update(): void {
-    // Update Parallax Background first, regardless of physics state
-    this.parallaxManager?.update();
+    this.parallaxManager.update();
 
     if (!this.physicsEnabled) return;
 
     // Update main game elements
-    this.player?.update();
+    this.player.update();
     this.enemies.forEach((enemy) => enemy.update());
 
     // --- Culling Logic ---

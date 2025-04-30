@@ -239,8 +239,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     console.log("[Player] exitBarrel called");
     if (!this.isInBarrel || !this.currentBarrel || !this.body) return;
 
-    if (this.recentlyExitedBarrel) return;
-
     const launchAngle = this.currentBarrel.angle;
 
     this.isInBarrel = false;

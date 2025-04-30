@@ -600,7 +600,7 @@ export class Game extends Scene {
       `[Game] Restarting level. Passing debug state: ${currentDebugState}`
     ); // Added log
 
-    // Explicitly remove world collision listener before restart
+    // Explicitly remove world collision listeners before restart
     if (this.matter.world) {
       this.matter.world.off("collisionstart", this.handleCollisionStart);
     } else {
@@ -647,7 +647,7 @@ export class Game extends Scene {
       if (
         barrelSprite &&
         !this.player.isInBarrel &&
-        !this.player.recentlyExitedBarrel
+        this.player.canEnterBarrels
       ) {
         console.log("[Game] Player collided with barrel", barrelSprite);
         this.player.enterBarrel(barrelSprite);

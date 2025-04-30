@@ -66,9 +66,6 @@ export class Game extends Scene {
   init(data: { physicsDebugWasActive?: boolean }): void {
     // Store the passed state, default to false if not provided
     this.initialPhysicsDebugState = data.physicsDebugWasActive ?? false;
-    console.log(
-      `[Game Init] Received initial physics debug state: ${this.initialPhysicsDebugState}`
-    ); // Added log
   }
 
   /**
@@ -81,8 +78,6 @@ export class Game extends Scene {
     this.initGame();
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
 
-    // --- BEGIN REVISED MODIFICATION: Use initial state passed via init ---
-    // Configure Matter debug rendering based on the state stored in init()
     if (this.debugGraphics) {
       this.debugGraphics.destroy(); // Destroy previous instance if any
     }
@@ -93,10 +88,6 @@ export class Game extends Scene {
     this.matter.world.drawDebug = this.initialPhysicsDebugState;
     this.physicsDebugActive = this.initialPhysicsDebugState;
     this.debugGraphics.setVisible(this.initialPhysicsDebugState); // Set visibility accordingly
-    console.log(
-      `[Game Create] Set physics debug state based on init: ${this.physicsDebugActive}`
-    ); // Added log
-    // --- END REVISED MODIFICATION ---
 
     // Listen for the event from DebugUIScene
     this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
@@ -260,24 +251,11 @@ export class Game extends Scene {
    */
   private togglePhysicsDebug(): void {
     this.physicsDebugActive = !this.physicsDebugActive;
-    console.log(
-      `[Game] Toggling physics debug. Active: ${this.physicsDebugActive}`
-    );
+
     // Use the built-in drawDebug flag
     this.matter.world.drawDebug = this.physicsDebugActive;
-    // Ensure the graphics object is available
-    if (!this.debugGraphics) {
-      // This case shouldn't happen if create runs correctly, but added as a safeguard
-      console.warn("[Game] Debug graphics object not found during toggle.");
-      this.debugGraphics = this.add.graphics().setAlpha(1).setDepth(9999);
-      this.matter.world.debugGraphic = this.debugGraphics;
-    }
-    console.log(
-      `[Game] Matter world drawDebug set to: ${this.matter.world.drawDebug}`
-    );
     // Also toggle the visibility of the graphics object itself
     this.debugGraphics.setVisible(this.physicsDebugActive); // Corrected: Toggle visibility based on state
-    console.log(`[Game] Debug graphics visible: ${this.debugGraphics.visible}`);
   }
 
   /**

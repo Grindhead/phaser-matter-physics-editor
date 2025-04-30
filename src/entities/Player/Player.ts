@@ -75,8 +75,6 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         string,
         Phaser.Input.Keyboard.Key
       >;
-    } else {
-      this.createMobileControls();
     }
   }
 

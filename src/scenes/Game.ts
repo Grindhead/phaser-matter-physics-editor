@@ -69,6 +69,16 @@ export class Game extends Scene {
     this.initGame();
     this.showUIOverlay(GAME_STATE.WAITING_TO_START);
 
+    this.createDebugUI();
+
+    const isDesktop = this.sys.game.device.os.desktop;
+
+    if (!isDesktop) {
+      this.createMobileControls();
+    }
+  }
+
+  private createDebugUI(): void {
     if (this.debugGraphics) {
       this.debugGraphics.destroy(); // Destroy previous instance if any
     }
@@ -507,6 +517,78 @@ export class Game extends Scene {
 
     this.cameraManager.handleZoomIn();
     this.showUIOverlay(GAME_STATE.GAME_OVER);
+  }
+
+  private createMobileControls() {
+    const { width, height } = this.cameras.main;
+    const buttonSize = 64;
+    const padding = 20;
+
+    // Left Button
+    this.createMobileButton(
+      padding + buttonSize / 2,
+      height - padding - buttonSize / 2,
+      () => (this.player.leftIsDown = true),
+      () => (this.player.leftIsDown = false),
+      {
+        angle: -180,
+      }
+    );
+
+    // Right Button
+    this.createMobileButton(
+      padding + buttonSize / 2 + buttonSize + padding,
+      height - padding - buttonSize / 2,
+      () => (this.player.rightIsDown = true),
+      () => (this.player.rightIsDown = false),
+      {
+        angle: 0,
+      }
+    );
+
+    // Jump Button (Bottom Right)
+    this.createMobileButton(
+      width - padding - buttonSize / 2,
+      height - padding - buttonSize / 2,
+      () => (this.player.upIsDown = true),
+      () => (this.player.upIsDown = false),
+      {
+        angle: -90, // Point up
+      }
+    );
+  }
+
+  private createMobileButton(
+    x: number,
+    y: number,
+    onPointerDown: () => void,
+    onPointerUpOrOut: () => void,
+    options: { angle: number } = { angle: 0 }
+  ): Phaser.GameObjects.Image {
+    const buttonSize = 64;
+    const button = this.add
+      .image(x, y, TEXTURE_ATLAS, "direction-button.png")
+      .setInteractive()
+      .setScrollFactor(0)
+      .setAlpha(0.7)
+      .setDisplaySize(buttonSize, buttonSize);
+
+    button.setAngle(options.angle);
+
+    button.on("pointerdown", () => {
+      onPointerDown();
+      button.setAlpha(1.0);
+    });
+    button.on("pointerup", () => {
+      onPointerUpOrOut();
+      button.setAlpha(0.7);
+    });
+    button.on("pointerout", () => {
+      onPointerUpOrOut();
+      button.setAlpha(0.7);
+    });
+
+    return button;
   }
 
   /**

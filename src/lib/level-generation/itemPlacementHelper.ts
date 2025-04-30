@@ -1,24 +1,23 @@
 import { Scene } from "phaser";
-import { Platform } from "../../../entities/Platforms/Platform";
-import { Coin } from "../../../entities/Coin/Coin";
-import { Enemy } from "../../../entities/Enemy/Enemy";
-import { CrateBig } from "../../../entities/CrateBig/CrateBig";
-import { CrateSmall } from "../../../entities/CrateSmall/CrateSmall";
-import { Barrel } from "../../../entities/Barrel/Barrel";
-import { SimplePRNG } from "./LevelGenerator"; // Assuming PRNG is still exported or moved
-import { WORLD_HEIGHT } from "../../constants"; // Import WORLD_HEIGHT
+import { SimplePRNG } from "./LevelGenerator";
+import { Platform } from "../../entities/Platforms/Platform";
 import {
-  LevelGenerationParams,
-  MIN_COIN_SPACING,
+  BARREL_HEIGHT,
+  BARREL_WIDTH,
   COIN_HEIGHT,
-  MIN_PLATFORM_LENGTH_WITH_ENEMY,
-  ENEMY_HEIGHT,
   CRATE_BIG_HEIGHT,
   CRATE_SMALL_HEIGHT,
-  BARREL_HEIGHT,
-  BARREL_WIDTH, // Now correctly imported
-  // WORLD_HEIGHT, // Removed incorrect import
-} from "../../interfaces/LevelGenerationConfig";
+  ENEMY_HEIGHT,
+  LevelGenerationParams,
+  MIN_COIN_SPACING,
+  MIN_PLATFORM_LENGTH_WITH_ENEMY,
+} from "../interfaces/LevelGenerationConfig";
+import { Coin } from "../../entities/Coin/Coin";
+import { Enemy } from "../../entities/Enemy/Enemy";
+import { CrateBig } from "../../entities/CrateBig/CrateBig";
+import { CrateSmall } from "../../entities/CrateSmall/CrateSmall";
+import { Barrel } from "../../entities/Barrel/Barrel";
+import { WORLD_HEIGHT } from "../constants";
 
 /**
  * Populates a given platform with coins based on spacing constraints.

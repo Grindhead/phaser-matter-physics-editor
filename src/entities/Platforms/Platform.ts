@@ -1,5 +1,5 @@
 import { PHYSICS, PHYSICS_ENTITIES } from "../../lib/constants";
-import { buildPlatform } from "../../lib/helpers/level-generation/platformBuilder";
+import { buildPlatform } from "../../lib/level-generation/platformBuilder";
 
 export class Platform extends Phaser.Physics.Matter.Sprite {
   public segmentCount: number;

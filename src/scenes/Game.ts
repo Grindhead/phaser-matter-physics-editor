@@ -30,10 +30,10 @@ import {
 } from "../lib/helpers/levelManager";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType } from "../lib/types";
-import { LevelGenerator } from "../lib/helpers/level-generation/LevelGenerator";
 import { Geom } from "phaser";
-import { ParallaxManager } from "../lib/helpers/parralax/ParallaxManager";
 import { Barrel } from "../entities/Barrel/Barrel";
+import { LevelGenerator } from "../lib/level-generation/LevelGenerator";
+import { ParallaxManager } from "../lib/parralax/ParallaxManager";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -449,7 +449,7 @@ export class Game extends Scene {
     let culledCoins = 0;
     let culledEnemies = 0;
 
-    this.levelGenerator.getCoins().forEach((coin) => {
+    this.levelGenerator.getCoins().forEach((coin: Coin) => {
       const visible = Geom.Rectangle.Overlaps(cullBounds, coin.getBounds());
       coin.setVisible(visible);
       coin.setActive(visible); // Also disable updates if not visible

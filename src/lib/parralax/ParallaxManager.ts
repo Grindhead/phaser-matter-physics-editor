@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { TEXTURE_ATLAS } from "../../constants";
 import { ParallaxBackground } from "./ParallaxBackground";
+import { TEXTURE_ATLAS } from "../constants";
 
 /**
  * Manages the creation and properties of parallax background layers using ParallaxBackground.

@@ -1,33 +1,30 @@
 import { Scene } from "phaser";
-import { Player } from "../../../entities/Player/Player";
-import { Enemy } from "../../../entities/Enemy/Enemy";
-import { Coin } from "../../../entities/Coin/Coin";
-import {
-  Platform,
-  // PlatformSegment, // Removed unused import
-} from "../../../entities/Platforms/Platform";
-import { CrateBig } from "../../../entities/CrateBig/CrateBig";
-import { CrateSmall } from "../../../entities/CrateSmall/CrateSmall";
-import { Finish } from "../../../entities/Finish/Finish";
-import { Barrel } from "../../../entities/Barrel/Barrel";
-import { WORLD_HEIGHT } from "../../constants";
-import { setTotalCoinsInLevel } from "../coinManager"; // Added import
-// Import the new configuration interface and constants
-import {
-  LevelGenerationParams,
-  MAX_JUMP_DISTANCE_X,
-  MAX_JUMP_HEIGHT_UP,
-  MAX_FALL_HEIGHT,
-  MIN_ABS_VERTICAL_GAP,
-  PLATFORM_SEGMENT_WIDTH,
-  BARREL_HEIGHT,
-  BARREL_WIDTH, // Ensure BARREL_WIDTH is imported
-} from "../../interfaces/LevelGenerationConfig";
+
 // Import the item placement helpers
 import {
   populatePlatformWithCoins,
   placeItemsOnPlatforms,
 } from "./itemPlacementHelper";
+import { Platform } from "../../entities/Platforms/Platform";
+import { Coin } from "../../entities/Coin/Coin";
+import { Enemy } from "../../entities/Enemy/Enemy";
+import { CrateBig } from "../../entities/CrateBig/CrateBig";
+import { CrateSmall } from "../../entities/CrateSmall/CrateSmall";
+import { Barrel } from "../../entities/Barrel/Barrel";
+import { Player } from "../../entities/Player/Player";
+import {
+  BARREL_HEIGHT,
+  BARREL_WIDTH,
+  LevelGenerationParams,
+  MAX_FALL_HEIGHT,
+  MAX_JUMP_DISTANCE_X,
+  MAX_JUMP_HEIGHT_UP,
+  MIN_ABS_VERTICAL_GAP,
+  PLATFORM_SEGMENT_WIDTH,
+} from "../interfaces/LevelGenerationConfig";
+import { WORLD_HEIGHT } from "../constants";
+import { setTotalCoinsInLevel } from "../helpers/coinManager";
+import { Finish } from "../../entities/Finish/Finish";
 
 // Simple Pseudo-Random Number Generator (PRNG) using Mulberry32 algorithm
 // Provides deterministic random numbers based on an initial seed.

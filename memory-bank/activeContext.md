@@ -2,6 +2,25 @@
 
 ## Current Focus
 
+- Initial project setup and organization.
+- Standardizing asset file naming conventions. The current task is renaming image assets for a player character's "wobble" animation.
+
+## Next Steps
+
+- Implement the file renaming for `/assets/player/wobble/`.
+- Continue defining the project structure and core editor functionality based on the project brief.
+
+## Active Decisions
+
+- Asset filenames should be lowercase, use hyphens as separators, and follow the pattern `[description]-[framenumber].[extension]`.
+
+## Patterns and Preferences
+
+- Use PowerShell for file system operations on Windows.
+- Follow custom instructions regarding memory bank updates, planning, and communication style.
+
+## Current Focus
+
 **Conditionally Initialize Game Based on Orientation:** Modify `src/main.ts` to only initialize the Phaser `Game` instance when the screen is detected to be in a landscape orientation. Implement checks both on initial load and on orientation changes.
 
 ## Recent Changes

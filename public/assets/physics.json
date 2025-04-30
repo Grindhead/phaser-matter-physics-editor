@@ -33,7 +33,7 @@
 		"density": 0.1,
 		"restitution": 0,
 		"friction": 0,
-		"frictionAir": 0,
+		"frictionAir": 0.02,
 		"frictionStatic": 0,
 		"collisionFilter": {
 			"group": 0,
@@ -47,32 +47,6 @@
 				"vertices": [
 					[ { "x":49, "y":61 }, { "x":43, "y":19 }, { "x":15, "y":22 }, { "x":14, "y":61 } ]
 				]
-			}
-		]
-	},
-	"duck-fall": {
-		"type": "fromPhysicsEditor",
-		"label": "duck",
-		"isStatic": false,
-		"density": 0.1,
-		"restitution": 0,
-		"friction": 0,
-		"frictionAir": 0.01,
-		"frictionStatic": 0.5,
-		"collisionFilter": {
-			"group": 0,
-			"category": 1,
-			"mask": 126
-		},
-		"fixtures": [
-			{
-				"label": "",
-				"isSensor": false,
-				"circle": {
-					"x": 30.984602912375884,
-					"y": 30.73113467558397,
-					"radius": 17.728179852302397
-				}
 			}
 		]
 	},
@@ -171,57 +145,6 @@
 				"vertices": [
 					[ { "x":14, "y":20 }, { "x":14, "y":50 }, { "x":33, "y":81 }, { "x":48, "y":74 }, { "x":45, "y":25 } ],
 					[ { "x":14, "y":50 }, { "x":24, "y":125 }, { "x":34, "y":125 }, { "x":33, "y":81 } ]
-				]
-			}
-		]
-	},
-	"duck-jump": {
-		"type": "fromPhysicsEditor",
-		"label": "duck",
-		"isStatic": false,
-		"density": 0.10000000149011612,
-		"restitution": 0,
-		"friction": 0,
-		"frictionAir": 0,
-		"frictionStatic": 0,
-		"collisionFilter": {
-			"group": 0,
-			"category": 1,
-			"mask": 126
-		},
-		"fixtures": [
-			{
-				"label": "duck",
-				"isSensor": false,
-				"circle": {
-					"x": 30.416078088295592,
-					"y": 32.42654603210586,
-					"radius": 16.536218641975804
-				}
-			}
-		]
-	},
-	"duck-run": {
-		"type": "fromPhysicsEditor",
-		"label": "duck",
-		"isStatic": false,
-		"density": 0.10000000149011612,
-		"restitution": 0,
-		"friction": 0,
-		"frictionAir": 0,
-		"frictionStatic": 0,
-		"collisionFilter": {
-			"group": 0,
-			"category": 1,
-			"mask": 126
-		},
-		"fixtures": [
-			{
-				"label": "duck",
-				"isSensor": false,
-				"vertices": [
-					[ { "x":31, "y":0 }, { "x":14, "y":15 }, { "x":14, "y":39 }, { "x":23, "y":56 }, { "x":47, "y":61 }, { "x":45, "y":16 } ],
-					[ { "x":11, "y":65 }, { "x":23, "y":56 }, { "x":14, "y":39 } ]
 				]
 			}
 		]

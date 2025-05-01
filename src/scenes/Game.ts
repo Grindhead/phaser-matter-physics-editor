@@ -36,6 +36,7 @@ import { Barrel } from "../entities/Barrel/Barrel";
 import { LevelGenerator } from "../lib/level-generation/LevelGenerator";
 import { ParallaxManager } from "../lib/parralax/ParallaxManager";
 import { CrateBig } from "../entities/CrateBig/CrateBig";
+import { UIScene } from "./UIScene";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -629,50 +630,14 @@ export class Game extends Scene {
   private showContinueButton(): void {
     console.log("level complete");
 
-    // Clean up any existing button
-    if (this.overlayButton) {
-      this.overlayButton.off("pointerup");
-      this.overlayButton.destroy();
-    }
-
-    // Calculate the position for the button (center of camera view)
-    const cam = this.cameras.main;
-    const centerX = cam.midPoint.x;
-    const centerY = cam.midPoint.y;
-
-    // Create the continue button
-    this.overlayButton = this.add
-      .image(centerX, centerY, TEXTURE_ATLAS, "ui/direction-button.png")
-      .setScale(2)
-      .setScrollFactor(0)
-      .setInteractive()
-      .setDepth(10000);
-
-    // Add text over the button
-    const continueText = this.add
-      .text(centerX, centerY, "CONTINUE", {
-        fontFamily: "Roboto",
-        fontSize: "32px",
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 4,
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(10001);
-
-    // Add event handler
-    this.overlayButton.on("pointerup", () => {
-      // Clean up text when button is clicked
-      if (continueText) continueText.destroy();
-      this.restartLevel();
-    });
+    const gameScene = this.scene.get(SCENES.DEBUG_UI);
+    (gameScene as UIScene).showContinueButton();
   }
 
   /**
    * Restarts the current level or advances to the next level.
    */
-  private restartLevel(): void {
+  public restartLevel(): void {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
 

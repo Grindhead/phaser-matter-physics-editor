@@ -2,7 +2,7 @@ import { Boot } from "./scenes/Boot";
 import { Game as MainGame } from "./scenes/Game";
 import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
-import { UIScene } from "./scenes/DebugUIScene";
+import { UIScene } from "./scenes/UIScene";
 import { Game, Types } from "phaser";
 
 //  Find out more information about the Game Config at:

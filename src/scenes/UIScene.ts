@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { SCENES } from "../lib/constants";
+import { SCENES, TEXTURE_ATLAS } from "../lib/constants";
 import { DebugPanel } from "../lib/ui/DebugPanel";
 import { CoinUI } from "../lib/ui/CoinUI";
 import { LevelUI } from "../lib/ui/LevelUI";
@@ -12,6 +12,7 @@ export class UIScene extends Phaser.Scene {
   private debugPanel: DebugPanel;
   private coinUI: CoinUI;
   private levelUI: LevelUI;
+  private overlayButton: Phaser.GameObjects.Image;
 
   constructor() {
     super(SCENES.DEBUG_UI);
@@ -27,6 +28,32 @@ export class UIScene extends Phaser.Scene {
     // Instantiate CoinUI in the top-left corner
     this.coinUI = new CoinUI(this);
     this.levelUI = new LevelUI(this);
+
+    // Create the continue button - fixed to camera
+    this.overlayButton = this.add
+      .image(
+        this.scale.width / 2,
+        this.scale.height / 2,
+        TEXTURE_ATLAS,
+        "ui/continue.png"
+      )
+      .setScrollFactor(0)
+      .setInteractive()
+      .setDepth(10000)
+      .setOrigin(0.5);
+
+    this.overlayButton.setScale(3);
+
+    this.overlayButton.visible = false;
+
+    // Add event handler
+    this.overlayButton.on("pointerup", () => {
+      // Clean up text when button is clicked
+      this.overlayButton!.destroy();
+      // Get reference to the Game scene and call its restartLevel method
+      const gameScene = this.scene.get(SCENES.GAME);
+      (gameScene as Phaser.Scene & { restartLevel: () => void }).restartLevel();
+    });
 
     // Listen for data updates from the Game scene
     const gameScene = this.scene.get(SCENES.GAME);
@@ -55,6 +82,14 @@ export class UIScene extends Phaser.Scene {
 
   private handleDebugDataUpdate(data: { [key: string]: any }): void {
     this.debugPanel.update(data);
+  }
+
+  public showContinueButton(): void {
+    this.overlayButton.visible = true;
+  }
+
+  public hideContinueButton(): void {
+    this.overlayButton.visible = false;
   }
 
   // Update CoinUI every frame

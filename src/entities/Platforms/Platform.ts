@@ -4,6 +4,8 @@ import { buildPlatform } from "../../lib/level-generation/platformBuilder";
 export class Platform extends Phaser.Physics.Matter.Sprite {
   public segmentCount: number;
   public isVertical: boolean;
+  public hasCrate: boolean = false;
+  public hasEnemy: boolean = false;
 
   constructor(
     scene: Phaser.Scene,

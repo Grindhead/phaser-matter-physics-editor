@@ -292,13 +292,32 @@ export class LevelGenerator {
     // Place Enemies using the helper
     this.placeEnemies(finalItemPlacementPlatforms, params);
 
-    this.platforms.forEach((platform) => {
-      totalCoins += populatePlatformWithCoins(
-        this.scene,
-        platform,
-        this.prng,
-        this.coins
-      );
+    // Sort platforms: platforms without enemies or crates should be fully populated
+    this.platforms.forEach((platform, index) => {
+      const hasEnemy = this.platformHasEnemy(platform);
+      const isInitialPlatform = index === 0; // First platform is the initial one
+
+      // If platform has no enemy and no crate, fully populate it with coins
+      if (!hasEnemy && !platform.hasCrate) {
+        totalCoins += populatePlatformWithCoins(
+          this.scene,
+          platform,
+          this.prng,
+          this.coins,
+          true, // fully populate flag
+          isInitialPlatform
+        );
+      } else {
+        // Otherwise, use normal coin placement
+        totalCoins += populatePlatformWithCoins(
+          this.scene,
+          platform,
+          this.prng,
+          this.coins,
+          false,
+          isInitialPlatform
+        );
+      }
     });
 
     this.calculateOverallBounds(); // Calculate bounds after all platforms exist
@@ -759,6 +778,9 @@ export class LevelGenerator {
         platformsWithCrates.add(platform); // Mark platform as having a crate
         cratesPlacedCount++; // Increment count of placed crates
 
+        // Mark the platform as having a crate for coin placement logic
+        platform.hasCrate = true;
+
         // Draw debug visualization only if debug is active
         if (this.isDebugActive && this.debugGraphics) {
           const graphics = this.debugGraphics;
@@ -791,5 +813,30 @@ export class LevelGenerator {
       this.levelNumber,
       this.enemies
     );
+  }
+
+  /**
+   * Checks if a platform has an enemy on it.
+   * @param platform The platform to check.
+   * @returns True if an enemy exists on the platform, false otherwise.
+   */
+  private platformHasEnemy(platform: Platform): boolean {
+    const platformBounds = platform.getBounds();
+
+    // Check if any enemy is positioned on this platform
+    for (const enemy of this.enemies) {
+      const enemyBounds = enemy.getBounds();
+
+      // If enemy's bottom is at platform's top and horizontally overlaps
+      if (
+        Math.abs(enemyBounds.bottom - platformBounds.top) < 2 &&
+        enemyBounds.right > platformBounds.left &&
+        enemyBounds.left < platformBounds.right
+      ) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

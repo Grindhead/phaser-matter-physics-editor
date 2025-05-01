@@ -25,31 +25,52 @@ export function populatePlatformWithCoins(
   scene: Scene,
   platform: Platform,
   prng: SimplePRNG,
-  coinsArray: Coin[]
+  coinsArray: Coin[],
+  fullPopulate: boolean = false,
+  isInitialPlatform: boolean = false
 ): number {
   const bounds = platform.getBounds();
   const platformWidth = bounds.width;
   let coinsAdded = 0;
 
+  // Skip platforms with crates
+  if (platform.hasCrate) {
+    return 0; // Skip coin placement on platforms with crates
+  }
+
+  // Skip the initial platform where the player starts
+  if (isInitialPlatform) {
+    return 0; // No coins on the initial platform
+  }
+
+  // Use the actual MIN_COIN_SPACING for proper spacing
   const maxPossibleCoins = Math.floor(platformWidth / MIN_COIN_SPACING);
-  // Increase number of coins placed by using a higher minimum number and multiplier
-  const minCoins = Math.min(1, Math.floor(maxPossibleCoins * 0.3));
-  const targetCoinsForPlatform = Math.max(
-    minCoins,
-    prng.nextInt(0, maxPossibleCoins + 1)
-  );
+
+  // Determine target coins based on whether we're fully populating
+  let targetCoinsForPlatform: number;
+
+  if (fullPopulate) {
+    // When fully populating, use maximum possible coins
+    targetCoinsForPlatform = maxPossibleCoins;
+  } else {
+    // Increase minimum coins to 50% of possible coins (was 30%)
+    const minCoins = Math.min(3, Math.floor(maxPossibleCoins * 0.5));
+
+    // Increase the target coins by using a higher minimum and higher random value
+    targetCoinsForPlatform = Math.max(
+      minCoins,
+      prng.nextInt(Math.floor(maxPossibleCoins * 0.3), maxPossibleCoins + 1)
+    );
+  }
 
   if (targetCoinsForPlatform > 0) {
     const startOffset =
       (platformWidth - (targetCoinsForPlatform - 1) * MIN_COIN_SPACING) / 2;
     const placeY = bounds.top - COIN_HEIGHT / 2 - 5;
 
+    // Place coins with even spacing without gaps
     for (let i = 0; i < targetCoinsForPlatform; i++) {
       const placeX = bounds.left + startOffset + i * MIN_COIN_SPACING;
-      const centerBuffer = 16;
-      if (Math.abs(placeX - bounds.centerX) < centerBuffer) {
-        continue;
-      }
       const coin = new Coin(scene, placeX, placeY);
       coinsArray.push(coin);
       coinsAdded++;

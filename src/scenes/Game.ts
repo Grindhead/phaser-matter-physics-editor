@@ -8,6 +8,7 @@ import {
 } from "../lib/constants";
 import { Player } from "../entities/Player/Player";
 import { EnemyLarge } from "../entities/Enemies/EnemyLarge";
+import { EnemySmall } from "../entities/Enemies/EnemySmall";
 import { Coin } from "../entities/Coin/Coin";
 import { Finish } from "../entities/Finish/Finish";
 import { isCoinBody } from "../lib/helpers/isCoinBody";
@@ -44,7 +45,7 @@ export class Game extends Scene {
   private restartTriggered = false;
   private physicsEnabled = false;
   private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
-  private enemies: EnemyLarge[] = [];
+  private enemies: (EnemyLarge | EnemySmall)[] = [];
   private barrels: Barrel[] = [];
   private cameraManager: CameraManager;
   private levelGenerator: LevelGenerator;
@@ -132,8 +133,7 @@ export class Game extends Scene {
    * Uses LevelGenerator to create the entities for the current level.
    */
   private generateLevelEntities(): void {
-    const currentLevel = getLevel();
-    this.levelGenerator = new LevelGenerator(this, currentLevel);
+    this.levelGenerator = new LevelGenerator(this);
     this.player = this.levelGenerator.generateLevel();
     this.enemies = this.levelGenerator.getEnemies();
     this.barrels = this.levelGenerator.getBarrels();

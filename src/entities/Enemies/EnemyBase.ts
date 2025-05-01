@@ -9,7 +9,6 @@ type PhysicsEntityKey =
 interface EnemyConfig {
   shapeKey: PhysicsEntityKey;
   animKey: string;
-  speed: number;
   scale?: number;
 }
 
@@ -28,14 +27,14 @@ export abstract class EnemyBase extends Phaser.Physics.Matter.Sprite {
     scene: Phaser.Scene,
     x: number,
     y: number,
-    { shapeKey, animKey, speed, scale = 1 }: EnemyConfig
+    { shapeKey, animKey, scale = 1 }: EnemyConfig
   ) {
     const shapes = scene.cache.json.get(PHYSICS);
     super(scene.matter.world, x, y, TEXTURE_ATLAS, animKey, {
       shape: shapes[shapeKey],
     });
 
-    this.speed = speed;
+    this.speed = Phaser.Math.Between(1, 1.3);
     if (scale !== 1) this.setScale(scale);
 
     scene.add.existing(this);

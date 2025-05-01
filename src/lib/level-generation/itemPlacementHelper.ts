@@ -18,6 +18,7 @@ import { CrateBig } from "../../entities/CrateBig/CrateBig";
 import { CrateSmall } from "../../entities/CrateSmall/CrateSmall";
 import { Barrel } from "../../entities/Barrel/Barrel";
 import { WORLD_HEIGHT } from "../constants";
+import { EnemySmall } from "../../entities/Enemies/EnemySmall";
 
 /**
  * Populates a given platform with coins based on spacing constraints.
@@ -64,7 +65,8 @@ export function placeItemsOnPlatforms(
   eligiblePlatforms: Platform[],
   prng: SimplePRNG,
   params: LevelGenerationParams,
-  enemiesArray: EnemyLarge[],
+  levelNumber: number,
+  enemiesArray: (EnemyLarge | EnemySmall)[],
   cratesArray: (CrateBig | CrateSmall)[]
   // barrelsArray: Barrel[] // REMOVED
 ): void {
@@ -112,7 +114,21 @@ export function placeItemsOnPlatforms(
       const bounds = platform.getBounds();
       const placeX = bounds.centerX;
       const placeY = bounds.top - ENEMY_HEIGHT / 2 - 14;
-      const enemy = new EnemyLarge(scene, placeX, placeY);
+
+      // Determine enemy type
+      let enemy: EnemyLarge | EnemySmall;
+      if (levelNumber === 1 && enemiesPlaced < 3) {
+        // Always small for the first 3 on level 1
+        enemy = new EnemySmall(scene, placeX, placeY);
+      } else {
+        // Randomly choose between small and large for others
+        if (prng.next() < 0.5) {
+          enemy = new EnemySmall(scene, placeX, placeY);
+        } else {
+          enemy = new EnemyLarge(scene, placeX, placeY);
+        }
+      }
+
       enemiesArray.push(enemy);
       enemiesPlaced++;
       usedPlatformIndices.add(i); // Mark platform as used

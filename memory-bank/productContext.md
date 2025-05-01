@@ -26,3 +26,6 @@ Users will interact with a graphical interface representing the Phaser/Matter.js
 - **Enemy Difficulty Curve:**
   - Introduce smaller/simpler enemies early to teach avoidance mechanics.
   - Reserve larger/more challenging enemies for later parts of the level.
+- **Level Complete Animation:** When the player completes a level and lands, play a specific "cool landing" animation, overriding any other current animation.
+- **Finish Line Depth:** Ensure the player sprite is always rendered visually in front of (on top of) the finish line sprite.
+- **Enemy Placement (Level 1):** The first two generated platforms in level 1 must never contain enemies.

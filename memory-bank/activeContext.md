@@ -47,8 +47,11 @@
   - Ensure boxes respawn on level restart.
   - Add higher death colliders to reduce fall time.
   - Refine enemy placement for a smoother difficulty curve (smaller enemies first).
+  - Implement the "cool landing" animation for level completion.
+  - Ensure player sprite renders in front of the finish line.
+  - Prevent enemies on the first two platforms in level 1.
 
-## Active Decisions & Considerations
+## Active Decisions
 
 - **Display Message:** Show a simple message (e.g., "Please rotate your device to landscape mode") when in portrait orientation.
 - **Scale Manager Strategy:** Continue testing `EXPAND`. The goal is full-screen adaptive display without cropping critical elements. `FIT` remains the fallback if `EXPAND` is unsuitable.

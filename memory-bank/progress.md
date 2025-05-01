@@ -17,6 +17,9 @@
   - Box respawning on restart.
   - Higher death colliders (reduce fall time).
   - Enemy difficulty curve refinement (smaller enemies first).
+  - Level completion "cool landing" animation implementation.
+  - Player/Finish line depth sorting implementation.
+  - Enemy placement restriction for first two platforms (level 1).
 
 ## Current Status
 

@@ -25,6 +25,8 @@ import {
 import { WORLD_HEIGHT } from "../constants";
 import { setTotalCoinsInLevel } from "../helpers/coinManager";
 import { Finish } from "../../entities/Finish/Finish";
+import { EnemySmall } from "../../entities/Enemies/EnemySmall";
+import { getLevel } from "../helpers/levelManager";
 
 // Simple Pseudo-Random Number Generator (PRNG) using Mulberry32 algorithm
 // Provides deterministic random numbers based on an initial seed.
@@ -86,7 +88,7 @@ export class LevelGenerator {
   private prng: SimplePRNG;
   private platforms: Platform[] = [];
   private coins: Coin[] = [];
-  private enemies: EnemyLarge[] = [];
+  private enemies: (EnemyLarge | EnemySmall)[] = [];
   private crates: (CrateBig | CrateSmall)[] = [];
   private barrels: Barrel[] = [];
   private player: Player;
@@ -104,10 +106,8 @@ export class LevelGenerator {
 
   private bridgeBarrelRanges: { start: number; end: number }[] = []; // Track bridge barrel horizontal ranges
 
-  constructor(scene: Scene, levelNumber: number) {
+  constructor(scene: Scene) {
     this.scene = scene;
-    this.levelNumber = levelNumber;
-    this.prng = new SimplePRNG(this.levelNumber);
   }
 
   /**
@@ -115,6 +115,9 @@ export class LevelGenerator {
    * Returns the created Player instance.
    */
   generateLevel(): Player {
+    this.levelNumber = getLevel();
+
+    this.prng = new SimplePRNG(this.levelNumber);
     const params = LevelGenerator.calculateLevelGenerationParams(
       this.levelNumber
     );
@@ -272,7 +275,8 @@ export class LevelGenerator {
       finalItemPlacementPlatforms,
       this.prng,
       params,
-      this.enemies, // Pass the arrays to be populated
+      this.levelNumber,
+      this.enemies,
       this.crates
     );
 
@@ -449,8 +453,7 @@ export class LevelGenerator {
     const lastPlatformBounds = lastPlatform.getBounds();
     // Place finish X at the right edge of the last platform
     const finishX = lastPlatformBounds.right - 40;
-    // Place finish Y 100px above the top surface of the last platform
-    const finishY = lastPlatformBounds.top - 45; // Increased from 50
+    const finishY = lastPlatformBounds.top - 60;
     new Finish(this.scene, finishX, finishY);
   }
 
@@ -487,7 +490,7 @@ export class LevelGenerator {
   /**
    * Returns the list of generated enemies.
    */
-  getEnemies(): EnemyLarge[] {
+  getEnemies(): (EnemyLarge | EnemySmall)[] {
     return this.enemies;
   }
 

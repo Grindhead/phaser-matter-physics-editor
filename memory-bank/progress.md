@@ -9,6 +9,9 @@
 - The entire editor application.
 - Asset organization and processing pipelines.
 - Implement conditional game initialization based on screen orientation.
+- **Level Generation Enhancements:**
+  - Vertical walls (using rotated platforms).
+  - Barrel substitution for impassable gaps.
 - **Gameplay Enhancements (Based on Feedback):**
   - Keyboard restart (Space/Enter).
   - Single-input restart (dismiss + start).

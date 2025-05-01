@@ -4,15 +4,24 @@
 
 - Initial project setup and organization.
 - Standardizing asset file naming conventions. The current task is renaming image assets for a player character's "wobble" animation.
+- Implement new level generation features:
+  - Vertical walls using rotated platforms.
+  - Barrel substitution for impassable gaps.
+- Implement player-barrel interaction logic.
 
 ## Next Steps
 
 - Implement the file renaming for `/assets/player/wobble/`.
 - Continue defining the project structure and core editor functionality based on the project brief.
+- Implement vertical wall generation in `LevelGenerator.ts`.
+- Implement barrel substitution logic in `LevelGenerator.ts`.
+- Test the updated level generation thoroughly.
 
 ## Active Decisions
 
 - Asset filenames should be lowercase, use hyphens as separators, and follow the pattern `[description]-[framenumber].[extension]`.
+- **Vertical Walls:** Implement walls by placing standard platform sprites vertically (rotated 90 degrees).
+- **Barrel Substitution:** Identify gaps larger than `maxHorizontalGap` and replace the subsequent platform placement with a barrel placement. Ensure the barrel is positioned appropriately for a jump.
 
 ## Patterns and Preferences
 
@@ -33,6 +42,10 @@
 - **Test `EXPAND` Mode:**
 - **Implement Mobile Controls:**
 - **Update Memory Bank:** Document mobile control implementation.
+- **Resolved Enemy Positioning:** The issue where enemies were not spawning correctly (often due to minimum platform length requirements) has been resolved. Enemies now spawn according to the defined logic (e.g., based on adjusted `MIN_PLATFORM_LENGTH_WITH_ENEMY`).
+- Confirmed bridge barrel substitution logic triggers with reduced `MAX_JUMP_DISTANCE_X` (150).
+- Temporarily reduced `MAX_JUMP_DISTANCE_X`.
+- Reduced `MIN_PLATFORM_LENGTH_WITH_ENEMY` to 6, fixing enemy spawning.
 
 ## Next Steps
 
@@ -50,6 +63,14 @@
   - Implement the "cool landing" animation for level completion.
   - Ensure player sprite renders in front of the finish line.
   - Prevent enemies on the first two platforms in level 1.
+- Implement Player-Barrel collision detection in `Game.ts::handleCollisionStart`.
+- Add `isInBarrel` state and related methods to `Player.ts`.
+- Implement vertical wall generation in `LevelGenerator.ts`.
+- Implement barrel substitution logic in `LevelGenerator.ts`.
+- Test the updated level generation thoroughly.
+- If overlap is prevented for bridge barrels, revert `MAX_JUMP_DISTANCE_X` to 200.
+- Then, uncomment `placeBarrelsBetweenPlatforms`.
+- Perform final test for barrel placements.
 
 ## Active Decisions
 
@@ -72,6 +93,7 @@
 - Using state machines or flags within entities to manage behavior.
 - **State Management for Interaction:** Using boolean flags and methods across interacting entities to manage complex interaction flows.
 - **Mobile Controls:** Add interactive UI elements (`Phaser.GameObjects.Image`) to the scene for touch input. Use `setInteractive()`, `setScrollFactor(0)`, and pointer events (`pointerdown`, `pointerup`, `pointerout`) to manage state flags (e.g., `mobileLeftActive`). Player logic reads these flags.
+- **Level Generation Logic:** Extend `LevelGenerator.ts` to handle wall placement and barrel substitution conditions.
 
 ## Learnings & Project Insights
 
@@ -563,58 +585,5 @@ Debugging level generation: 0 enemies and 0 barrels spawning.
 
 - Item placement functions can fail silently if none of the potential locations meet the required conditions (e.g., platform length).
 - Debugging procedural generation often involves isolating different components and checking intermediate results and conditions.
-
-## Current Focus
-
-- **Current Focus:** Refining the behavior of the `Barrel` entity.
-- **Task:** Adjust the rotation origin of the barrel sprite to be the center (0.5, 0.5).
-- **Recent Changes:** Initial creation of the `Barrel` class and its associated animations.
-- **Next Steps:** Implement player interaction with the barrel (entering, launching).
-
-## Current Focus
-
-Implementing player-barrel interaction logic.
-
-- **Status:** Barrel rotation origin confirmed and maintained at `(0.22, 0.5)` based on sprite visual.
-- **Goal:** Allow the player to enter and be launched from barrels.
-- **Approach:**
-  1. Implement collision detection between Player and Barrel in `Game.ts`.
-  2. Add state management to `Player.ts` (`isInBarrel`, `currentBarrel`).
-  3. Add methods to `Player.ts` (`enterBarrel`, `exitBarrel`, `launchFromBarrel`).
-  4. Implement input handling (e.g., jump key) in `Player.ts` or `Game.ts` to trigger `launchFromBarrel`.
-  5. Connect `Barrel` animations (`enter`, `launch`) via the interaction logic.
-  6. Ensure `Barrel.launch()` returns the correct launch vector based on its angle.
-
-## Recent Changes
-
-- **Corrected Barrel Rotation Origin:** Verified and kept the origin at `(0.22, 0.5)` in `Barrel.ts` after confirming the visual center differed from the geometric center.
-- Confirmed bridge barrel substitution logic triggers with reduced `MAX_JUMP_DISTANCE_X` (150).
-- Temporarily reduced `MAX_JUMP_DISTANCE_X`.
-- Reduced `MIN_PLATFORM_LENGTH_WITH_ENEMY` to 6, fixing enemy spawning.
-
-## Next Steps
-
-- Implement Player-Barrel collision detection in `Game.ts::handleCollisionStart`.
-- Add `isInBarrel` state and related methods to `Player.ts`.
-
-## Active Decisions & Considerations
-
-- Collision logic will trigger `player.enterBarrel(barrel)` and `barrel.enter()`.
-- Player input (jump) will trigger `player.launchFromBarrel()` which in turn calls `barrel.launch()` and uses the returned vector.
-- Choosing to place a platform instead of an overlapping barrel simplifies the logic, although it removes the mandatory jump for that specific gap.
-- This overlap check is separate from the one in `placeBarrelsBetweenPlatforms`, which handles optional barrels.
-
-## Important Patterns & Preferences
-
-- State tracking during generation.
-- Leveraging Matter.js collision events.
-- Encapsulating entity-specific logic within the entity class (`Player`, `Barrel`).
-- Using state machines or flags within entities to manage behavior.
-
-## Learnings & Project Insights
-
-- Visual asset origins might not align with geometric centers; always verify against the visual representation if available.
-- Adding new generation features can introduce conflicts requiring explicit checks.
-- State synchronization between interacting entities, especially with animation delays, can be complex.
 
 ## _Previous Context Entries Below_

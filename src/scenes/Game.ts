@@ -611,14 +611,62 @@ export class Game extends Scene {
   private handleLevelComplete(): void {
     if (this.gameState !== GAME_STATE.PLAYING) return;
 
+    this.gameState = GAME_STATE.LEVEL_COMPLETE;
     this.player.finishLevel();
     addLevel(1);
     this.enemies.forEach((enemy) => enemy.handleGameOver());
     this.cameraManager.handleZoomIn();
 
-    // Restart immediately without delay
-    this.gameState = GAME_STATE.LEVEL_COMPLETE;
-    this.restartLevel();
+    // Wait for player to complete landing animation before showing continue button
+    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.showContinueButton();
+    });
+  }
+
+  /**
+   * Shows the continue button after level completion
+   */
+  private showContinueButton(): void {
+    console.log("level complete");
+
+    // Clean up any existing button
+    if (this.overlayButton) {
+      this.overlayButton.off("pointerup");
+      this.overlayButton.destroy();
+    }
+
+    // Calculate the position for the button (center of camera view)
+    const cam = this.cameras.main;
+    const centerX = cam.midPoint.x;
+    const centerY = cam.midPoint.y;
+
+    // Create the continue button
+    this.overlayButton = this.add
+      .image(centerX, centerY, TEXTURE_ATLAS, "ui/direction-button.png")
+      .setScale(2)
+      .setScrollFactor(0)
+      .setInteractive()
+      .setDepth(10000);
+
+    // Add text over the button
+    const continueText = this.add
+      .text(centerX, centerY, "CONTINUE", {
+        fontFamily: "Roboto",
+        fontSize: "32px",
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(10001);
+
+    // Add event handler
+    this.overlayButton.on("pointerup", () => {
+      // Clean up text when button is clicked
+      if (continueText) continueText.destroy();
+      this.restartLevel();
+    });
   }
 
   /**

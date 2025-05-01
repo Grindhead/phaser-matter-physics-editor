@@ -2,19 +2,26 @@
 
 ## Problem Solved
 
-Manually configuring Matter.js physics in Phaser code can be tedious, error-prone, and lacks visual feedback. This editor aims to simplify this process, allowing developers and designers to visually create and tweak physics interactions.
+This project aimed to create a feature-rich, responsive platformer game using Phaser 3 and Matter.js, incorporating procedural generation and specific gameplay mechanics based on iterative feedback.
 
-## How It Works (Vision)
+## How It Works (Result)
 
-Users will interact with a graphical interface representing the Phaser/Matter.js scene. They can add predefined shapes or draw custom polygons, adjust their physical properties via input fields and sliders, connect bodies with constraints, and see a visual representation of the physics world.
+The final product is a platformer game where the player navigates procedurally generated levels. Key features include:
 
-## User Experience Goals
+- Responsive design adapting to different screen sizes.
+- Mobile touch controls alongside keyboard input.
+- Matter.js physics for interactions.
+- Procedural level generation including platforms, vertical walls, enemies, coins, crates, and barrels.
+- Dynamic elements like respawning crates and segmented death zones.
+- Specific gameplay mechanics: strategic crate placement for wall jumps, barrel interactions, coin collection, enemy avoidance.
+- Polished user experience: immediate game start, smooth restart flow, dedicated landing animations.
 
-- Intuitive visual editing.
-- Real-time feedback (potentially a simulation preview).
-- Streamlined workflow for exporting configurations.
-- Easy integration with existing Phaser projects.
-- Immediate Gameplay: The game should start automatically after loading, without requiring an initial click.
+## User Experience Goals (Achieved)
+
+- Immediate Gameplay: The game starts automatically after loading.
+- Responsive Controls: Works on desktop (keyboard) and mobile (touch).
+- Engaging Gameplay Loop: Procedural generation provides replayability, and the restart flow is seamless.
+- Clear Visuals: Depth sorting ensures player visibility; UI adapts to screen size.
 
 ## Gameplay Enhancements (Derived from Feedback)
 

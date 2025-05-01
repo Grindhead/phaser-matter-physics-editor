@@ -34,6 +34,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private currentPlatformBounds: { left: number; right: number } | null = null;
   private coinCollectionTimer?: Phaser.Time.TimerEvent;
   private coinCollectedDuringLanding = false; // Track coin collection during landing
+  private landingAnimationEventEmitted = false; // Track if landing animation complete event was emitted
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -296,8 +297,13 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, true);
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
           this.isPlayingLandAnimation = false;
-          // If level is complete, keep the final frame of DUCK_LAND animation
-          if (this.isGrounded && !this.isLevelComplete) {
+          // If level is complete, keep the final frame of DUCK_LAND animation and emit completion
+          if (this.isLevelComplete) {
+            if (!this.landingAnimationEventEmitted) {
+              this.landingAnimationEventEmitted = true;
+              this.emit("landingAnimationComplete");
+            }
+          } else if (this.isGrounded) {
             if (this.leftIsDown || this.rightIsDown) {
               this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
             } else {
@@ -461,6 +467,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
 
   public finishLevel() {
     this.isLevelComplete = true;
+    this.landingAnimationEventEmitted = false;
     this.setVelocityX(0);
     if (this.isInBarrel) {
       this.exitBarrel();
@@ -478,6 +485,37 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
         this.isPlayingLandAnimation = false;
         // Keep the final frame of the landing animation
+        if (!this.landingAnimationEventEmitted) {
+          this.landingAnimationEventEmitted = true;
+          this.emit("landingAnimationComplete");
+        }
+      });
+    } else if (!this.isGrounded) {
+      // Player is in the air, wait for them to land first
+      this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+        if (this.isGrounded && this.isPlayingLandAnimation) {
+          // Wait for landing animation to complete
+          this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+            if (!this.landingAnimationEventEmitted) {
+              this.landingAnimationEventEmitted = true;
+              this.emit("landingAnimationComplete");
+            }
+          });
+        } else {
+          // If we somehow didn't get a landing animation, still continue
+          if (!this.landingAnimationEventEmitted) {
+            this.landingAnimationEventEmitted = true;
+            this.emit("landingAnimationComplete");
+          }
+        }
+      });
+    } else {
+      // Edge case: already grounded but something prevented landing animation
+      this.scene.time.delayedCall(100, () => {
+        if (!this.landingAnimationEventEmitted) {
+          this.landingAnimationEventEmitted = true;
+          this.emit("landingAnimationComplete");
+        }
       });
     }
   }

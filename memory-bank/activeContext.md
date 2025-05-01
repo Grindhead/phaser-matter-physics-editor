@@ -2,10 +2,7 @@
 
 ## Current Focus
 
-- Begin development of the core editor application (original project goal):
-  - Set up the editor UI framework.
-  - Implement Matter.js shape creation and manipulation.
-  - Build export functionality for Phaser projects.
+- The core gameplay features are complete. Awaiting further instructions or definition of the next phase.
 
 ## Recent Changes
 
@@ -68,12 +65,7 @@
 
 ## Next Steps
 
-- **Begin editor application development:**
-  - Create a basic UI layout for the editor.
-  - Implement Matter.js shape creation tools.
-  - Add physics property editing capabilities.
-  - Develop scene export functionality.
-  - Build constraint creation and editing tools.
+- Project goals achieved for the core game implementation. Awaiting further instructions.
 
 ## Active Decisions
 

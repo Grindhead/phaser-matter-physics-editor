@@ -22,6 +22,9 @@
   - Barrel substitution for impassable gaps refined.
   - Strategic crate placement specifically near walls based on jump necessity.
   - Debug visualization for wall and crate placement.
+- Cool landing animation for level completion implemented.
+- Player sprite rendered in front of finish line (proper depth sorting).
+- Increased enemy density and level length for greater challenge.
 
 ## What's Left to Build
 
@@ -33,9 +36,6 @@
   - Multiple dynamic death zones (500px below platforms).
   - Box respawning on restart.
   - Crate destruction in death zones.
-  - Increase enemy density/level length & refine difficulty curve.
-  - Level completion "cool landing" animation implementation.
-  - Player/Finish line depth sorting implementation.
   - Prevent 'fx_land' animation when collecting a coin on landing.
 
 ## Current Status
@@ -52,3 +52,4 @@
 - Evolution of level generation strategy: from randomly placed vertical walls to strategically positioned walls at platform edges, improving navigation and game flow.
 - Evolution of crate placement: from random placement to strategic positioning specifically near walls to help players climb.
 - Addition of debug visualization to verify correct object placement during level generation.
+- Enhanced difficulty curve by increasing enemy density and level length, providing a more challenging experience while maintaining playability.

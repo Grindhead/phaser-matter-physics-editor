@@ -8,13 +8,13 @@
   - Implement multiple, dynamic death zone colliders.
   - Ensure boxes respawn on level restart.
   - Implement crate destruction upon hitting a death zone.
-  - Increase enemy density and level length, refine placement.
-  - Implement the "cool landing" animation for level completion.
-  - Ensure player sprite renders in front of the finish line.
   - Implement conditional logic for the 'fx_land' animation.
 
 ## Recent Changes
 
+- **Implemented Cool Landing Animation for Level Completion:** Added a dedicated animation that plays when the player completes a level, giving a more satisfying finish.
+- **Ensured Player Renders in Front of Finish Line:** Set proper depth values to ensure the player sprite (depth 10) always renders in front of the finish line (depth 5).
+- **Increased Enemy Density and Level Length:** Modified level generation parameters to increase the number of platforms and enemies per level, creating a more challenging experience.
 - **Refined Crate Placement Logic:** Updated `LevelGenerator.ts` (`placeStrategicCratesNearWalls`) to only place crates when the vertical jump distance to clear the wall exceeds the player's base jump height, considering small/big crate heights. Removed redundant crate placement from `itemPlacementHelper.ts`.
 - **Refined Level Generation Strategy:**
   - Fixed wall generation logic to correctly place vertical walls at platform edges.
@@ -50,9 +50,6 @@
   - Implement multiple, dynamic death zone colliders.
   - Ensure boxes respawn on level restart.
   - Implement crate destruction upon hitting a death zone.
-  - Increase enemy density and level length, refine placement.
-  - Implement the "cool landing" animation for level completion.
-  - Ensure player sprite renders in front of the finish line.
 - Implement Player-Barrel collision detection in `Game.ts::handleCollisionStart`.
 - Add `isInBarrel` state and related methods to `Player.ts`.
 
@@ -78,6 +75,8 @@
 - **Level Generation Logic:** Extend `LevelGenerator.ts` for walls and barrels.
 - **Crate Spawning Constraint:** No crates on the final platform.
 - **Crate Purpose and Placement:** Use for vertical navigation; require platform segment count >= 8.
+- **Depth Management:** Use consistent depth values for entities, with player (depth 10) always rendering above finish line (depth 5).
+- **Difficulty Curve:** Increase platform count and enemy density as level number increases, using multipliers to adjust generation parameters.
 
 ## Important Patterns & Preferences
 
@@ -108,6 +107,8 @@
 - Animation events/delays are crucial for interaction state sync.
 - Visual asset origins might not align with geometric centers.
 - Adding new generation features can introduce conflicts requiring explicit checks.
+- **Depth Management:** Setting appropriate depth values ensures correct visual layering of game objects, critical for maintaining the player's visibility during gameplay moments like level completion.
+- **Level Generation Tuning:** Adjusting generation parameters can significantly impact gameplay difficulty and flow. Using multipliers for platform count and enemy density creates a natural difficulty progression.
 
 ## Design Patterns
 

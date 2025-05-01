@@ -23,6 +23,8 @@ import {
   PLATFORM_SEGMENT_WIDTH,
   CRATE_BIG_HEIGHT,
   CRATE_SMALL_HEIGHT,
+  LEVEL_LENGTH_MULTIPLIER,
+  ENEMY_DENSITY_MULTIPLIER,
 } from "./LevelGenerationConfig";
 import { WORLD_HEIGHT } from "../constants";
 import { setTotalCoinsInLevel } from "../helpers/coinManager";
@@ -271,11 +273,6 @@ export class LevelGenerator {
       }
     }
 
-    // After all platforms are placed, add vertical walls at the end of platforms
-    // that lead to higher platforms
-    console.log(
-      `Generated ${platformPositions.length} platforms, checking for wall placement...`
-    );
     this.addVerticalWallsAtPlatformEdges(platformPositions);
 
     // --- Post-Generation Item Placement ---
@@ -285,9 +282,6 @@ export class LevelGenerator {
     // Exclude first two platforms from item placement ONLY on level 1
     let finalItemPlacementPlatforms = [...itemPlacementPlatforms]; // Copy the list
     if (this.levelNumber === 1 && this.platforms.length >= 3) {
-      // platforms[0] is the start platform (already excluded)
-      // platforms[1] is the first platform after start
-      // platforms[2] is the second platform after start
       const firstEligible = this.platforms[1];
       const secondEligible = this.platforms[2];
       finalItemPlacementPlatforms = finalItemPlacementPlatforms.filter(
@@ -321,10 +315,20 @@ export class LevelGenerator {
   private static calculateLevelGenerationParams(
     levelNumber: number
   ): LevelGenerationParams {
-    const minPlatforms = 10 + levelNumber;
-    const maxPlatforms = 15 + levelNumber;
+    // Increase base platform counts by the level length multiplier
+    const minPlatforms = Math.floor(
+      (10 + levelNumber) * LEVEL_LENGTH_MULTIPLIER
+    );
+    const maxPlatforms = Math.floor(
+      (15 + levelNumber) * LEVEL_LENGTH_MULTIPLIER
+    );
     const requiredCoins = 100;
-    const enemyProbability = 0.3 + Math.min(0.3, levelNumber * 0.02);
+
+    // Increase enemy probability with the enemy density multiplier
+    const enemyProbability = Math.min(
+      0.8,
+      (0.3 + Math.min(0.3, levelNumber * 0.02)) * ENEMY_DENSITY_MULTIPLIER
+    );
     const crateProbability = 0.25 + Math.min(0.2, levelNumber * 0.01);
     const barrelProbability = 0.15 + Math.min(0.1, levelNumber * 0.01);
 
@@ -597,13 +601,6 @@ export class LevelGenerator {
       wall: Platform;
     }[] = [];
 
-    console.log(
-      `Processing ${sortedPlatforms.length} platforms for wall placement`
-    );
-
-    // First check if any platforms have significant height differences (removed for clarity)
-    // Forcing test wall removed
-
     // Only process platform pairs where we can potentially place walls
     for (let i = 0; i < sortedPlatforms.length - 1; i++) {
       const currentPlatform = sortedPlatforms[i].platform;
@@ -611,7 +608,6 @@ export class LevelGenerator {
 
       // Skip if either platform is vertical (avoid placing walls next to walls)
       if (currentPlatform.isVertical || nextPlatform.isVertical) {
-        console.log(`Skipping pair ${i} - one platform is already vertical`);
         continue;
       }
 
@@ -624,10 +620,6 @@ export class LevelGenerator {
       // In Phaser, lower Y values are higher on screen
       // So nextBounds.top < currentBounds.top means the next platform is higher
       const heightDifference = nextBounds.top - currentBounds.top;
-
-      console.log(
-        `Platform pair ${i}: gap=${gap}, heightDiff=${heightDifference}, MAX_JUMP_HEIGHT_UP=${MAX_JUMP_HEIGHT_UP}`
-      );
 
       // Only place a wall if there is significant height difference and reasonable gap
       // heightDifference < 0 means the next platform is higher (smaller Y value is higher in Phaser)
@@ -653,10 +645,6 @@ export class LevelGenerator {
         // Center of wall should be at: current platform top - (wall height/2)
         // This positions the bottom of the wall at the current platform level
         const wallY = currentBounds.top - wallTotalHeight / 2;
-
-        console.log(
-          `Placing wall at platform ${i}: heightDiff=${heightDifference}, wallHeight=${wallHeight}, wallX=${wallX}, wallY=${wallY}`
-        );
 
         // Create the wall and make sure it's used
         const wall = this.createVerticalWall(
@@ -684,18 +672,8 @@ export class LevelGenerator {
             wallTotalHeight
           );
         }
-      } else {
-        console.log(
-          `Not placing wall between platforms ${i} and ${
-            i + 1
-          }: conditions not met`
-        );
       }
     }
-
-    console.log(
-      `Finished wall placement. Placed ${wallPositions.length} walls.`
-    );
 
     // Now place crates strategically near walls
     this.placeStrategicCratesNearWalls(wallPositions);
@@ -720,8 +698,6 @@ export class LevelGenerator {
       return;
     }
 
-    console.log(`Placing crates near ${wallPositions.length} walls`);
-
     // Track platforms that have crates placed on them
     const platformsWithCrates = new Set<Platform>();
     let cratesPlacedCount = 0; // Keep track of actual crates placed
@@ -732,9 +708,6 @@ export class LevelGenerator {
 
       // Skip if platform already has a crate (redundant check now, but safe)
       if (platformsWithCrates.has(platform)) {
-        console.log(
-          `Skipping wall ${i} check - platform already assigned a crate`
-        );
         continue;
       }
 
@@ -752,41 +725,13 @@ export class LevelGenerator {
       // Required jump = StartY - EndY
       const requiredVerticalJump = platformTopY - wallTopY;
 
-      console.log(
-        `Wall ${i}: PlatformTopY=${platformTopY.toFixed(
-          2
-        )}, WallTopY=${wallTopY.toFixed(
-          2
-        )}, RequiredJump=${requiredVerticalJump.toFixed(2)}`
-      );
-      console.log(
-        `  - MaxJump=${MAX_JUMP_HEIGHT_UP}, +SmallCrate=${(
-          MAX_JUMP_HEIGHT_UP + CRATE_SMALL_HEIGHT
-        ).toFixed(2)}, +BigCrate=${(
-          MAX_JUMP_HEIGHT_UP + CRATE_BIG_HEIGHT
-        ).toFixed(2)}`
-      );
-      console.log(
-        `  - Wall object: ${
-          wallPos.wall.isVertical ? "Vertical" : "Horizontal"
-        }`
-      );
-
       let crateToPlace: CrateSmall | CrateBig | null = null;
       let placeX = 0;
       let placeY = 0;
       let crateHeight = 0;
 
-      // Determine if a crate is needed and which type
-      if (requiredVerticalJump <= MAX_JUMP_HEIGHT_UP) {
-        // No crate needed, player can make the jump
-        console.log(`  - Crate not needed for wall ${i}.`);
-      } else if (
-        requiredVerticalJump <=
-        MAX_JUMP_HEIGHT_UP + CRATE_SMALL_HEIGHT
-      ) {
+      if (requiredVerticalJump <= MAX_JUMP_HEIGHT_UP + CRATE_SMALL_HEIGHT) {
         // Small crate is sufficient
-        console.log(`  - Small crate needed for wall ${i}.`);
         crateHeight = CRATE_SMALL_HEIGHT;
         placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
         placeY = platformBounds.top - crateHeight / 2;
@@ -796,19 +741,12 @@ export class LevelGenerator {
         MAX_JUMP_HEIGHT_UP + CRATE_BIG_HEIGHT
       ) {
         // Big crate is needed
-        console.log(`  - Big crate needed for wall ${i}.`);
+
         crateHeight = CRATE_BIG_HEIGHT;
         placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
         placeY = platformBounds.top - crateHeight / 2;
         crateToPlace = new CrateBig(this.scene, placeX, placeY);
       } else {
-        // Wall is too high even with a big crate - place big crate anyway?
-        // Or potentially log an error/warning about impossible jump
-        console.warn(
-          `  - Wall ${i} might be too high (${requiredVerticalJump.toFixed(
-            2
-          )}) even with a big crate! Placing big crate.`
-        );
         crateHeight = CRATE_BIG_HEIGHT;
         placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
         placeY = platformBounds.top - crateHeight / 2;
@@ -835,9 +773,6 @@ export class LevelGenerator {
         }
       }
     }
-
-    // Report on crate placement
-    console.log(`Placed ${cratesPlacedCount} crates near walls`); // Use actual count
   }
 
   /**

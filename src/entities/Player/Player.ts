@@ -83,9 +83,11 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       return;
     }
 
-    if (this.getVelocity().x < 0) {
+    // Add a small threshold for velocity to prevent flipping when colliding with walls
+    const velocityThreshold = 0.1;
+    if (this.getVelocity().x < -velocityThreshold) {
       this.flipX = true;
-    } else if (this.getVelocity().x > 0) {
+    } else if (this.getVelocity().x > velocityThreshold) {
       this.flipX = false;
     }
 

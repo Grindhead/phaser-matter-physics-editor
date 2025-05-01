@@ -154,6 +154,11 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     ) {
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
     } else if (this.isGrounded) {
+      if (this.isPlayingLandAnimation) {
+        // Skip animation changes if we're playing the landing animation
+        return;
+      }
+
       if (this.isNearEdge && !this.leftIsDown && !this.rightIsDown) {
         // Play wobble animation when near edge and not moving
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_WOBBLE);
@@ -255,6 +260,26 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       this.currentPlatformBounds = null;
       // Play landing effect only if newly grounded
       new FXLand(this.scene, this.x, this.getBounds().bottom);
+
+      // Play landing animation only after barrel jump or level completion
+      if (
+        !this.isPlayingLandAnimation &&
+        (this.recentlyExitedBarrel || this.isLevelComplete)
+      ) {
+        this.isPlayingLandAnimation = true;
+        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, true);
+        this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+          this.isPlayingLandAnimation = false;
+          if (this.isGrounded) {
+            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE);
+          }
+        });
+
+        // Reset the barrel exit flag after landing animation starts
+        if (this.recentlyExitedBarrel) {
+          this.recentlyExitedBarrel = false;
+        }
+      }
     }
   }
 

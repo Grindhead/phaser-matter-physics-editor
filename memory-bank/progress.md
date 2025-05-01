@@ -20,7 +20,7 @@
   - Vertical walls (using rotated platforms) implemented at the end of platforms to help reach higher platforms.
   - Wall placement algorithm improved with correct positioning and height calculations.
   - Barrel substitution for impassable gaps refined.
-  - Strategic crate placement specifically near walls to help players climb.
+  - Strategic crate placement specifically near walls based on jump necessity.
   - Debug visualization for wall and crate placement.
 
 ## What's Left to Build

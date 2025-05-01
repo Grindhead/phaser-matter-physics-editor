@@ -4,11 +4,14 @@ import { isPlayerBody } from "../../lib/helpers/isPlayerBody";
 import { FXLand } from "../fx-land/FxLand";
 import { Barrel } from "../Barrel/Barrel";
 import { PLAYER_ANIMATION_KEYS, PLAYER_ANIMATIONS } from "./playerAnimations";
+import { Platform } from "../Platforms/Platform";
 
 const JUMP_VELOCITY = -12;
 const WALK_VELOCITY = 3;
 const BARREL_LAUNCH_VELOCITY = 14;
 const EDGE_DETECTION_DISTANCE = 15; // Distance from edge to trigger wobble
+const VERTICAL_COLLISION_NORMAL_THRESHOLD = 0.8; // Min Y normal component to count as top/bottom collision
+
 export class Player extends Phaser.Physics.Matter.Sprite {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<string, Phaser.Input.Keyboard.Key>;
@@ -122,10 +125,16 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       }
 
       if (this.isGrounded && !this.leftIsDown && !this.rightIsDown) {
-        this.setVelocity(0, 0);
+        this.setVelocity(0, 0); // Stop horizontal movement when idle on ground
+      } else if (!this.isGrounded && !this.leftIsDown && !this.rightIsDown) {
+        // Allow slight air control if not touching wall
+        // Keep existing velocity or slightly dampen?
+        // For now, do nothing extra - natural air physics apply
       }
 
+      // --- Modified Jump Logic --- START
       if (this.upIsDown && !this.isInBarrel && this.isGrounded) {
+        // Standard ground jump
         this.setVelocityY(JUMP_VELOCITY);
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_JUMP, true);
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
@@ -133,8 +142,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
             this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL, true);
           }
         });
-        return;
+        return; // Exit update after jump
       }
+      // --- Modified Jump Logic --- END
     }
 
     if (
@@ -225,98 +235,87 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private handleCollisionStart(
     event: Phaser.Physics.Matter.Events.CollisionStartEvent
   ) {
-    for (const { bodyA, bodyB } of event.pairs) {
-      if (isPlayerBody(bodyA) && isGroundBody(bodyB)) {
-        this.handleLanding(bodyB);
-      } else if (isPlayerBody(bodyB) && isGroundBody(bodyA)) {
-        this.handleLanding(bodyA);
+    this.isGrounded = false; // Reset grounded state, check contacts below
+
+    for (const pair of event.pairs) {
+      const { bodyA, bodyB } = pair;
+      // Use processCollision to handle different body types
+      if (isPlayerBody(bodyA)) {
+        this.processCollision(bodyB, pair, true); // true for start
+      } else if (isPlayerBody(bodyB)) {
+        this.processCollision(bodyA, pair, true); // true for start
       }
     }
 
+    // Update final state based on contacts found
     this.isGrounded = this.groundContacts.size > 0;
 
-    // Reset platform bounds when landing on a new platform
-    this.currentPlatformBounds = null;
-
+    // Reset platform bounds only if landing on new ground
     if (this.isGrounded) {
+      this.currentPlatformBounds = null;
+      // Play landing effect only if newly grounded
       new FXLand(this.scene, this.x, this.getBounds().bottom);
     }
-  }
-
-  private handleLanding(target: MatterJS.BodyType) {
-    this.groundContacts.add(target);
-
-    // Update platform bounds when landing
-    if (target && target.bounds) {
-      const { min, max } = target.bounds;
-      this.currentPlatformBounds = { left: min.x, right: max.x };
-    }
-
-    if (this.isGrounded) {
-      return;
-    }
-
-    if (this.recentlyExitedBarrel) {
-      this.isPlayingLandAnimation = true;
-      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, true);
-      this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-        this.isPlayingLandAnimation = false;
-        if (!this.leftIsDown && !this.rightIsDown) {
-          // Check if near edge after landing animation completes
-          this.checkIfNearEdge();
-          if (this.isNearEdge) {
-            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_WOBBLE, false);
-            // Set flipX based on which edge we're near
-            if (this.isNearLeftEdge && !this.isNearRightEdge) {
-              this.flipX = true; // Face left at left edge
-            } else if (this.isNearRightEdge && !this.isNearLeftEdge) {
-              this.flipX = false; // Face right at right edge
-            }
-          } else {
-            this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-          }
-        }
-      });
-    } else if (
-      this.anims.currentAnim!.key !== PLAYER_ANIMATION_KEYS.DUCK_LAND
-    ) {
-      // Check if near edge when landing normally
-      this.checkIfNearEdge();
-      if (this.isNearEdge && !this.leftIsDown && !this.rightIsDown) {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_WOBBLE, false);
-        // Set flipX based on which edge we're near
-        if (this.isNearLeftEdge && !this.isNearRightEdge) {
-          this.flipX = true; // Face left at left edge
-        } else if (this.isNearRightEdge && !this.isNearLeftEdge) {
-          this.flipX = false; // Face right at right edge
-        }
-      } else {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-      }
-    }
-
-    this.recentlyExitedBarrel = false;
   }
 
   private handleCollisionEnd(
     event: Phaser.Physics.Matter.Events.CollisionEndEvent
   ) {
-    for (const { bodyA, bodyB } of event.pairs) {
-      if (isPlayerBody(bodyA) && isGroundBody(bodyB)) {
-        this.groundContacts.delete(bodyB);
-      } else if (isPlayerBody(bodyB) && isGroundBody(bodyA)) {
-        this.groundContacts.delete(bodyA);
+    for (const pair of event.pairs) {
+      const { bodyA, bodyB } = pair;
+      // Use processCollision to handle different body types
+      if (isPlayerBody(bodyA)) {
+        this.processCollision(bodyB, pair, false); // false for end
+      } else if (isPlayerBody(bodyB)) {
+        this.processCollision(bodyA, pair, false); // false for end
       }
     }
-
+    // Re-evaluate final state after removing contacts
     this.isGrounded = this.groundContacts.size > 0;
 
-    // Reset platform bounds if no longer grounded
+    // If no longer grounded, clear platform bounds
     if (!this.isGrounded) {
       this.currentPlatformBounds = null;
-      this.isNearEdge = false;
-      this.isNearLeftEdge = false;
-      this.isNearRightEdge = false;
+    }
+  }
+
+  // Re-introduced and modified collision processing logic
+  private processCollision(
+    otherBody: MatterJS.BodyType,
+    pair: Phaser.Types.Physics.Matter.MatterCollisionPair,
+    isStart: boolean // true for collisionstart, false for collisionend
+  ): void {
+    // Check for standard ground collision (uses the modified isGroundBody which excludes vertical walls)
+    if (isGroundBody(otherBody)) {
+      if (isStart) {
+        this.groundContacts.add(otherBody);
+      } else {
+        this.groundContacts.delete(otherBody);
+      }
+    }
+    // Check specifically for vertical walls to handle top landings
+    else if (
+      otherBody.gameObject &&
+      otherBody.gameObject instanceof Platform &&
+      otherBody.gameObject.isVertical
+    ) {
+      // Check collision normal - Is it a top/bottom collision?
+      // Normal Y close to -1 means landing on top
+      // Normal Y close to 1 means hitting bottom (not ground)
+      if (
+        pair.collision &&
+        pair.collision.normal.y < -VERTICAL_COLLISION_NORMAL_THRESHOLD
+      ) {
+        // Collision is on the top surface of the vertical wall
+        if (isStart) {
+          this.groundContacts.add(otherBody); // Treat wall top as ground
+        } else {
+          this.groundContacts.delete(otherBody);
+        }
+      } else {
+        // Collision is on the side or bottom of the vertical wall - NOT ground
+        // Do nothing here, don't add to groundContacts
+      }
     }
   }
 

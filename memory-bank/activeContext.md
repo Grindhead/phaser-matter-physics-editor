@@ -15,6 +15,7 @@
 
 ## Recent Changes
 
+- **Refined Crate Placement Logic:** Updated `LevelGenerator.ts` (`placeStrategicCratesNearWalls`) to only place crates when the vertical jump distance to clear the wall exceeds the player's base jump height, considering small/big crate heights. Removed redundant crate placement from `itemPlacementHelper.ts`.
 - **Refined Level Generation Strategy:**
   - Fixed wall generation logic to correctly place vertical walls at platform edges.
   - Improved wall positioning calculations for better gameplay accessibility.
@@ -83,11 +84,11 @@
 - Use PowerShell for file system operations on Windows.
 - Follow custom instructions regarding memory bank updates, planning, and communication style.
 - **Responsive UI:** Position UI relative to screen dimensions using `scene.scale.width/height` and `scene.scale.on('resize', ...)`.
-- **Mobile Touch Controls:** Implement via interactive `Image` objects (`setScrollFactor(0)`), using pointer events to set player state flags.
+- **Mobile Touch Controls:** On-screen touch buttons (implemented as interactive `Phaser.GameObjects.Image`) are displayed for movement and jump. Pointer events on these buttons update state flags in the `Player` entity.
 - **State Persistence Across Restarts:** Pass state explicitly via `scene.restart({ key: value })` and retrieve in `init(data)`.
 - **Event Listener Cleanup:** Remove listeners (`game.events.off`, `scene.events.off`) before scene restarts/object destruction.
 - **State Tracking during Generation:** Maintain state (e.g., occupied ranges) within generation loops.
-- **Collision Handling:** Leverage Matter.js collision events.
+- **Collision Handling:** Leverage Matter.js collision events (`collisionstart`, `collisionend`). `isGroundBody` helper excludes vertical walls. Player's `processCollision` uses collision normal (`pair.collision.normal.y < -threshold`) to identify top impacts on vertical walls and treat them as ground.
 - **Encapsulation:** Keep entity-specific logic within the entity's class.
 - **State Management:** Use state machines or flags within entities.
 - **Interaction Logic:** Coordinate state changes across interacting entities (e.g., Player, Barrel) using flags/methods.
@@ -102,7 +103,12 @@
 - **Debug Visualization Importance:** Visual feedback during level generation helps identify issues with placement algorithms.
 - **Orientation Handling:** `window.matchMedia` is effective; manage game instance creation/destruction carefully.
 - **Scene Restart Lifecycle:** Explicitly passing state via `restart(data)` is safer than reading potentially reset state in `create()`.
+- **Collision Handling:** Leverage Matter.js collision events (`collisionstart`, `collisionend`) and helper functions (`isPlayerBody`, `isGroundBody`) to manage player state (`isGrounded`). Check collision normals (`pair.collision.normal.y`) to differentiate top vs. side collisions on vertical walls.
 - Implementing interactive mechanics requires coordinating state across entities.
 - Animation events/delays are crucial for interaction state sync.
 - Visual asset origins might not align with geometric centers.
 - Adding new generation features can introduce conflicts requiring explicit checks.
+
+## Design Patterns
+
+(To be defined)

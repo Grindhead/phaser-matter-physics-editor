@@ -181,7 +181,7 @@ export class LevelGenerator {
       );
 
       // Calculate potential position and gaps for the *next* platform
-      const { nextX, nextY, dX, dY } = this.calculateNextPlatformPosition(
+      const { nextX, nextY, dX } = this.calculateNextPlatformPosition(
         { x: currentPlatformX, y: currentPlatformY },
         platformLength,
         lastPlatform,
@@ -390,11 +390,10 @@ export class LevelGenerator {
     platformLength: number,
     lastPlatform: Platform | null, // The platform we are generating *from*
     params: PlatformGenerationParams
-  ): { nextX: number; nextY: number; dX: number; dY: number } {
+  ): { nextX: number; nextY: number; dX: number } {
     let currentX = currentPos.x;
     let currentY = currentPos.y;
     let dX = 0;
-    let dY = 0;
 
     if (lastPlatform) {
       const lastPlatformBounds = lastPlatform.getBounds();
@@ -409,7 +408,10 @@ export class LevelGenerator {
       );
 
       // Generate the VERTICAL gap (center to center)
-      dY = this.prng.nextInt(params.minVerticalGap, params.maxVerticalGap + 1);
+      let dY = this.prng.nextInt(
+        params.minVerticalGap,
+        params.maxVerticalGap + 1
+      );
 
       // --- Ensure Minimum Absolute Vertical Gap --- (Keep this)
       if (Math.abs(dY) < MIN_ABS_VERTICAL_GAP) {
@@ -430,12 +432,10 @@ export class LevelGenerator {
       const minY = 100; // Prevent platforms too close to the top edge
       const maxY = WORLD_HEIGHT - 100; // Prevent platforms too close to the bottom
       currentY = Phaser.Math.Clamp(currentY, minY, maxY);
-      // Recalculate dY based on clamped Y for accurate reporting if needed
-      dY = currentY - lastPlatform.y;
     }
 
     // Return calculated potential position AND the potentially large dX
-    return { nextX: currentX, nextY: currentY, dX, dY };
+    return { nextX: currentX, nextY: currentY, dX };
   }
 
   /**
@@ -594,6 +594,7 @@ export class LevelGenerator {
       wallY: number;
       wallHeight: number;
       platformBelow: Platform;
+      wall: Platform;
     }[] = [];
 
     console.log(
@@ -657,6 +658,7 @@ export class LevelGenerator {
           `Placing wall at platform ${i}: heightDiff=${heightDifference}, wallHeight=${wallHeight}, wallX=${wallX}, wallY=${wallY}`
         );
 
+        // Create the wall and make sure it's used
         const wall = this.createVerticalWall(
           { x: wallX, y: wallY },
           wallHeight
@@ -668,6 +670,7 @@ export class LevelGenerator {
           wallY,
           wallHeight,
           platformBelow: currentPlatform, // The platform below the wall
+          wall, // Store a reference to the actual wall object as well
         });
 
         // Draw debug visualization only if debug is active
@@ -708,6 +711,7 @@ export class LevelGenerator {
       wallY: number;
       wallHeight: number;
       platformBelow: Platform;
+      wall: Platform;
     }[]
   ): void {
     // If no walls, no need for crates
@@ -761,6 +765,11 @@ export class LevelGenerator {
         ).toFixed(2)}, +BigCrate=${(
           MAX_JUMP_HEIGHT_UP + CRATE_BIG_HEIGHT
         ).toFixed(2)}`
+      );
+      console.log(
+        `  - Wall object: ${
+          wallPos.wall.isVertical ? "Vertical" : "Horizontal"
+        }`
       );
 
       let crateToPlace: CrateSmall | CrateBig | null = null;
@@ -845,8 +854,7 @@ export class LevelGenerator {
       this.prng,
       params,
       this.levelNumber,
-      this.enemies,
-      [] // Empty array for crates since we're placing them separately
+      this.enemies
     );
   }
 }

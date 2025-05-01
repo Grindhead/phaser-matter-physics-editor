@@ -10,6 +10,7 @@
 
 ## Recent Changes
 
+- **Implemented Immediate Game Start:** Removed any "click to play" state. The game now transitions directly to the main game scene after preloading assets.
 - **Adjusted Platform Visibility:** Modified level generation parameters (`LevelGenerator.ts`) to reduce the maximum potential vertical distance (`maxVerticalGap`) between platforms, ensuring platforms are generally kept within the player's view and preventing excessive "leaps of faith".
 - **Implemented Player-Barrel Interaction Logic:**
   - Added collision detection between Player and Barrel in `Game.ts::handleCollisionStart`.
@@ -59,6 +60,8 @@
 
 ## Active Decisions
 
+- **Immediate Start:** The game starts automatically after assets are loaded (e.g., `Preloader` scene transitions directly to `Game` scene).
+- **Display Message:** Show a simple message (e.g., "Please rotate your device to landscape mode") when in portrait orientation.
 - Asset filenames should be lowercase, use hyphens as separators, and follow the pattern `[description]-[framenumber].[extension]`.
 - **Vertical Walls:** Implement walls by placing standard platform sprites vertically (rotated 90 degrees).
 - **Barrel Substitution:** Identify gaps larger than `maxHorizontalGap` and replace the subsequent platform placement with a barrel placement. Ensure the barrel is positioned appropriately for a jump.

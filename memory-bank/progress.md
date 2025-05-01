@@ -15,6 +15,7 @@
 - Enemy Placement Restriction (Level 1, First 2 Platforms) Implemented.
 - Player-Barrel Interaction Logic (Collision Detection, Player State) Implemented.
 - Improved Platform Visibility (Reduced Max Y Distance).
+- Immediate Game Start (No Click-to-Play).
 
 ## What's Left to Build
 

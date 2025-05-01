@@ -14,6 +14,7 @@ Users will interact with a graphical interface representing the Phaser/Matter.js
 - Real-time feedback (potentially a simulation preview).
 - Streamlined workflow for exporting configurations.
 - Easy integration with existing Phaser projects.
+- Immediate Gameplay: The game should start automatically after loading, without requiring an initial click.
 
 ## Gameplay Enhancements (Derived from Feedback)
 

@@ -183,7 +183,8 @@ export class LevelGenerator {
       );
 
       // Calculate potential position and gaps for the *next* platform
-      const { nextX, nextY, dX } = this.calculateNextPlatformPosition(
+      // Use let for destructuring to allow modification later
+      let { nextX, nextY, dX } = this.calculateNextPlatformPosition(
         { x: currentPlatformX, y: currentPlatformY },
         platformLength,
         lastPlatform,
@@ -214,7 +215,6 @@ export class LevelGenerator {
 
         let overlaps = false;
         for (const range of this.bridgeBarrelRanges) {
-          // Use this.bridgeBarrelRanges
           if (
             newBarrelRange.start < range.end &&
             newBarrelRange.end > range.start
@@ -234,8 +234,26 @@ export class LevelGenerator {
           barrelY = Math.min(barrelY, WORLD_HEIGHT - BARREL_HEIGHT / 2 - 2);
 
           placeBridgeBarrel = true;
+        } else {
+          // Barrel placement failed due to overlap, clamp the gap
+          // Recalculate nextX based on the maximum allowed gap
+          const clampedDX = params.maxHorizontalGap;
+          const estimatedHalfWidth =
+            (platformLength * PLATFORM_SEGMENT_WIDTH) / 2;
+          nextX =
+            lastPlatform.getBounds().right + clampedDX + estimatedHalfWidth;
+          placeBridgeBarrel = false; // Ensure we place a normal platform
         }
+      } else if (dX > params.maxHorizontalGap) {
+        // dX exceeds max jump distance, but we are at the end or placing a wall
+        // Clamp the gap for the final platform placement
+        const clampedDX = params.maxHorizontalGap;
+        const estimatedHalfWidth =
+          (platformLength * PLATFORM_SEGMENT_WIDTH) / 2;
+        nextX = lastPlatform.getBounds().right + clampedDX + estimatedHalfWidth;
+        placeBridgeBarrel = false; // Ensure we place a normal platform
       }
+      // --- Barrel Substitution Logic --- END
 
       // --- Placement Decision ---
       if (shouldPlaceVerticalWall) {
@@ -246,22 +264,19 @@ export class LevelGenerator {
         this.bridgeBarrelRanges.push(newBarrelRange!); // Add range to tracker
 
         // Adjust position for NEXT iteration
+        // Important: Use the original oversized dX for barrel placement variety
         currentPlatformX =
-          barrelX +
-          this.prng.nextInt(
-            params.minHorizontalGap,
-            params.maxHorizontalGap + 1
-          );
+          lastPlatform.getBounds().right + dX + BARREL_WIDTH / 2; // Position relative to barrel end
 
         // Keep lastPlatform pointing to the platform *before* the barrel for next Y calculation
         // currentPlatformY is not updated here, will be recalculated next iteration relative to lastPlatform
       } else {
-        // --- Normal Platform Placement (or fallback from overlapping barrel) ---
+        // --- Normal Platform Placement (or fallback from overlapping/clamped barrel) ---
         // Check if this is the last platform
         const isLastPlatform = i === numPlatforms - 1;
 
         const platform = this.createPlatform(
-          { x: nextX, y: nextY },
+          { x: nextX, y: nextY }, // Use potentially clamped nextX
           platformLength,
           isLastPlatform ? -1 : i // Use -1 as a special index for the end platform
         );
@@ -277,7 +292,9 @@ export class LevelGenerator {
 
     // --- Post-Generation Item Placement ---
     // Create the finish point after the last platform/barrel logic
-    this.createFinishPoint(lastPlatform);
+    // Capture the reference to the true final horizontal platform before potentially adding walls
+    const finalGameplayPlatform = lastPlatform;
+    this.createFinishPoint(finalGameplayPlatform);
 
     // Exclude first two platforms from item placement ONLY on level 1
     let finalItemPlacementPlatforms = [...itemPlacementPlatforms]; // Copy the list
@@ -296,6 +313,8 @@ export class LevelGenerator {
     this.platforms.forEach((platform, index) => {
       const hasEnemy = this.platformHasEnemy(platform);
       const isInitialPlatform = index === 0; // First platform is the initial one
+      // Check if the current platform is the one the finish line was placed on
+      const isFinalPlatform = platform === finalGameplayPlatform;
 
       // If platform has no enemy and no crate, fully populate it with coins
       if (!hasEnemy && !platform.hasCrate) {
@@ -305,7 +324,8 @@ export class LevelGenerator {
           this.prng,
           this.coins,
           true, // fully populate flag
-          isInitialPlatform
+          isInitialPlatform,
+          isFinalPlatform
         );
       } else {
         // Otherwise, use normal coin placement
@@ -315,7 +335,8 @@ export class LevelGenerator {
           this.prng,
           this.coins,
           false,
-          isInitialPlatform
+          isInitialPlatform,
+          isFinalPlatform
         );
       }
     });
@@ -417,6 +438,9 @@ export class LevelGenerator {
     let currentX = currentPos.x;
     let currentY = currentPos.y;
     let dX = 0;
+    // Declare nextX and nextY with let to allow modification later
+    let nextX = currentX;
+    let nextY = currentY;
 
     if (lastPlatform) {
       const lastPlatformBounds = lastPlatform.getBounds();
@@ -447,18 +471,19 @@ export class LevelGenerator {
       }
 
       // Calculate the potential center X of the next platform based on generated dX
-      currentX = lastPlatformBounds.right + dX + estimatedHalfWidth;
+      // Assign to the variables declared with let
+      nextX = lastPlatformBounds.right + dX + estimatedHalfWidth;
       // Calculate the potential center Y of the next platform relative to the last
-      currentY = lastPlatform.y + dY;
+      nextY = lastPlatform.y + dY;
 
       // Clamp Y position to prevent going too high or low relative to world (Keep this)
       const minY = 100; // Prevent platforms too close to the top edge
       const maxY = WORLD_HEIGHT - 100; // Prevent platforms too close to the bottom
-      currentY = Phaser.Math.Clamp(currentY, minY, maxY);
+      nextY = Phaser.Math.Clamp(nextY, minY, maxY);
     }
 
     // Return calculated potential position AND the potentially large dX
-    return { nextX: currentX, nextY: currentY, dX };
+    return { nextX, nextY, dX };
   }
 
   /**

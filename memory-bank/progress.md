@@ -25,6 +25,10 @@
 - Cool landing animation for level completion implemented.
 - Player sprite rendered in front of finish line (proper depth sorting).
 - Increased enemy density and level length for greater challenge.
+- Corrected Coin Placement:
+  - No coins on the initial platform.
+  - `MIN_COIN_SPACING` is strictly enforced.
+  - Coins placed evenly without gaps.
 
 ## What's Left to Build
 
@@ -53,3 +57,4 @@
 - Evolution of crate placement: from random placement to strategic positioning specifically near walls to help players climb.
 - Addition of debug visualization to verify correct object placement during level generation.
 - Enhanced difficulty curve by increasing enemy density and level length, providing a more challenging experience while maintaining playability.
+- Refined coin placement logic to prevent placement on the initial platform and ensure consistent spacing.

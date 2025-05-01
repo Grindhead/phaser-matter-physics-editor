@@ -27,7 +27,8 @@ export function populatePlatformWithCoins(
   prng: SimplePRNG,
   coinsArray: Coin[],
   fullPopulate: boolean = false,
-  isInitialPlatform: boolean = false
+  isInitialPlatform: boolean = false,
+  isFinalPlatform: boolean = false
 ): number {
   const bounds = platform.getBounds();
   const platformWidth = bounds.width;
@@ -41,6 +42,11 @@ export function populatePlatformWithCoins(
   // Skip the initial platform where the player starts
   if (isInitialPlatform) {
     return 0; // No coins on the initial platform
+  }
+
+  // Skip the final platform
+  if (isFinalPlatform) {
+    return 0; // No coins on the final platform
   }
 
   // Use the actual MIN_COIN_SPACING for proper spacing

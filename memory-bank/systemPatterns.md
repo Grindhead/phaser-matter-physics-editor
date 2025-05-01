@@ -29,6 +29,7 @@
 - **Entity State Management:** Entities like Player track state through boolean flags (isGrounded, isInBarrel, etc.), which determine behavior and animations.
 - **Event-Driven Animation:** Animation transitions are triggered by events (collisions, level completion), with completion callbacks to manage subsequent state transitions.
 - **Collision Detection Strategy:** Uses Matter.js collision events and helper functions to categorize collisions (isPlayerBody, isGroundBody) and manage interaction logic.
+- **Conditional Generation Logic:** Helper functions accept context flags (e.g., `isInitialPlatform` in `populatePlatformWithCoins`) to apply specific rules during procedural generation.
 
 ## Component Relationships
 

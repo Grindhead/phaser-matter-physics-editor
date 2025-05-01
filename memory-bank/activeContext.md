@@ -12,6 +12,10 @@
 
 ## Recent Changes
 
+- **Fixed Coin Placement Logic:**
+  - Corrected coin spacing to strictly adhere to `MIN_COIN_SPACING`.
+  - Removed the `centerBuffer` logic that caused gaps in coin placement near platform centers.
+  - Prevented coins from being placed on the initial platform (`isInitialPlatform` flag added to `populatePlatformWithCoins`).
 - **Implemented Cool Landing Animation for Level Completion:** Added a dedicated animation that plays when the player completes a level, giving a more satisfying finish.
 - **Ensured Player Renders in Front of Finish Line:** Set proper depth values to ensure the player sprite (depth 10) always renders in front of the finish line (depth 5).
 - **Increased Enemy Density and Level Length:** Modified level generation parameters to increase the number of platforms and enemies per level, creating a more challenging experience.
@@ -55,6 +59,10 @@
 
 ## Active Decisions
 
+- **Coin Placement Rules:**
+  - No coins on the initial starting platform.
+  - Strictly enforce `MIN_COIN_SPACING` between coins.
+  - Place coins evenly across the eligible platform width (no center buffer gaps).
 - **Vertical Wall Placement Strategy:**
   - Walls now placed at the end of platforms leading to higher platforms.
   - Wall height calculated based on the vertical gap between platforms.
@@ -77,6 +85,7 @@
 - **Crate Purpose and Placement:** Use for vertical navigation; require platform segment count >= 8.
 - **Depth Management:** Use consistent depth values for entities, with player (depth 10) always rendering above finish line (depth 5).
 - **Difficulty Curve:** Increase platform count and enemy density as level number increases, using multipliers to adjust generation parameters.
+- **Passing Context Flags:** Use boolean flags (e.g., `isInitialPlatform`) passed into helper functions (`populatePlatformWithCoins`) to control conditional logic within generation/placement algorithms.
 
 ## Important Patterns & Preferences
 
@@ -97,6 +106,7 @@
 
 ## Learnings & Project Insights
 
+- **Level Generation Refinement:** Minor details like coin spacing and initial platform item placement significantly impact the perceived quality and fairness of procedurally generated levels.
 - **Wall Placement Physics:** Vertical wall position is critical for gameplay; center of wall should be positioned to make bottom align with platform and top extend above target height.
 - **Strategic Level Design:** Positioning vertical walls at platform edges and using crates for vertical navigation creates more deliberate paths through levels.
 - **Debug Visualization Importance:** Visual feedback during level generation helps identify issues with placement algorithms.

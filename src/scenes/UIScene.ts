@@ -52,7 +52,7 @@ export class UIScene extends Phaser.Scene {
       const gameScene = this.scene.get(SCENES.GAME);
       (gameScene as Phaser.Scene & { restartLevel: () => void }).restartLevel();
     });
-
+    console.log("hello photonstorm");
     // Listen for data updates from the Game scene
     const gameScene = this.scene.get(SCENES.GAME);
     if (gameScene) {

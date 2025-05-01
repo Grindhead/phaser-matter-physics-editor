@@ -243,10 +243,13 @@ export class LevelGenerator {
         // currentPlatformY is not updated here, will be recalculated next iteration relative to lastPlatform
       } else {
         // --- Normal Platform Placement (or fallback from overlapping barrel) ---
+        // Check if this is the last platform
+        const isLastPlatform = i === numPlatforms - 1;
+
         const platform = this.createPlatform(
           { x: nextX, y: nextY },
           platformLength,
-          i
+          isLastPlatform ? -1 : i // Use -1 as a special index for the end platform
         );
         itemPlacementPlatforms.push(platform); // Add eligible platforms for items
         lastPlatform = platform;
@@ -459,12 +462,13 @@ export class LevelGenerator {
     length: number,
     index: number
   ): Platform {
-    // Determine platform type based on index (only for key generation)
-    // NOTE: This logic assumes numPlatforms is known or the last platform index is calculated elsewhere
-    //       If placing finish point depends on 'lastPlatform', index might not correspond perfectly to 'end'.
-    //       For simplicity here, we just use index 0 for start. A more robust 'type' might be needed.
-    const platformType = index === 0 ? "start" : "middle"; // Simplified: Assume only start and middle for now
-    // TODO: Need a way to identify the 'end' platform reliably if its texture differs
+    // Determine platform type based on index
+    let platformType = "middle";
+    if (index === 0) {
+      platformType = "start";
+    } else if (index === -1) {
+      platformType = "end";
+    }
 
     // Generate a unique key based on type and length for texture caching
     const platformKey = `platform-${platformType}-${length}`;

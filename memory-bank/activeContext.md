@@ -2,15 +2,36 @@
 
 ## Current Focus
 
-- Implement gameplay enhancements:
-  - Add keyboard input (Space/Enter) for restarting.
-  - Combine game over dismissal and restart into a single action.
-  - Implement multiple, dynamic death zone colliders.
-  - Ensure boxes respawn on level restart.
-  - Implement crate destruction upon hitting a death zone.
-  - Implement conditional logic for the 'fx_land' animation.
+- Begin development of the core editor application (original project goal):
+  - Set up the editor UI framework.
+  - Implement Matter.js shape creation and manipulation.
+  - Build export functionality for Phaser projects.
 
 ## Recent Changes
+
+- **Implemented Single-Input Restart:**
+
+  - Combined game over dismissal and restart into a single automatic action with a delay.
+  - Game now automatically restarts after player death or level completion.
+  - Removed the need for explicit player input to restart, creating a smoother gameplay flow.
+
+- **Implemented Multiple Dynamic Death Zones:**
+
+  - Added death zone colliders positioned 500px below platforms at various points throughout the level.
+  - For longer levels, multiple death zones are created with appropriate spacing and overlap.
+  - This reduces the time players fall after a mistake before the level restarts.
+
+- **Implemented Box Respawning on Restart:**
+
+  - Added tracking of original crate positions in `Game.ts`.
+  - On level restart, all crates are respawned at their original positions.
+  - Utilizes the `respawnCrates` method in both `Game.ts` and `LevelGenerator.ts`.
+
+- **Implemented Crate Destruction in Death Zones:**
+
+  - Crates now get destroyed when they hit a death zone collider.
+  - Implemented in the `checkFallSensorCollision` method in `Game.ts`.
+  - Properly removes crates from both the physics world and the LevelGenerator's crate array.
 
 - **Fixed Coin Placement Logic:**
   - Corrected coin spacing to strictly adhere to `MIN_COIN_SPACING`.
@@ -28,8 +49,6 @@
   - Added forced test wall when no natural height differences are found.
   - Modified crate placement to only position crates where needed for jumping up walls.
   - Added debug visualization for walls and crates during level generation.
-- **Improved Level Generation Strategy:**
-  - Modified vertical wall placement to position walls at the end of platforms that lead to higher platforms.
   - Enhanced crate placement logic to strategically position crates to help players reach higher platforms.
 - **Implemented Vertical Walls:** Added support for vertical wall generation using rotated platform sprites. Updated the Platform class, platformBuilder, and LevelGenerator to handle vertical orientation.
 - **Enhanced Barrel Substitution Logic:** Refined barrel substitution to work properly with vertical walls and prevent conflicting placements.
@@ -45,20 +64,31 @@
   - Implemented on-screen mobile controls.
   - Tested successfully across various resolutions.
 - **Resolved Enemy Positioning:** Fixed spawning issues related to platform length (`MIN_PLATFORM_LENGTH_WITH_ENEMY` adjusted).
+- **Improved Crate Generation Variety:** Modified `placeStrategicCratesNearWalls` in `LevelGenerator.ts` to add randomness (60/40 split) when choosing between small/big crates if both are viable. Added `placeAdditionalRandomCrates` method to scatter additional random crates (50/50 split) on eligible platforms, ensuring both `CrateSmall` and `CrateBig` are used and resolving unused import warning.
 
 ## Next Steps
 
-- Test the updated level generation thoroughly.
-- **Implement Gameplay Enhancements:**
-  - Single-input restart (dismiss + start).
-  - Multiple dynamic death zones (500px below platforms).
-  - Ensure boxes respawn on level restart.
-  - Implement crate destruction upon hitting a death zone.
-- Implement Player-Barrel collision detection in `Game.ts::handleCollisionStart`.
-- Add `isInBarrel` state and related methods to `Player.ts`.
+- **Begin editor application development:**
+  - Create a basic UI layout for the editor.
+  - Implement Matter.js shape creation tools.
+  - Add physics property editing capabilities.
+  - Develop scene export functionality.
+  - Build constraint creation and editing tools.
 
 ## Active Decisions
 
+- **Automatic Restart Flow:**
+  - Restart occurs immediately after game over or level completion without any delay.
+  - Maintain the keyboard shortcuts (Space/Enter) for optional manual restart during gameplay.
+  - Remove the intermediate UI step, creating a smoother gameplay experience.
+- **Multiple Death Zone Strategy:**
+  - Create segmented death zones for levels wider than 2000px.
+  - Use overlap margin (200px) to ensure no gaps between death zone segments.
+  - Position death zones 500px below the lowest platform in each section.
+- **Crate Management:**
+  - Store original crate positions at level generation time for respawning.
+  - Use LevelGenerator's `respawnCrates` method to recreate crates with correct type and position on restart.
+  - Destroy crates immediately upon collision with death zones.
 - **Coin Placement Rules:**
   - No coins on the initial starting platform.
   - Strictly enforce `MIN_COIN_SPACING` between coins.
@@ -69,9 +99,9 @@
   - Wall position aligned to ensure proper access from the lower platform.
   - Debug visualization added to verify proper wall placement.
 - **Strategic Crate Placement:**
-  - Crates only placed near walls to help players climb.
-  - Crate type (big/small) selected based on wall height.
-  - Crate positioned on platform edge near wall.
+  - Crates placed near walls to help players climb, with type (big/small) selected based on wall height and added randomness (60/40) if both are viable.
+  - Additional random crates (50/50 small/big) placed on other eligible platforms to increase variety.
+  - Crate positioned on platform edge near wall or randomly within platform bounds for additional crates.
 - **Immediate Start:** Game starts automatically after asset loading.
 - **Orientation Handling:** Display message in portrait mode; use `window.matchMedia`.
 - **Asset Naming:** Use lowercase, hyphens: `[description]-[framenumber].[extension]`.
@@ -101,14 +131,18 @@
 - **State Management:** Use state machines or flags within entities.
 - **Interaction Logic:** Coordinate state changes across interacting entities (e.g., Player, Barrel) using flags/methods.
 - **Conditional Animation:** Check game state (e.g., coin collection during landing) before playing/suppressing animations (e.g., `fx_land`).
-- **Level Design Strategy:** Place vertical walls at platform edges to help reach higher platforms; position crates to help vertical navigation.
+- **Level Design Strategy:** Place vertical walls at platform edges to help reach higher platforms; position crates strategically near walls and randomly elsewhere to help vertical navigation and add variety.
 - **Debug Visualization:** For complex procedural level generation, add debug visualization to verify correct placement.
+- **Delayed Actions:** Use Phaser's time events (`scene.time.delayedCall`) for delayed transitions instead of immediate state changes.
 
 ## Learnings & Project Insights
 
+- **Game Flow Improvement:** Removing intermediary UI steps and implementing auto-restart creates a smoother, more engaging player experience with less interruption.
+- **Death Zone Distribution:** Strategic placement of multiple, overlapping death zones along a level improves player experience by reducing wait time after mistakes without adding unnecessary complexity to the physics system.
+- **State Management for Respawning:** Storing original positions of dynamic objects (crates) at generation time enables clean respawning on level restart.
 - **Level Generation Refinement:** Minor details like coin spacing and initial platform item placement significantly impact the perceived quality and fairness of procedurally generated levels.
 - **Wall Placement Physics:** Vertical wall position is critical for gameplay; center of wall should be positioned to make bottom align with platform and top extend above target height.
-- **Strategic Level Design:** Positioning vertical walls at platform edges and using crates for vertical navigation creates more deliberate paths through levels.
+- **Strategic Level Design:** Positioning vertical walls at platform edges and using crates (both strategically placed near walls and randomly placed elsewhere) for vertical navigation creates more deliberate paths and variety through levels.
 - **Debug Visualization Importance:** Visual feedback during level generation helps identify issues with placement algorithms.
 - **Orientation Handling:** `window.matchMedia` is effective; manage game instance creation/destruction carefully.
 - **Scene Restart Lifecycle:** Explicitly passing state via `restart(data)` is safer than reading potentially reset state in `create()`.
@@ -119,6 +153,7 @@
 - Adding new generation features can introduce conflicts requiring explicit checks.
 - **Depth Management:** Setting appropriate depth values ensures correct visual layering of game objects, critical for maintaining the player's visibility during gameplay moments like level completion.
 - **Level Generation Tuning:** Adjusting generation parameters can significantly impact gameplay difficulty and flow. Using multipliers for platform count and enemy density creates a natural difficulty progression.
+- **Automated Game Flow:** Using immediate transitions between game states (like instant restart after game over) creates a fluid, uninterrupted experience while still allowing manual intervention (keyboard shortcuts) during normal gameplay.
 
 ## Design Patterns
 

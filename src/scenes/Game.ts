@@ -36,7 +36,6 @@ import { Barrel } from "../entities/Barrel/Barrel";
 import { LevelGenerator } from "../lib/level-generation/LevelGenerator";
 import { ParallaxManager } from "../lib/parralax/ParallaxManager";
 import { CrateBig } from "../entities/CrateBig/CrateBig";
-import { CrateSmall } from "../entities/CrateSmall/CrateSmall";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -264,72 +263,6 @@ export class Game extends Scene {
         },
       }
     );
-  }
-
-  /**
-   * Shows a UI overlay based on the current game state
-   *
-   * @param state - The game state determining which UI to show
-   * @param fadeIn - Whether to fade in the UI (default: true)
-   */
-  private showUIOverlay(state: GameStateType, fadeIn: boolean = true): void {
-    // Clean up any existing overlay
-    if (this.overlayButton) {
-      this.overlayButton.off("pointerup"); // Explicitly remove the listener
-      this.overlayButton.destroy();
-      this.overlayButton = undefined;
-    }
-
-    // If we're transitioning to PLAYING state, don't show an overlay
-    if (state === GAME_STATE.PLAYING) {
-      this.gameState = state;
-      return;
-    }
-
-    // Use fixed screen coordinates instead of camera-relative coordinates
-    const centerX = this.game.canvas.width / 2;
-    const centerY = this.game.canvas.height / 2;
-
-    let texture: string;
-    let callback: () => void;
-
-    switch (state) {
-      case GAME_STATE.GAME_OVER:
-        texture = "ui/game-over.png";
-        callback = () => {
-          if (!this.restartTriggered) this.restartLevel();
-        };
-        break;
-      case GAME_STATE.LEVEL_COMPLETE:
-        texture = "ui/continue.png"; // Use continue texture for level complete
-        callback = () => {
-          if (!this.restartTriggered) this.restartLevel();
-        };
-        break;
-      default:
-        return;
-    }
-
-    // Create the overlay at fixed screen coordinates
-    this.overlayButton = this.add
-      .image(centerX, centerY, TEXTURE_ATLAS, texture)
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(1000) // Ensure it's on top of everything
-      .setInteractive({ useHandCursor: true });
-
-    if (fadeIn) {
-      this.overlayButton.setAlpha(0);
-      this.tweens.add({
-        targets: this.overlayButton,
-        alpha: 1,
-        duration: 400,
-        ease: "Power2",
-      });
-    }
-
-    this.overlayButton.on("pointerup", callback);
-    this.gameState = state;
   }
 
   /**
@@ -605,7 +538,10 @@ export class Game extends Scene {
     this.enemies.forEach((enemy) => enemy.handleGameOver());
 
     this.cameraManager.handleZoomIn();
-    this.showUIOverlay(GAME_STATE.GAME_OVER);
+
+    // Restart immediately without delay
+    this.gameState = GAME_STATE.GAME_OVER;
+    this.restartLevel();
   }
 
   private createMobileControls() {
@@ -679,7 +615,10 @@ export class Game extends Scene {
     addLevel(1);
     this.enemies.forEach((enemy) => enemy.handleGameOver());
     this.cameraManager.handleZoomIn();
-    this.showUIOverlay(GAME_STATE.LEVEL_COMPLETE);
+
+    // Restart immediately without delay
+    this.gameState = GAME_STATE.LEVEL_COMPLETE;
+    this.restartLevel();
   }
 
   /**
@@ -689,7 +628,7 @@ export class Game extends Scene {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
 
-    // Clean up UI
+    // Clean up UI if any exists
     if (this.overlayButton) {
       this.overlayButton.off("pointerup");
       this.overlayButton.destroy();

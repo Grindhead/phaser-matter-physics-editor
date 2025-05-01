@@ -310,7 +310,7 @@ export class LevelGenerator {
     this.placeEnemies(finalItemPlacementPlatforms, params);
 
     // Place additional random crates across platforms for more variety
-    this.placeAdditionalRandomCrates(finalItemPlacementPlatforms, params);
+    this.placeAdditionalRandomCrates(finalItemPlacementPlatforms);
 
     // Sort platforms: platforms without enemies or crates should be fully populated
     this.platforms.forEach((platform, index) => {
@@ -906,10 +906,7 @@ export class LevelGenerator {
    * @param platforms Array of platforms eligible for crate placement
    * @param params Level generation parameters
    */
-  private placeAdditionalRandomCrates(
-    platforms: Platform[],
-    params: LevelGenerationParams
-  ): void {
+  private placeAdditionalRandomCrates(platforms: Platform[]): void {
     // Skip if no platforms available
     if (platforms.length === 0) return;
 

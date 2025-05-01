@@ -3,12 +3,19 @@
 ## What Works
 
 - Project workspace initialized.
+- Defined Project Structure (Standard Phaser/TS/Vite conventions).
+- Mobile Responsiveness and UI Scaling:
+  - Game scales correctly using `EXPAND` mode.
+  - UI elements adapt to different screen sizes.
+  - Mobile touch controls are implemented and functional.
+- Conditional Game Initialization:
+  - Game only initializes and runs in landscape orientation.
+- Asset Naming Convention Applied (Player Wobble).
 
 ## What's Left to Build
 
 - The entire editor application.
 - Asset organization and processing pipelines.
-- Implement conditional game initialization based on screen orientation.
 - **Level Generation Enhancements:**
   - Vertical walls (using rotated platforms).
   - Barrel substitution for impassable gaps.
@@ -27,8 +34,7 @@
 
 ## Current Status
 
-- Project initiation phase.
-- First task: Renaming assets in `/assets/player/wobble/`.
+- Implementing Level Generation and Gameplay Enhancements.
 
 ## Known Issues
 

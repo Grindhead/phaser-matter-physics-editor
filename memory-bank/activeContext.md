@@ -3,42 +3,23 @@
 ## Current Focus
 
 - Initial project setup and organization.
-- Standardizing asset file naming conventions. The current task is renaming image assets for a player character's "wobble" animation.
 - Implement new level generation features:
   - Vertical walls using rotated platforms.
   - Barrel substitution for impassable gaps.
 - Implement player-barrel interaction logic.
 
-## Next Steps
-
-- Implement the file renaming for `/assets/player/wobble/`.
-- Continue defining the project structure and core editor functionality based on the project brief.
-- Implement vertical wall generation in `LevelGenerator.ts`.
-- Implement barrel substitution logic in `LevelGenerator.ts`.
-- Test the updated level generation thoroughly.
-- If overlap is prevented for bridge barrels, revert `MAX_JUMP_DISTANCE_X` to 200.
-- Then, uncomment `placeBarrelsBetweenPlatforms`.
-- Perform final test for barrel placements.
-- Implement conditional logic for the 'fx_land' animation (prevent playing if coin collected).
-
-## Active Decisions
-
-- Asset filenames should be lowercase, use hyphens as separators, and follow the pattern `[description]-[framenumber].[extension]`.
-- **Vertical Walls:** Implement walls by placing standard platform sprites vertically (rotated 90 degrees).
-- **Barrel Substitution:** Identify gaps larger than `maxHorizontalGap` and replace the subsequent platform placement with a barrel placement. Ensure the barrel is positioned appropriately for a jump.
-- **Conditional Landing Animation:** The player state or animation manager needs to check if a coin was collected in the same frame/action as landing to prevent the 'fx_land' animation from playing.
-
-## Patterns and Preferences
-
-- Use PowerShell for file system operations on Windows.
-- Follow custom instructions regarding memory bank updates, planning, and communication style.
-
-## Current Focus
-
-**Conditionally Initialize Game Based on Orientation:** Modify `src/main.ts` to only initialize the Phaser `Game` instance when the screen is detected to be in a landscape orientation. Implement checks both on initial load and on orientation changes.
-
 ## Recent Changes
 
+- **Uncommented Optional Barrel Placement:** The call to `placeBarrelsBetweenPlatforms` in the level generation logic has been uncommented, enabling the placement of barrels in large gaps between existing platforms.
+- **Defined Project Structure:** Analyzed and documented the existing project structure in `systemPatterns.md`. The structure follows standard conventions for Phaser/TS/Vite projects (src/scenes, src/entities, src/lib).
+- **Renamed Player Wobble Animation Assets:** Standardized filenames in `/assets/player/wobble/` according to the convention (lowercase, hyphens, `[description]-[framenumber].[extension]`).
+- **Implemented Conditional Game Initialization:** Modified `src/main.ts` to check `window.matchMedia('(orientation: landscape)')`. The Phaser game instance is only created if the orientation is landscape. A listener handles orientation changes, displaying a message and potentially destroying/recreating the game instance as needed.
+- **Completed Mobile Responsiveness and UI Scaling Feature:**
+  - Finalized the scaling strategy using Phaser's `EXPAND` mode with `CENTER_BOTH` auto-centering. This fills the screen while maintaining aspect ratio for the core game world.
+  - Adapted UI elements (`CoinUI`, `LevelUI`, `DebugPanel`, overlays) to be responsive using relative positioning (anchoring to corners/edges) and resize listeners.
+  - Implemented on-screen mobile controls (left/right/jump buttons) using interactive images and pointer events, updating player state flags.
+  - Tested successfully across various resolutions, confirming UI layout, gameplay, and control responsiveness.
+  - Documented the changes in the memory bank.
 - **Tested `EXPAND` Scaling Mode:** Reverted the scaling mode to `EXPAND` (the original setting) to test if it achieves the goal of filling the screen adaptively while correctly positioning entities within the viewable area, avoiding the cropping seen with `ENVELOP` and the black bars from `FIT`. Testing is ongoing (Step 5 in `implementation-plan.mdc`).
 - **Reverted to `FIT` Mode:** Changed scale mode from `ENVELOP` back to `FIT` due to entity cropping issues.
 - **Attempted `ENVELOP` Mode:** Changed scale mode to `ENVELOP` to test full-screen coverage.
@@ -54,9 +35,12 @@
 
 ## Next Steps
 
-- **Implement Orientation Check:** Add the logic to `src/main.ts` to check `window.matchMedia('(orientation: landscape)')`.
-- **Test Orientation Logic:** Verify the game only loads in landscape and displays a message in portrait.
-- **Continue Responsiveness Testing:** Proceed with Step 5 (`Test EXPAND Mode`) and subsequent steps in `implementation-plan.mdc`.
+- Implement vertical wall generation in `LevelGenerator.ts`.
+- Implement barrel substitution logic in `LevelGenerator.ts`.
+- Test the updated level generation thoroughly.
+- If overlap is prevented for bridge barrels, revert `MAX_JUMP_DISTANCE_X` to 200.
+- Perform final test for barrel placements (including optional barrels).
+- Implement conditional logic for the 'fx_land' animation (prevent playing if coin collected).
 - **Implement Gameplay Enhancements:**
   - Add keyboard input (Space/Enter) for restarting.
   - Combine game over dismissal and restart into a single action.
@@ -74,14 +58,18 @@
 - Implement barrel substitution logic in `LevelGenerator.ts`.
 - Test the updated level generation thoroughly.
 - If overlap is prevented for bridge barrels, revert `MAX_JUMP_DISTANCE_X` to 200.
-- Then, uncomment `placeBarrelsBetweenPlatforms`.
-- Perform final test for barrel placements.
+- Perform final test for barrel placements (including optional barrels).
 - Implement conditional logic for the 'fx_land' animation (prevent playing if coin collected).
 
 ## Active Decisions
 
-- **Display Message:** Show a simple message (e.g., "Please rotate your device to landscape mode") when in portrait orientation.
-- **Scale Manager Strategy:** Continue testing `EXPAND`. The goal is full-screen adaptive display without cropping critical elements. `FIT` remains the fallback if `EXPAND` is unsuitable.
+- Asset filenames should be lowercase, use hyphens as separators, and follow the pattern `[description]-[framenumber].[extension]`.
+- **Vertical Walls:** Implement walls by placing standard platform sprites vertically (rotated 90 degrees).
+- **Barrel Substitution:** Identify gaps larger than `maxHorizontalGap` and replace the subsequent platform placement with a barrel placement. Ensure the barrel is positioned appropriately for a jump.
+- **Conditional Landing Animation:** The player state or animation manager needs to check if a coin was collected in the same frame/action as landing to prevent the 'fx_land' animation from playing.
+- **Scale Manager Strategy:** Finalized strategy is `Phaser.Scale.EXPAND` with `autoCenter: Phaser.Scale.CENTER_BOTH`.
+- **UI Positioning:** Responsive UI logic uses relative positioning (anchoring) and resize listeners attached to scene scale events (`this.scale.on('resize', ...)`).
+- **Mobile Controls:** Use interactive `Phaser.GameObjects.Image` elements anchored to screen corners, controlled via pointer events updating state flags in `Player.ts`.
 - **`EXPAND` Mode Theory:** `EXPAND` might resize the canvas to fill space but scale the internal game world like `FIT`, potentially offering the best visual compromise.
 - **UI Positioning:** Responsive UI logic should still work, but testing is needed to confirm positioning relative to the `EXPAND` mode's canvas/game size.
 - **UI Anchoring/Positioning:** Relative positioning (top-left, top-right, center) implemented in UI elements works well with `FIT` mode.
@@ -92,7 +80,10 @@
 
 ## Important Patterns & Preferences
 
-- **Orientation Check:** Use `window.matchMedia('(orientation: landscape)')` to check screen orientation both initially and via an event listener for changes.
+- Use PowerShell for file system operations on Windows.
+- Follow custom instructions regarding memory bank updates, planning, and communication style.
+- **Responsive UI:** Position UI elements relative to screen dimensions (`scene.scale.width`, `scene.scale.height`). Use resize event listeners (`scene.scale.on('resize', handler)`) to dynamically update positions or scales when the screen size changes. Anchor elements to corners or edges.
+- **Mobile Touch Controls:** Implement via interactive `Image` game objects fixed to the camera (`setScrollFactor(0)`). Use pointer events (`pointerdown`, `pointerup`, `pointerout`) to set boolean flags (e.g., `mobileLeftActive`) which are then read by the player's update loop.
 - **State Persistence Across Restarts (Revised):** When state needs to persist across `scene.restart()`, explicitly pass the state as data (`scene.restart({ key: value })`) and retrieve it in the scene's `init(data)` method. Relying on reading the state from engine objects at the start of `create()` can be unreliable if the engine resets those objects based on initial configurations before `create` executes.
 - **Event Listener Cleanup:** Removing event listeners (e.g., `this.game.events.off(...)`) before restarting a scene or destroying an object is crucial to prevent memory leaks and duplicate listeners.
 - **State Tracking during Generation:** Maintaining state (occupied ranges) within the generation loop to inform subsequent placement decisions.
@@ -106,6 +97,7 @@
 
 ## Learnings & Project Insights
 
+- **Orientation Handling:** Using `window.matchMedia` and its associated listener (`addListener` or `addEventListener`) is effective for reacting to orientation changes. Careful handling of game instance creation/destruction is needed if the game should only run in specific orientations.
 - **Scene Restart Lifecycle:** Understanding that `scene.restart()` might reset certain engine states based on initial configuration _before_ `create()` runs is crucial for reliable state persistence. Explicitly passing state via `restart` data is safer than trying to read potentially reset state in `create`.
 - Implementing interactive mechanics often involves coordinating state changes across multiple entities (`Player`, `Barrel`, `Game`).
 - Animation events or delays can be crucial for correct state synchronization during interactions.

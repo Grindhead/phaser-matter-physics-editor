@@ -89,8 +89,6 @@ export function placeItemsOnPlatforms(
 
   const totalPlatformsNeeded = targetEnemies + targetCrates;
 
-  // Create a pool of platforms reserved for item placement
-  // Slice ensures we don't try to reserve more platforms than available
   const placementPool = shuffledPlatforms.slice(
     0,
     Math.min(totalPlatformsNeeded, shuffledPlatforms.length)
@@ -131,15 +129,6 @@ export function placeItemsOnPlatforms(
         ? ENEMY_LARGE_HEIGHT
         : ENEMY_SMALL_HEIGHT;
       const placeY = bounds.top - enemyHeight / 2 - 14; // Use determined height
-
-      // Log platform details when placing an enemy
-      console.log(
-        `Placing enemy on platform at (${platform.x.toFixed(
-          0
-        )}, ${platform.y.toFixed(0)}) with segmentCount=${
-          platform.segmentCount
-        }`
-      );
 
       // Instantiate the correct enemy
       const enemy = isLargeEnemy
@@ -218,8 +207,6 @@ export function placeBarrelsBetweenPlatforms(
     const gapEnd = boundsB.left;
     const gapWidth = gapEnd - gapStart;
 
-    // Ensure there's enough horizontal space for at least one barrel,
-    // AND the edge buffers on both sides.
     if (gapWidth >= BARREL_WIDTH + 2 * EDGE_BUFFER) {
       availableGaps.push({
         startX: gapStart,
@@ -228,13 +215,6 @@ export function placeBarrelsBetweenPlatforms(
         platformBTop: boundsB.top,
       });
     }
-  }
-
-  if (availableGaps.length === 0) {
-    console.warn(
-      "LevelGenerator: No suitable gaps wide enough found between platforms for barrels (considering edge buffers)."
-    );
-    return; // No gaps wide enough
   }
 
   // Keep track of occupied horizontal ranges on the ground
@@ -258,8 +238,6 @@ export function placeBarrelsBetweenPlatforms(
     const minPlaceX = selectedGap.startX + EDGE_BUFFER + BARREL_WIDTH / 2;
     const maxPlaceX = selectedGap.endX - EDGE_BUFFER - BARREL_WIDTH / 2;
 
-    // Since we filtered availableGaps, minPlaceX should always be < maxPlaceX
-    // (unless BARREL_WIDTH is zero or negative, which is an error)
     if (minPlaceX >= maxPlaceX) {
       console.error(
         "LevelGenerator: Invalid placement range calculated even after filtering gaps. Check BARREL_WIDTH and EDGE_BUFFER."
@@ -288,7 +266,7 @@ export function placeBarrelsBetweenPlatforms(
     if (placedSuccessfully) {
       barrelsPlaced++;
     }
-  } // End of while loop
+  }
 
   if (barrelsPlaced < targetBarrels) {
     console.warn(
@@ -332,9 +310,6 @@ function placeBarrelIfPossible(
     barrelsArray.push(barrel);
     occupiedRanges.push(barrelRange); // Mark this range as occupied
     return true; // Barrel placed successfully
-
-    // Optional: Remove or shrink the gap to prevent placing more barrels too close?
-    // For now, we just rely on the overlap check.
   }
   return false; // Barrel could not be placed due to overlap
 }

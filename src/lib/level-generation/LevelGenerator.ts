@@ -98,9 +98,6 @@ export class LevelGenerator {
   private levelMaxX: number = 0;
   private levelLowestY: number = 0;
 
-  // --- Configuration Constants Moved to LevelGenerationConfig.ts ---
-  // Remove constants previously defined here
-
   // --- Keep PLATFORM_DISPLAY_HEIGHT if still used directly for player offset
   private readonly PLATFORM_DISPLAY_HEIGHT = 32; // Or import if moved
 
@@ -234,11 +231,7 @@ export class LevelGenerator {
             params.minHorizontalGap,
             params.maxHorizontalGap + 1
           );
-        console.log(
-          `  Placed barrel at (${barrelX.toFixed(0)}, ${barrelY.toFixed(
-            0
-          )}). Next platform target X: ${currentPlatformX.toFixed(0)}`
-        );
+
         // Keep lastPlatform pointing to the platform *before* the barrel for next Y calculation
         // currentPlatformY is not updated here, will be recalculated next iteration relative to lastPlatform
       } else {
@@ -294,12 +287,6 @@ export class LevelGenerator {
       this.crates // Pass class member array
     );
 
-    // Note: Barrels placed between platforms are handled separately (or not at all if logic removed)
-    // Note: Bridge barrels are handled within the main platform loop
-
-    // --- Coin Placement (After other items) ---
-    // Populate all originally generated platforms (including start/end?) with coins
-    // Or just the itemPlacementPlatforms? Let's do all for now.
     this.platforms.forEach((platform) => {
       totalCoins += populatePlatformWithCoins(
         this.scene,
@@ -310,10 +297,6 @@ export class LevelGenerator {
     });
 
     this.calculateOverallBounds(); // Calculate bounds after all platforms exist
-
-    console.log(
-      `Level generated with ${this.platforms.length} platforms, ${this.enemies.length} enemies, ${this.crates.length} crates, ${this.barrels.length} barrels, ${totalCoins} coins.`
-    );
 
     setTotalCoinsInLevel(totalCoins); // Set the total coins for the level
 
@@ -334,8 +317,6 @@ export class LevelGenerator {
     const crateProbability = 0.25 + Math.min(0.2, levelNumber * 0.01);
     const barrelProbability = 0.15 + Math.min(0.1, levelNumber * 0.01);
 
-    // Calculate target counts based on probabilities and average platform count
-    // Use average platform count for estimation
     const avgPlatformsForTargets = (minPlatforms + maxPlatforms) / 2;
     const targetEnemies = Math.floor(avgPlatformsForTargets * enemyProbability);
     const targetCrates = Math.floor(avgPlatformsForTargets * crateProbability);
@@ -399,12 +380,10 @@ export class LevelGenerator {
     lastPlatform: Platform | null, // The platform we are generating *from*
     params: PlatformGenerationParams
   ): { nextX: number; nextY: number; dX: number; dY: number } {
-    // Return gaps too
-    // Represents the CENTER of the platform being calculated
     let currentX = currentPos.x;
     let currentY = currentPos.y;
-    let dX = 0; // Horizontal gap from last platform right edge to next platform left edge
-    let dY = 0; // Vertical gap (center-to-center)
+    let dX = 0;
+    let dY = 0;
 
     if (lastPlatform) {
       const lastPlatformBounds = lastPlatform.getBounds();
@@ -430,7 +409,6 @@ export class LevelGenerator {
           params.maxVerticalGap
         );
       }
-      // --- End Minimum Absolute Vertical Gap ---
 
       // Calculate the potential center X of the next platform based on generated dX
       currentX = lastPlatformBounds.right + dX + estimatedHalfWidth;
@@ -443,11 +421,6 @@ export class LevelGenerator {
       currentY = Phaser.Math.Clamp(currentY, minY, maxY);
       // Recalculate dY based on clamped Y for accurate reporting if needed
       dY = currentY - lastPlatform.y;
-    } else {
-      // Should not happen if starting platform is created first
-      console.error(
-        "calculateNextPlatformPosition called without lastPlatform!"
-      );
     }
 
     // Return calculated potential position AND the potentially large dX
@@ -505,9 +478,7 @@ export class LevelGenerator {
       this.levelMinX = 0;
       this.levelMaxX = 1000; // Default if no platforms
       this.levelLowestY = WORLD_HEIGHT - 100; // Default Y
-      console.warn(
-        "LevelGenerator: No platforms generated, using default bounds."
-      );
+
       return;
     }
 

@@ -32,7 +32,7 @@ export class Platform extends Phaser.Physics.Matter.Sprite {
     // Create the Matter Sprite with the specified body configuration
     super(scene.matter.world, x, y, id, undefined, bodyConfig);
 
-    this.segmentCount = width; // Store the width/segment count AFTER super()
+    this.segmentCount = width; // Store the width parameter directly as segment count
 
     scene.add.existing(this);
   }

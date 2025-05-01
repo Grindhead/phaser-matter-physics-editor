@@ -21,7 +21,7 @@ import {
   MAX_JUMP_HEIGHT_UP,
   MIN_ABS_VERTICAL_GAP,
   PLATFORM_SEGMENT_WIDTH,
-} from "../interfaces/LevelGenerationConfig";
+} from "./LevelGenerationConfig";
 import { WORLD_HEIGHT } from "../constants";
 import { setTotalCoinsInLevel } from "../helpers/coinManager";
 import { Finish } from "../../entities/Finish/Finish";
@@ -248,39 +248,64 @@ export class LevelGenerator {
           platformLength,
           i
         );
-
-        totalCoins += populatePlatformWithCoins(
-          this.scene,
-          platform,
-          this.prng,
-          this.coins
-        );
-
-        itemPlacementPlatforms.push(platform);
-
-        // Update tracking variables for next iteration
+        itemPlacementPlatforms.push(platform); // Add eligible platforms for items
         lastPlatform = platform;
-        currentPlatformX = nextX;
+        currentPlatformX = nextX; // Update position based on the newly placed platform
         currentPlatformY = nextY;
       }
-    } // End of platform generation loop
+    }
 
-    // Filter out the very last platform from item placement eligibility
-    const finalItemPlacementPlatforms = itemPlacementPlatforms.filter(
-      (p) => p !== lastPlatform
-    );
+    // --- Post-Generation Item Placement ---
+    // Create the finish point after the last platform/barrel logic
+    this.createFinishPoint(lastPlatform);
 
+    // Exclude first two platforms from item placement ONLY on level 1
+    let finalItemPlacementPlatforms = [...itemPlacementPlatforms]; // Copy the list
+    if (this.levelNumber === 1 && this.platforms.length >= 3) {
+      // platforms[0] is the start platform (already excluded)
+      // platforms[1] is the first platform after start
+      // platforms[2] is the second platform after start
+      const firstEligible = this.platforms[1];
+      const secondEligible = this.platforms[2];
+      finalItemPlacementPlatforms = finalItemPlacementPlatforms.filter(
+        (p) => p !== firstEligible && p !== secondEligible
+      );
+      console.log(
+        `Level 1: Excluding platforms at (${firstEligible?.x.toFixed(
+          0
+        )}, ${firstEligible?.y.toFixed(0)}) and (${secondEligible?.x.toFixed(
+          0
+        )}, ${secondEligible?.y.toFixed(0)}) from item placement.`
+      );
+    }
+
+    // Place Enemies, Crates using the helper
+    // Pass the potentially filtered list and the class member arrays
     placeItemsOnPlatforms(
       this.scene,
-      finalItemPlacementPlatforms,
+      finalItemPlacementPlatforms, // Use the filtered list
       this.prng,
       params,
       this.levelNumber,
-      this.enemies,
-      this.crates
+      this.enemies, // Pass class member array
+      this.crates // Pass class member array
     );
 
-    this.createFinishPoint(lastPlatform);
+    // Note: Barrels placed between platforms are handled separately (or not at all if logic removed)
+    // Note: Bridge barrels are handled within the main platform loop
+
+    // --- Coin Placement (After other items) ---
+    // Populate all originally generated platforms (including start/end?) with coins
+    // Or just the itemPlacementPlatforms? Let's do all for now.
+    this.platforms.forEach((platform) => {
+      totalCoins += populatePlatformWithCoins(
+        this.scene,
+        platform,
+        this.prng,
+        this.coins
+      );
+    });
+
     this.calculateOverallBounds(); // Calculate bounds after all platforms exist
 
     console.log(

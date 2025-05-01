@@ -7,11 +7,12 @@ import {
   COIN_HEIGHT,
   CRATE_BIG_HEIGHT,
   CRATE_SMALL_HEIGHT,
-  ENEMY_HEIGHT,
+  ENEMY_SMALL_HEIGHT,
+  ENEMY_LARGE_HEIGHT,
   LevelGenerationParams,
   MIN_COIN_SPACING,
   MIN_PLATFORM_LENGTH_WITH_ENEMY,
-} from "../interfaces/LevelGenerationConfig";
+} from "./LevelGenerationConfig";
 import { Coin } from "../../entities/Coin/Coin";
 import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
 import { CrateBig } from "../../entities/CrateBig/CrateBig";
@@ -110,24 +111,40 @@ export function placeItemsOnPlatforms(
     if (usedPlatformIndices.has(i)) continue; // Skip if already used
 
     const platform = placementPool[i];
+
+    // Strictly enforce the minimum platform length for enemy placement
     if (platform.segmentCount >= MIN_PLATFORM_LENGTH_WITH_ENEMY) {
       const bounds = platform.getBounds();
       const placeX = bounds.centerX;
-      const placeY = bounds.top - ENEMY_HEIGHT / 2 - 14;
 
-      // Determine enemy type
-      let enemy: EnemyLarge | EnemySmall;
-      if (levelNumber === 1 && enemiesPlaced < 3) {
-        // Always small for the first 3 on level 1
-        enemy = new EnemySmall(scene, placeX, placeY);
-      } else {
-        // Randomly choose between small and large for others
-        if (prng.next() < 0.5) {
-          enemy = new EnemySmall(scene, placeX, placeY);
-        } else {
-          enemy = new EnemyLarge(scene, placeX, placeY);
+      // Determine enemy type and height *before* calculating Y
+      let isLargeEnemy = false;
+      if (!(levelNumber === 1 && enemiesPlaced < 3)) {
+        // Not the first 3 on level 1
+        if (prng.next() >= 0.5) {
+          // Randomly choose for others
+          isLargeEnemy = true;
         }
       }
+
+      const enemyHeight = isLargeEnemy
+        ? ENEMY_LARGE_HEIGHT
+        : ENEMY_SMALL_HEIGHT;
+      const placeY = bounds.top - enemyHeight / 2 - 14; // Use determined height
+
+      // Log platform details when placing an enemy
+      console.log(
+        `Placing enemy on platform at (${platform.x.toFixed(
+          0
+        )}, ${platform.y.toFixed(0)}) with segmentCount=${
+          platform.segmentCount
+        }`
+      );
+
+      // Instantiate the correct enemy
+      const enemy = isLargeEnemy
+        ? new EnemyLarge(scene, placeX, placeY)
+        : new EnemySmall(scene, placeX, placeY);
 
       enemiesArray.push(enemy);
       enemiesPlaced++;

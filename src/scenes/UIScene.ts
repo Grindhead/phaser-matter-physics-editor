@@ -42,8 +42,6 @@ export class UIScene extends Phaser.Scene {
       .setDepth(10000)
       .setOrigin(0.5);
 
-    this.overlayButton.setScale(3);
-
     this.overlayButton.visible = false;
 
     // Add event handler

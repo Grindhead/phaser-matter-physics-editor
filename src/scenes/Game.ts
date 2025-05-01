@@ -7,7 +7,7 @@ import {
   WORLD_WIDTH,
 } from "../lib/constants";
 import { Player } from "../entities/Player/Player";
-import { Enemy } from "../entities/Enemy/Enemy";
+import { EnemyLarge } from "../entities/Enemies/EnemyLarge";
 import { Coin } from "../entities/Coin/Coin";
 import { Finish } from "../entities/Finish/Finish";
 import { isCoinBody } from "../lib/helpers/isCoinBody";
@@ -44,7 +44,7 @@ export class Game extends Scene {
   private restartTriggered = false;
   private physicsEnabled = false;
   private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
-  private enemies: Enemy[] = [];
+  private enemies: EnemyLarge[] = [];
   private barrels: Barrel[] = [];
   private cameraManager: CameraManager;
   private levelGenerator: LevelGenerator;

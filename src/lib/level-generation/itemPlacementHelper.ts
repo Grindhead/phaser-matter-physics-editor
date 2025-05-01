@@ -13,7 +13,7 @@ import {
   MIN_PLATFORM_LENGTH_WITH_ENEMY,
 } from "../interfaces/LevelGenerationConfig";
 import { Coin } from "../../entities/Coin/Coin";
-import { Enemy } from "../../entities/Enemy/Enemy";
+import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
 import { CrateBig } from "../../entities/CrateBig/CrateBig";
 import { CrateSmall } from "../../entities/CrateSmall/CrateSmall";
 import { Barrel } from "../../entities/Barrel/Barrel";
@@ -64,7 +64,7 @@ export function placeItemsOnPlatforms(
   eligiblePlatforms: Platform[],
   prng: SimplePRNG,
   params: LevelGenerationParams,
-  enemiesArray: Enemy[],
+  enemiesArray: EnemyLarge[],
   cratesArray: (CrateBig | CrateSmall)[]
   // barrelsArray: Barrel[] // REMOVED
 ): void {
@@ -112,7 +112,7 @@ export function placeItemsOnPlatforms(
       const bounds = platform.getBounds();
       const placeX = bounds.centerX;
       const placeY = bounds.top - ENEMY_HEIGHT / 2 - 14;
-      const enemy = new Enemy(scene, placeX, placeY);
+      const enemy = new EnemyLarge(scene, placeX, placeY);
       enemiesArray.push(enemy);
       enemiesPlaced++;
       usedPlatformIndices.add(i); // Mark platform as used

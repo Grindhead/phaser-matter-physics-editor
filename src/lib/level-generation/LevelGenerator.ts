@@ -7,7 +7,7 @@ import {
 } from "./itemPlacementHelper";
 import { Platform } from "../../entities/Platforms/Platform";
 import { Coin } from "../../entities/Coin/Coin";
-import { Enemy } from "../../entities/Enemy/Enemy";
+import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
 import { CrateBig } from "../../entities/CrateBig/CrateBig";
 import { CrateSmall } from "../../entities/CrateSmall/CrateSmall";
 import { Barrel } from "../../entities/Barrel/Barrel";
@@ -86,7 +86,7 @@ export class LevelGenerator {
   private prng: SimplePRNG;
   private platforms: Platform[] = [];
   private coins: Coin[] = [];
-  private enemies: Enemy[] = [];
+  private enemies: EnemyLarge[] = [];
   private crates: (CrateBig | CrateSmall)[] = [];
   private barrels: Barrel[] = [];
   private player: Player;
@@ -487,7 +487,7 @@ export class LevelGenerator {
   /**
    * Returns the list of generated enemies.
    */
-  getEnemies(): Enemy[] {
+  getEnemies(): EnemyLarge[] {
     return this.enemies;
   }
 

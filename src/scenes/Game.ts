@@ -7,7 +7,8 @@ import {
   WORLD_WIDTH,
 } from "../lib/constants";
 import { Player } from "../entities/Player/Player";
-import { Enemy } from "../entities/Enemy/Enemy";
+import { EnemyLarge } from "../entities/Enemies/EnemyLarge";
+import { EnemySmall } from "../entities/Enemies/EnemySmall";
 import { Coin } from "../entities/Coin/Coin";
 import { Finish } from "../entities/Finish/Finish";
 import { isCoinBody } from "../lib/helpers/isCoinBody";
@@ -34,6 +35,7 @@ import { Geom } from "phaser";
 import { Barrel } from "../entities/Barrel/Barrel";
 import { LevelGenerator } from "../lib/level-generation/LevelGenerator";
 import { ParallaxManager } from "../lib/parralax/ParallaxManager";
+import { CrateBig } from "../entities/CrateBig/CrateBig";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -44,7 +46,7 @@ export class Game extends Scene {
   private restartTriggered = false;
   private physicsEnabled = false;
   private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
-  private enemies: Enemy[] = [];
+  private enemies: (EnemyLarge | EnemySmall)[] = [];
   private barrels: Barrel[] = [];
   private cameraManager: CameraManager;
   private levelGenerator: LevelGenerator;
@@ -54,6 +56,8 @@ export class Game extends Scene {
   private physicsDebugActive: boolean = false; // Track the state
   private debugGraphics: Phaser.GameObjects.Graphics; // Graphics object for debug drawing
   private initialPhysicsDebugState: boolean = false; // Store state passed via init
+  private restartKeys: Phaser.Input.Keyboard.Key[] = []; // Keys for restarting
+  private originalCratePositions: { x: number; y: number; type: string }[] = []; // Store original crate positions
 
   constructor() {
     super(SCENES.GAME);
@@ -67,9 +71,12 @@ export class Game extends Scene {
     this.parallaxManager = new ParallaxManager(this);
     this.setupWorldBounds();
     this.initGame();
-    this.showUIOverlay(GAME_STATE.WAITING_TO_START);
+    this.startGame(); // Start the game immediately
 
     this.createDebugUI();
+
+    // Setup keyboard controls for restart
+    this.setupRestartKeys();
 
     // Check for touch support AND non-desktop OS to identify mobile/tablet (real or emulated)
     const isMobileEnvironment = this.sys.game.device.input.touch;
@@ -132,13 +139,27 @@ export class Game extends Scene {
    * Uses LevelGenerator to create the entities for the current level.
    */
   private generateLevelEntities(): void {
-    const currentLevel = getLevel();
-    this.levelGenerator = new LevelGenerator(this, currentLevel);
+    // Pass the scene, debug graphics object, and current debug state to the generator
+    this.levelGenerator = new LevelGenerator(
+      this,
+      this.debugGraphics,
+      this.physicsDebugActive
+    );
     this.player = this.levelGenerator.generateLevel();
     this.enemies = this.levelGenerator.getEnemies();
     this.barrels = this.levelGenerator.getBarrels();
     // Store the total count
     this.totalBarrelsGenerated = this.barrels.length;
+
+    // Save the original crate positions for respawning
+    this.originalCratePositions = [];
+    this.levelGenerator.getCrates().forEach((crate) => {
+      this.originalCratePositions.push({
+        x: crate.x,
+        y: crate.y,
+        type: crate instanceof CrateBig ? "big" : "small",
+      });
+    });
 
     // Get overall bounds directly from the generator
     const levelBounds = this.levelGenerator.getOverallLevelBounds();
@@ -158,108 +179,57 @@ export class Game extends Scene {
       this.parallaxManager.initialize(levelWidth);
     }
 
-    const sensorWidth = levelWidth + 1000;
-    const sensorCenterX = startX + (endX - startX) / 2;
-
-    // Create the fall sensor using bounds from generator
-    this.createFallSensor(lowestPlatformY, sensorCenterX, sensorWidth);
+    // Create multiple death zones instead of a single one
+    this.createDeathZones(levelWidth, startX, endX, lowestPlatformY);
   }
 
   /**
-   * Shows a UI overlay based on the current game state
+   * Creates multiple death zone sensors at strategic positions throughout the level.
    *
-   * @param state - The game state determining which UI to show
-   * @param fadeIn - Whether to fade in the UI (default: true)
+   * @param levelWidth - The total width of the level
+   * @param startX - The starting X coordinate of the level
+   * @param endX - The ending X coordinate of the level
+   * @param lowestPlatformY - The Y coordinate of the lowest platform
    */
-  private showUIOverlay(state: GameStateType, fadeIn: boolean = true): void {
-    // Clean up any existing overlay
-    if (this.overlayButton) {
-      this.overlayButton.off("pointerup"); // Explicitly remove the listener
-      this.overlayButton.destroy();
-      this.overlayButton = undefined;
-    }
-
-    // If we're transitioning to PLAYING state, don't show an overlay
-    if (state === GAME_STATE.PLAYING) {
-      this.gameState = state;
+  private createDeathZones(
+    levelWidth: number,
+    startX: number,
+    endX: number,
+    lowestPlatformY: number
+  ): void {
+    // If the level is short, just create one death zone
+    if (levelWidth < 2000) {
+      this.createFallSensor(
+        lowestPlatformY,
+        startX + (endX - startX) / 2,
+        levelWidth + 1000
+      );
       return;
     }
 
-    // Use fixed screen coordinates instead of camera-relative coordinates
-    const centerX = this.game.canvas.width / 2;
-    const centerY = this.game.canvas.height / 2;
+    // For longer levels, create multiple death zones spaced throughout the level
+    const segmentWidth = 2000; // Width of each death zone segment
+    const overlapMargin = 200; // Ensure some overlap between segments
 
-    let texture: string;
-    let callback: () => void;
+    const numSegments = Math.ceil(levelWidth / (segmentWidth - overlapMargin));
 
-    switch (state) {
-      case GAME_STATE.WAITING_TO_START:
-        texture = "ui/start.png";
-        callback = () => {
-          // Hide the overlay and start the game
-          this.overlayButton?.destroy();
-          this.overlayButton = undefined;
-          this.startGame();
-        };
-        break;
-      case GAME_STATE.GAME_OVER:
-        texture = "ui/game-over.png";
-        callback = () => {
-          if (!this.restartTriggered) this.restartLevel();
-        };
-        break;
-      case GAME_STATE.LEVEL_COMPLETE:
-        texture = "ui/start.png"; // Using start.png as requested
-        callback = () => {
-          if (!this.restartTriggered) this.restartLevel();
-        };
-        break;
-      default:
-        return;
+    for (let i = 0; i < numSegments; i++) {
+      const segmentStartX = startX + i * (segmentWidth - overlapMargin);
+      const segmentEndX = Math.min(segmentStartX + segmentWidth, endX);
+      const segmentCenter = segmentStartX + (segmentEndX - segmentStartX) / 2;
+      const currentSegmentWidth = segmentEndX - segmentStartX;
+
+      this.createFallSensor(
+        lowestPlatformY,
+        segmentCenter,
+        currentSegmentWidth
+      );
     }
-
-    // Create the overlay at fixed screen coordinates
-    this.overlayButton = this.add
-      .image(centerX, centerY, TEXTURE_ATLAS, texture)
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(1000) // Ensure it's on top of everything
-      .setInteractive({ useHandCursor: true });
-
-    if (fadeIn) {
-      this.overlayButton.setAlpha(0);
-      this.tweens.add({
-        targets: this.overlayButton,
-        alpha: 1,
-        duration: 400,
-        ease: "Power2",
-      });
-    }
-
-    this.overlayButton.on("pointerup", callback);
-    this.gameState = state;
   }
 
   /**
-   * Toggles the Matter.js debug rendering graphics on or off.
-   */
-  private togglePhysicsDebug(): void {
-    this.physicsDebugActive = !this.physicsDebugActive;
-    this.matter.world.drawDebug = this.physicsDebugActive;
-    this.debugGraphics.setVisible(this.physicsDebugActive);
-  }
-
-  /**
-   * Enables physics, sets camera follow, and marks the game as running.
-   */
-  private startGame(): void {
-    this.gameState = GAME_STATE.PLAYING;
-    this.matter.world.enabled = true;
-    this.physicsEnabled = true;
-  }
-
-  /**
-   * Creates an invisible Matter.js sensor below the level to detect if the player falls off.
+   * Creates a fall sensor (death zone) at the specified position.
+   *
    * @param lowestPlatformBottomY The Y coordinate of the bottom edge of the lowest platform.
    * @param centerX The calculated center X coordinate for the sensor.
    * @param width The calculated width for the sensor (level width + padding).
@@ -296,6 +266,24 @@ export class Game extends Scene {
   }
 
   /**
+   * Toggles the Matter.js debug rendering graphics on or off.
+   */
+  private togglePhysicsDebug(): void {
+    this.physicsDebugActive = !this.physicsDebugActive;
+    this.matter.world.drawDebug = this.physicsDebugActive;
+    this.debugGraphics.setVisible(this.physicsDebugActive);
+  }
+
+  /**
+   * Enables physics, sets camera follow, and marks the game as running.
+   */
+  private startGame(): void {
+    this.gameState = GAME_STATE.PLAYING;
+    this.matter.world.enabled = true;
+    this.physicsEnabled = true;
+  }
+
+  /**
    * Configures Matter.js collision handlers for key entities.
    */
   private setupCollisions(): void {
@@ -323,6 +311,7 @@ export class Game extends Scene {
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
+    // Check if player hit a fall sensor (death zone)
     if (
       (isFallSensorBody(bodyA) && isPlayerBody(bodyB)) ||
       (isFallSensorBody(bodyB) && isPlayerBody(bodyA))
@@ -330,6 +319,42 @@ export class Game extends Scene {
       this.handleGameOver();
       return true;
     }
+
+    // Check if a crate hit a fall sensor (should be destroyed)
+    const isCrateA =
+      bodyA.label &&
+      (bodyA.label === "crate-small" || bodyA.label === "crate-big");
+    const isCrateB =
+      bodyB.label &&
+      (bodyB.label === "crate-small" || bodyB.label === "crate-big");
+
+    if (
+      (isFallSensorBody(bodyA) && isCrateB) ||
+      (isFallSensorBody(bodyB) && isCrateA)
+    ) {
+      // Get the crate game object
+      const crateBody = isCrateA ? bodyA : bodyB;
+      if (crateBody && crateBody.gameObject) {
+        // Remove the crate from the world
+        const gameObject = crateBody.gameObject;
+        if (gameObject) {
+          gameObject.destroy();
+        }
+
+        // Remove from the crates array
+        const crates = this.levelGenerator.getCrates();
+        if (crates) {
+          const crateIndex = crates.findIndex(
+            (crate) => crate === crateBody.gameObject
+          );
+          if (crateIndex >= 0) {
+            crates.splice(crateIndex, 1);
+          }
+        }
+      }
+      return true;
+    }
+
     return false;
   }
 
@@ -419,6 +444,11 @@ export class Game extends Scene {
       this.levelGenerator.removeCoin(coinSprite); // Remove from generator's list
       coinSprite.collect(); // Play animation and schedule destroy
       setCoins(getCoins() + 1);
+
+      // Prevent landing animation if coin is collected during landing
+      if (this.player instanceof Player) {
+        this.player.setRecentCoinCollection();
+      }
     }
   }
 
@@ -508,12 +538,15 @@ export class Game extends Scene {
     this.enemies.forEach((enemy) => enemy.handleGameOver());
 
     this.cameraManager.handleZoomIn();
-    this.showUIOverlay(GAME_STATE.GAME_OVER);
+
+    // Restart immediately without delay
+    this.gameState = GAME_STATE.GAME_OVER;
+    this.restartLevel();
   }
 
   private createMobileControls() {
     const yPos = 800;
-    console.log("Creating mobile controls");
+
     // Left Button
     this.createMobileButton(
       100,
@@ -578,41 +611,104 @@ export class Game extends Scene {
   private handleLevelComplete(): void {
     if (this.gameState !== GAME_STATE.PLAYING) return;
 
+    this.gameState = GAME_STATE.LEVEL_COMPLETE;
     this.player.finishLevel();
     addLevel(1);
     this.enemies.forEach((enemy) => enemy.handleGameOver());
     this.cameraManager.handleZoomIn();
-    this.showUIOverlay(GAME_STATE.LEVEL_COMPLETE);
+
+    // Wait for player to complete landing animation before showing continue button
+    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.showContinueButton();
+    });
   }
 
   /**
-   * Restarts the current level by shutting down and starting the scene again.
-   * Also restarts the DebugUIScene if it's running.
+   * Shows the continue button after level completion
+   */
+  private showContinueButton(): void {
+    console.log("level complete");
+
+    // Clean up any existing button
+    if (this.overlayButton) {
+      this.overlayButton.off("pointerup");
+      this.overlayButton.destroy();
+    }
+
+    // Calculate the position for the button (center of camera view)
+    const cam = this.cameras.main;
+    const centerX = cam.midPoint.x;
+    const centerY = cam.midPoint.y;
+
+    // Create the continue button
+    this.overlayButton = this.add
+      .image(centerX, centerY, TEXTURE_ATLAS, "ui/direction-button.png")
+      .setScale(2)
+      .setScrollFactor(0)
+      .setInteractive()
+      .setDepth(10000);
+
+    // Add text over the button
+    const continueText = this.add
+      .text(centerX, centerY, "CONTINUE", {
+        fontFamily: "Roboto",
+        fontSize: "32px",
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(10001);
+
+    // Add event handler
+    this.overlayButton.on("pointerup", () => {
+      // Clean up text when button is clicked
+      if (continueText) continueText.destroy();
+      this.restartLevel();
+    });
+  }
+
+  /**
+   * Restarts the current level or advances to the next level.
    */
   private restartLevel(): void {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
-    const currentDebugState = this.physicsDebugActive; // Capture state BEFORE stopping/restarting
-    console.log(
-      `[Game] Restarting level. Passing debug state: ${currentDebugState}`
-    ); // Added log
 
-    // Explicitly remove world collision listeners before restart
-    if (this.matter.world) {
-      this.matter.world.off("collisionstart", this.handleCollisionStart);
-    } else {
-      console.warn("[Game] Matter world not found during restart cleanup."); // Added log
+    // Clean up UI if any exists
+    if (this.overlayButton) {
+      this.overlayButton.off("pointerup");
+      this.overlayButton.destroy();
+      this.overlayButton = undefined;
     }
-    // Also remove the debug toggle listener to prevent duplicates on restart
-    this.game.events.off("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
-    // Shut down the DebugUI scene if it's active
-    if (this.scene.isActive(SCENES.DEBUG_UI)) {
-      console.log("[Game Restart] Stopping Debug UI scene."); // Added log
-      this.scene.stop(SCENES.DEBUG_UI);
+    // Handle level complete case
+    if (this.gameState === GAME_STATE.LEVEL_COMPLETE) {
+      addLevel(); // Increment level counter
+      this.scene.restart({ keepPhysicsDebug: this.physicsDebugActive });
+      return;
     }
-    // Restart this scene, passing the captured debug state
-    this.scene.restart({ physicsDebugWasActive: currentDebugState });
+
+    // Handle game over case
+    if (this.gameState === GAME_STATE.GAME_OVER) {
+      // Manually respawn all crates that were destroyed
+      this.respawnCrates();
+    }
+
+    // Restart the scene, preserving debug state
+    this.scene.restart({ keepPhysicsDebug: this.physicsDebugActive });
+  }
+
+  /**
+   * Recreates all crates at their original positions
+   */
+  private respawnCrates(): void {
+    // Use the LevelGenerator to respawn crates at their original positions
+    if (this.levelGenerator && this.originalCratePositions.length > 0) {
+      console.log(`Respawning ${this.originalCratePositions.length} crates`);
+      this.levelGenerator.respawnCrates(this.originalCratePositions);
+    }
   }
 
   /**
@@ -653,5 +749,73 @@ export class Game extends Scene {
     }
 
     return false; // No relevant collision
+  }
+
+  /**
+   * Sets up keyboard keys to handle game restart
+   */
+  private setupRestartKeys(): void {
+    // Clean up previous keys if any
+    this.restartKeys.forEach((key) => key.removeAllListeners());
+    this.restartKeys = [];
+
+    // Add Space and Enter keys for restart
+    const spaceKey = this.input.keyboard!.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE
+    );
+    const enterKey = this.input.keyboard!.addKey(
+      Phaser.Input.Keyboard.KeyCodes.ENTER
+    );
+
+    spaceKey.on("down", () => this.restartLevel());
+    enterKey.on("down", () => this.restartLevel());
+
+    // Store keys for cleanup
+    this.restartKeys.push(spaceKey, enterKey);
+  }
+
+  /**
+   * Called when the scene shuts down
+   */
+  shutdown(): void {
+    // Clean up event listeners
+    if (this.restartKeys) {
+      this.restartKeys.forEach((key) => {
+        if (key) key.removeAllListeners();
+      });
+      this.restartKeys = [];
+    }
+
+    if (this.game && this.game.events) {
+      this.game.events.off("togglePhysicsDebug", this.togglePhysicsDebug, this);
+    }
+
+    // Clean up Matter.js event listeners
+    if (this.matter && this.matter.world) {
+      this.matter.world.off("collisionstart", this.handleCollisionStart);
+    }
+
+    // Clean up any other scene-specific resources
+    if (this.overlayButton) {
+      this.overlayButton.off("pointerup");
+      this.overlayButton.destroy();
+      this.overlayButton = undefined;
+    }
+  }
+
+  /**
+   * Scene lifecycle method called when the scene starts
+   * @param data - Any data passed from another scene
+   */
+  init(data: any): void {
+    // If restarting after game over and we have original crate positions stored,
+    // they will be used in generateLevelEntities when the level is created
+
+    // Initialize physics debug state from passed data
+    if (data && data.keepPhysicsDebug !== undefined) {
+      this.initialPhysicsDebugState = data.keepPhysicsDebug;
+    } else {
+      this.initialPhysicsDebugState = false;
+    }
   }
 }

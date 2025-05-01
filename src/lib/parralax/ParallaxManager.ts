@@ -40,8 +40,6 @@ export class ParallaxManager {
     this.midScrollFactorX = 1.5;
     this.fgScrollFactorX = 2.0;
 
-    // Helper function to create a layer
-
     // Background
     this.backgroundLayer = this.createLayer(
       TEXTURE_ATLAS,
@@ -84,9 +82,6 @@ export class ParallaxManager {
     const screenHeight = this.scene.scale.height;
     // Get frame dimensions from the atlas
     const frame = this.scene.textures.getFrame(atlasKey, frameName);
-    if (!frame) {
-      console.error(`Frame '${frameName}' not found in atlas '${atlasKey}'`);
-    }
     const frameHeight = frame.height;
 
     // Calculate the visually scaled height of the texture

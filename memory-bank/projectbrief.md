@@ -1,13 +1,14 @@
-# Project Brief: Phaser Matter Physics Editor
+# Project Brief: Phaser Platformer Game
 
 ## Core Requirements and Goals
 
-Develop an editor application to facilitate the creation and configuration of physics objects and scenes for Phaser games utilizing the Matter.js physics engine. The editor should provide a visual interface for manipulating physics properties, shapes, constraints, and potentially exporting configurations usable within a Phaser project.
+Develop a responsive Phaser 3 platformer game utilizing the Matter.js physics engine. The game features procedural level generation, mobile controls, and various gameplay mechanics like wall jumping (assisted by crates), barrel interaction, and dynamic death zones.
 
 ## Scope
 
-- Visual editing of Matter.js bodies (shapes, position, properties like mass, friction, restitution).
-- Configuration of Matter.js constraints.
-- Scene management (adding/removing bodies).
-- Exporting scene/object configurations in a format suitable for Phaser.
-- (Initial scope, may evolve)
+- Procedural level generation with increasing difficulty.
+- Player movement (walk, jump) and interactions (crates, barrels, enemies, coins).
+- Physics-based interactions using Matter.js.
+- Responsive design for desktop and mobile (with touch controls).
+- Dynamic elements: Respawning crates, multiple death zones.
+- Core gameplay loop: Level progression, restart mechanics.

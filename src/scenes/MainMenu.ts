@@ -44,14 +44,30 @@ export class MainMenu extends Scene {
     this.playButton = this.add
       .image(
         width / 2,
-        height * 0.6,
+        height * 0.75,
         TEXTURE_ATLAS,
         "ui/main-menu/play-game.png"
       )
       .setInteractive({ useHandCursor: true });
 
     this.playButton.on("pointerdown", () => {
-      this.scene.start(SCENES.GAME);
+      this.startGame();
     });
+
+    if (this.input.keyboard) {
+      this.input.keyboard.on("keydown-SPACE", () => {
+        this.startGame();
+      });
+    }
+
+    if (this.input.keyboard) {
+      this.input.keyboard.on("keydown-ENTER", () => {
+        this.startGame();
+      });
+    }
+  }
+
+  private startGame() {
+    this.scene.start(SCENES.GAME);
   }
 }

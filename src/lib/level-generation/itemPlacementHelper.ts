@@ -5,19 +5,17 @@ import {
   BARREL_HEIGHT,
   BARREL_WIDTH,
   COIN_HEIGHT,
-  CRATE_BIG_HEIGHT,
-  CRATE_SMALL_HEIGHT,
-  ENEMY_HEIGHT,
+  ENEMY_SMALL_HEIGHT,
+  ENEMY_LARGE_HEIGHT,
   LevelGenerationParams,
   MIN_COIN_SPACING,
   MIN_PLATFORM_LENGTH_WITH_ENEMY,
-} from "../interfaces/LevelGenerationConfig";
+} from "./LevelGenerationConfig";
 import { Coin } from "../../entities/Coin/Coin";
-import { Enemy } from "../../entities/Enemy/Enemy";
-import { CrateBig } from "../../entities/CrateBig/CrateBig";
-import { CrateSmall } from "../../entities/CrateSmall/CrateSmall";
+import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
 import { Barrel } from "../../entities/Barrel/Barrel";
 import { WORLD_HEIGHT } from "../constants";
+import { EnemySmall } from "../../entities/Enemies/EnemySmall";
 
 /**
  * Populates a given platform with coins based on spacing constraints.
@@ -27,26 +25,58 @@ export function populatePlatformWithCoins(
   scene: Scene,
   platform: Platform,
   prng: SimplePRNG,
-  coinsArray: Coin[]
+  coinsArray: Coin[],
+  fullPopulate: boolean = false,
+  isInitialPlatform: boolean = false,
+  isFinalPlatform: boolean = false
 ): number {
   const bounds = platform.getBounds();
   const platformWidth = bounds.width;
   let coinsAdded = 0;
 
+  // Skip platforms with crates
+  if (platform.hasCrate) {
+    return 0; // Skip coin placement on platforms with crates
+  }
+
+  // Skip the initial platform where the player starts
+  if (isInitialPlatform) {
+    return 0; // No coins on the initial platform
+  }
+
+  // Skip the final platform
+  if (isFinalPlatform) {
+    return 0; // No coins on the final platform
+  }
+
+  // Use the actual MIN_COIN_SPACING for proper spacing
   const maxPossibleCoins = Math.floor(platformWidth / MIN_COIN_SPACING);
-  const targetCoinsForPlatform = prng.nextInt(0, maxPossibleCoins + 1);
+
+  // Determine target coins based on whether we're fully populating
+  let targetCoinsForPlatform: number;
+
+  if (fullPopulate) {
+    // When fully populating, use maximum possible coins
+    targetCoinsForPlatform = maxPossibleCoins;
+  } else {
+    // Increase minimum coins to 50% of possible coins (was 30%)
+    const minCoins = Math.min(3, Math.floor(maxPossibleCoins * 0.5));
+
+    // Increase the target coins by using a higher minimum and higher random value
+    targetCoinsForPlatform = Math.max(
+      minCoins,
+      prng.nextInt(Math.floor(maxPossibleCoins * 0.3), maxPossibleCoins + 1)
+    );
+  }
 
   if (targetCoinsForPlatform > 0) {
     const startOffset =
       (platformWidth - (targetCoinsForPlatform - 1) * MIN_COIN_SPACING) / 2;
     const placeY = bounds.top - COIN_HEIGHT / 2 - 5;
 
+    // Place coins with even spacing without gaps
     for (let i = 0; i < targetCoinsForPlatform; i++) {
       const placeX = bounds.left + startOffset + i * MIN_COIN_SPACING;
-      const centerBuffer = 16;
-      if (Math.abs(placeX - bounds.centerX) < centerBuffer) {
-        continue;
-      }
       const coin = new Coin(scene, placeX, placeY);
       coinsArray.push(coin);
       coinsAdded++;
@@ -64,9 +94,7 @@ export function placeItemsOnPlatforms(
   eligiblePlatforms: Platform[],
   prng: SimplePRNG,
   params: LevelGenerationParams,
-  enemiesArray: Enemy[],
-  cratesArray: (CrateBig | CrateSmall)[]
-  // barrelsArray: Barrel[] // REMOVED
+  enemiesArray: (EnemyLarge | EnemySmall)[]
 ): void {
   if (eligiblePlatforms.length === 0) return;
 
@@ -82,12 +110,11 @@ export function placeItemsOnPlatforms(
   const shuffledPlatforms = shuffleArray([...eligiblePlatforms]);
 
   const targetEnemies = params.targetEnemies;
-  const targetCrates = params.targetCrates;
+  // const targetCrates = params.targetCrates; // Removed crate target calculation
 
-  const totalPlatformsNeeded = targetEnemies + targetCrates;
+  // const totalPlatformsNeeded = targetEnemies + targetCrates; // Simplified total platforms needed
+  const totalPlatformsNeeded = targetEnemies;
 
-  // Create a pool of platforms reserved for item placement
-  // Slice ensures we don't try to reserve more platforms than available
   const placementPool = shuffledPlatforms.slice(
     0,
     Math.min(totalPlatformsNeeded, shuffledPlatforms.length)
@@ -97,7 +124,7 @@ export function placeItemsOnPlatforms(
   const usedPlatformIndices = new Set<number>();
 
   let enemiesPlaced = 0;
-  let cratesPlaced = 0;
+  // let cratesPlaced = 0; // Removed crate placed counter
 
   // --- Place Enemies ---
   for (
@@ -108,11 +135,33 @@ export function placeItemsOnPlatforms(
     if (usedPlatformIndices.has(i)) continue; // Skip if already used
 
     const platform = placementPool[i];
+
+    // Strictly enforce the minimum platform length for enemy placement
     if (platform.segmentCount >= MIN_PLATFORM_LENGTH_WITH_ENEMY) {
       const bounds = platform.getBounds();
       const placeX = bounds.centerX;
-      const placeY = bounds.top - ENEMY_HEIGHT / 2 - 14;
-      const enemy = new Enemy(scene, placeX, placeY);
+
+      // Determine enemy type and height *before* calculating Y
+      let isLargeEnemy = false;
+      // Force the first enemy placed to be small
+      if (enemiesPlaced > 0) {
+        // Randomly choose type for subsequent enemies
+        if (prng.next() >= 0.5) {
+          isLargeEnemy = true;
+        }
+      }
+      // If enemiesPlaced === 0, isLargeEnemy remains false, resulting in EnemySmall
+
+      const enemyHeight = isLargeEnemy
+        ? ENEMY_LARGE_HEIGHT
+        : ENEMY_SMALL_HEIGHT;
+      const placeY = bounds.top - enemyHeight / 2 - 14; // Use determined height
+
+      // Instantiate the correct enemy
+      const enemy = isLargeEnemy
+        ? new EnemyLarge(scene, placeX, placeY)
+        : new EnemySmall(scene, placeX, placeY);
+
       enemiesArray.push(enemy);
       enemiesPlaced++;
       usedPlatformIndices.add(i); // Mark platform as used
@@ -120,7 +169,8 @@ export function placeItemsOnPlatforms(
     // Note: We don't automatically use the platform if too short
   }
 
-  // --- Place Crates ---
+  // --- REMOVED CRATE PLACEMENT LOGIC ---
+  /*
   for (
     let i = 0;
     i < placementPool.length && cratesPlaced < targetCrates;
@@ -141,6 +191,7 @@ export function placeItemsOnPlatforms(
     cratesPlaced++;
     usedPlatformIndices.add(i); // Mark platform as used
   }
+  */
 }
 
 /**
@@ -185,8 +236,6 @@ export function placeBarrelsBetweenPlatforms(
     const gapEnd = boundsB.left;
     const gapWidth = gapEnd - gapStart;
 
-    // Ensure there's enough horizontal space for at least one barrel,
-    // AND the edge buffers on both sides.
     if (gapWidth >= BARREL_WIDTH + 2 * EDGE_BUFFER) {
       availableGaps.push({
         startX: gapStart,
@@ -195,13 +244,6 @@ export function placeBarrelsBetweenPlatforms(
         platformBTop: boundsB.top,
       });
     }
-  }
-
-  if (availableGaps.length === 0) {
-    console.warn(
-      "LevelGenerator: No suitable gaps wide enough found between platforms for barrels (considering edge buffers)."
-    );
-    return; // No gaps wide enough
   }
 
   // Keep track of occupied horizontal ranges on the ground
@@ -225,8 +267,6 @@ export function placeBarrelsBetweenPlatforms(
     const minPlaceX = selectedGap.startX + EDGE_BUFFER + BARREL_WIDTH / 2;
     const maxPlaceX = selectedGap.endX - EDGE_BUFFER - BARREL_WIDTH / 2;
 
-    // Since we filtered availableGaps, minPlaceX should always be < maxPlaceX
-    // (unless BARREL_WIDTH is zero or negative, which is an error)
     if (minPlaceX >= maxPlaceX) {
       console.error(
         "LevelGenerator: Invalid placement range calculated even after filtering gaps. Check BARREL_WIDTH and EDGE_BUFFER."
@@ -255,7 +295,7 @@ export function placeBarrelsBetweenPlatforms(
     if (placedSuccessfully) {
       barrelsPlaced++;
     }
-  } // End of while loop
+  }
 
   if (barrelsPlaced < targetBarrels) {
     console.warn(
@@ -299,9 +339,6 @@ function placeBarrelIfPossible(
     barrelsArray.push(barrel);
     occupiedRanges.push(barrelRange); // Mark this range as occupied
     return true; // Barrel placed successfully
-
-    // Optional: Remove or shrink the gap to prevent placing more barrels too close?
-    // For now, we just rely on the overlap check.
   }
   return false; // Barrel could not be placed due to overlap
 }

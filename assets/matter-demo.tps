@@ -733,6 +733,21 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">ui/continue.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>70,10,139,19</rect>
+                <key>scale9Paddings</key>
+                <rect>70,10,139,19</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">ui/game-over.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -775,21 +790,6 @@
                 <rect>200,50,400,100</rect>
                 <key>scale9Paddings</key>
                 <rect>200,50,400,100</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">ui/start.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>spriteScale</key>
-                <double>1</double>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>70,10,139,19</rect>
-                <key>scale9Paddings</key>
-                <rect>70,10,139,19</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>

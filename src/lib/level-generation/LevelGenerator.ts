@@ -204,22 +204,11 @@ export class LevelGenerator {
           barrelY = Math.min(barrelY, WORLD_HEIGHT - BARREL_HEIGHT / 2 - 2);
 
           placeBridgeBarrel = true;
-        } else {
-          console.warn(
-            `  Overlap detected for bridge barrel at X=${barrelX.toFixed(
-              0
-            )}. Placing platform instead.`
-          );
         }
       }
 
       // --- Placement Decision ---
       if (placeBridgeBarrel) {
-        console.log(
-          `Impossible gap detected (dX=${dX.toFixed(0)} > maxJump=${
-            params.maxHorizontalGap
-          }). Placing barrel.`
-        );
         const bridgeBarrel = new Barrel(this.scene, barrelX, barrelY);
         this.barrels.push(bridgeBarrel);
         this.bridgeBarrelRanges.push(newBarrelRange!); // Add range to tracker
@@ -265,13 +254,6 @@ export class LevelGenerator {
       const secondEligible = this.platforms[2];
       finalItemPlacementPlatforms = finalItemPlacementPlatforms.filter(
         (p) => p !== firstEligible && p !== secondEligible
-      );
-      console.log(
-        `Level 1: Excluding platforms at (${firstEligible?.x.toFixed(
-          0
-        )}, ${firstEligible?.y.toFixed(0)}) and (${secondEligible?.x.toFixed(
-          0
-        )}, ${secondEligible?.y.toFixed(0)}) from item placement.`
       );
     }
 

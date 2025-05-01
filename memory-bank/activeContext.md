@@ -10,6 +10,12 @@
 
 ## Recent Changes
 
+- **Adjusted Platform Visibility:** Modified level generation parameters (`LevelGenerator.ts`) to reduce the maximum potential vertical distance (`maxVerticalGap`) between platforms, ensuring platforms are generally kept within the player's view and preventing excessive "leaps of faith".
+- **Implemented Player-Barrel Interaction Logic:**
+  - Added collision detection between Player and Barrel in `Game.ts::handleCollisionStart`.
+  - Added `isInBarrel` state flag and associated methods (`enterBarrel`, `exitBarrel`, `launchFromBarrel`) to `Player.ts`.
+- **Prevented Enemies on First Two Platforms (Level 1):** Updated level generation logic (`LevelGenerator.ts`) to specifically exclude the first two generated platforms from enemy placement consideration when the level is 1.
+- **Completed Barrel Placement Testing:** Final testing confirmed that both mandatory bridge barrels (substituted for platforms when gaps > max jump distance) and optional barrels (placed between platforms via `placeBarrelsBetweenPlatforms`) are positioned correctly and accessibly, without overlaps.
 - **Uncommented Optional Barrel Placement:** The call to `placeBarrelsBetweenPlatforms` in the level generation logic has been uncommented, enabling the placement of barrels in large gaps between existing platforms.
 - **Defined Project Structure:** Analyzed and documented the existing project structure in `systemPatterns.md`. The structure follows standard conventions for Phaser/TS/Vite projects (src/scenes, src/entities, src/lib).
 - **Renamed Player Wobble Animation Assets:** Standardized filenames in `/assets/player/wobble/` according to the convention (lowercase, hyphens, `[description]-[framenumber].[extension]`).
@@ -38,28 +44,18 @@
 - Implement vertical wall generation in `LevelGenerator.ts`.
 - Implement barrel substitution logic in `LevelGenerator.ts`.
 - Test the updated level generation thoroughly.
-- If overlap is prevented for bridge barrels, revert `MAX_JUMP_DISTANCE_X` to 200.
-- Perform final test for barrel placements (including optional barrels).
 - Implement conditional logic for the 'fx_land' animation (prevent playing if coin collected).
 - **Implement Gameplay Enhancements:**
   - Add keyboard input (Space/Enter) for restarting.
   - Combine game over dismissal and restart into a single action.
-  - Implement a "safe zone" mechanic after the first major obstacle.
-  - Adjust level generation to ensure platform visibility (reduce max Y distance).
+  - Implement multiple, dynamic death zone colliders positioned 500px below platforms at various points throughout the level.
   - Ensure boxes respawn on level restart.
-  - Add higher death colliders to reduce fall time.
-  - Refine enemy placement for a smoother difficulty curve (smaller enemies first).
+  - Implement crate destruction upon hitting a death zone.
+  - Increase enemy density and level length, and refine placement for a smoother difficulty curve (introduce simpler enemies first).
   - Implement the "cool landing" animation for level completion.
   - Ensure player sprite renders in front of the finish line.
-  - Prevent enemies on the first two platforms in level 1.
 - Implement Player-Barrel collision detection in `Game.ts::handleCollisionStart`.
 - Add `isInBarrel` state and related methods to `Player.ts`.
-- Implement vertical wall generation in `LevelGenerator.ts`.
-- Implement barrel substitution logic in `LevelGenerator.ts`.
-- Test the updated level generation thoroughly.
-- If overlap is prevented for bridge barrels, revert `MAX_JUMP_DISTANCE_X` to 200.
-- Perform final test for barrel placements (including optional barrels).
-- Implement conditional logic for the 'fx_land' animation (prevent playing if coin collected).
 
 ## Active Decisions
 

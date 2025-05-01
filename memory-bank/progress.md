@@ -11,6 +11,10 @@
 - Conditional Game Initialization:
   - Game only initializes and runs in landscape orientation.
 - Asset Naming Convention Applied (Player Wobble).
+- Barrel Placement Logic (Mandatory Substitution & Optional Placement) Implemented and Tested.
+- Enemy Placement Restriction (Level 1, First 2 Platforms) Implemented.
+- Player-Barrel Interaction Logic (Collision Detection, Player State) Implemented.
+- Improved Platform Visibility (Reduced Max Y Distance).
 
 ## What's Left to Build
 
@@ -22,14 +26,12 @@
 - **Gameplay Enhancements (Based on Feedback):**
   - Keyboard restart (Space/Enter).
   - Single-input restart (dismiss + start).
-  - Post-obstacle "safe zone".
-  - Improved platform visibility (adjust max Y distance).
+  - Multiple dynamic death zones (500px below platforms).
   - Box respawning on restart.
-  - Higher death colliders (reduce fall time).
-  - Enemy difficulty curve refinement (smaller enemies first).
+  - Crate destruction in death zones.
+  - Increase enemy density/level length & refine difficulty curve.
   - Level completion "cool landing" animation implementation.
   - Player/Finish line depth sorting implementation.
-  - Enemy placement restriction for first two platforms (level 1).
   - Prevent 'fx_land' animation when collecting a coin on landing.
 
 ## Current Status

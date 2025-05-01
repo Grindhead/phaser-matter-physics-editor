@@ -39,6 +39,14 @@
 - **Implement Orientation Check:** Add the logic to `src/main.ts` to check `window.matchMedia('(orientation: landscape)')`.
 - **Test Orientation Logic:** Verify the game only loads in landscape and displays a message in portrait.
 - **Continue Responsiveness Testing:** Proceed with Step 5 (`Test EXPAND Mode`) and subsequent steps in `implementation-plan.mdc`.
+- **Implement Gameplay Enhancements:**
+  - Add keyboard input (Space/Enter) for restarting.
+  - Combine game over dismissal and restart into a single action.
+  - Implement a "safe zone" mechanic after the first major obstacle.
+  - Adjust level generation to ensure platform visibility (reduce max Y distance).
+  - Ensure boxes respawn on level restart.
+  - Add higher death colliders to reduce fall time.
+  - Refine enemy placement for a smoother difficulty curve (smaller enemies first).
 
 ## Active Decisions & Considerations
 

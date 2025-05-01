@@ -8,6 +8,15 @@
 
 - The entire editor application.
 - Asset organization and processing pipelines.
+- Implement conditional game initialization based on screen orientation.
+- **Gameplay Enhancements (Based on Feedback):**
+  - Keyboard restart (Space/Enter).
+  - Single-input restart (dismiss + start).
+  - Post-obstacle "safe zone".
+  - Improved platform visibility (adjust max Y distance).
+  - Box respawning on restart.
+  - Higher death colliders (reduce fall time).
+  - Enemy difficulty curve refinement (smaller enemies first).
 
 ## Current Status
 

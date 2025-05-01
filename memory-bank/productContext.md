@@ -14,3 +14,15 @@ Users will interact with a graphical interface representing the Phaser/Matter.js
 - Real-time feedback (potentially a simulation preview).
 - Streamlined workflow for exporting configurations.
 - Easy integration with existing Phaser projects.
+
+## Gameplay Enhancements (Derived from Feedback)
+
+- **Restart Input:** Allow level restart via keyboard input (Space/Enter) in addition to mouse/touch.
+- **Streamlined Restart:** Combine the "dismiss game over" and "restart level" actions into a single input (click/press).
+- **Post-Obstacle Safe Zone:** Provide a brief "safe zone" (e.g., slightly wider platform or temporary invulnerability) after clearing the first major obstacle (platform/enemy) to reinforce success.
+- **Platform Visibility:** Ensure platforms are always fully visible by adjusting maximum Y-distance generation parameters to prevent "leaps of faith."
+- **Box Respawns:** Respawn interactable boxes when the level restarts.
+- **Reduced Fall Time:** Implement higher death colliders, especially early in the level, to reduce falling time after a mistake.
+- **Enemy Difficulty Curve:**
+  - Introduce smaller/simpler enemies early to teach avoidance mechanics.
+  - Reserve larger/more challenging enemies for later parts of the level.

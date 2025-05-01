@@ -459,12 +459,22 @@ export class LevelGenerator {
     length: number,
     index: number
   ): Platform {
+    // Determine platform type based on index (only for key generation)
+    // NOTE: This logic assumes numPlatforms is known or the last platform index is calculated elsewhere
+    //       If placing finish point depends on 'lastPlatform', index might not correspond perfectly to 'end'.
+    //       For simplicity here, we just use index 0 for start. A more robust 'type' might be needed.
+    const platformType = index === 0 ? "start" : "middle"; // Simplified: Assume only start and middle for now
+    // TODO: Need a way to identify the 'end' platform reliably if its texture differs
+
+    // Generate a unique key based on type and length for texture caching
+    const platformKey = `platform-${platformType}-${length}`;
+
     const platform = new Platform(
       this.scene,
       pos.x,
       pos.y,
       length,
-      index === 0 ? "start" : index === length - 1 ? "end" : "middle" // Simplified type for example
+      platformKey // Use the unique key
     );
     this.platforms.push(platform);
     return platform;

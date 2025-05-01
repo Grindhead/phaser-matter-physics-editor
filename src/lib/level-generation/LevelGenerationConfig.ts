@@ -24,7 +24,8 @@ export const MAX_FALL_HEIGHT = 400;
 
 // Entity heights/dimensions for placement calculations
 export const COIN_HEIGHT = 28;
-export const ENEMY_HEIGHT = 40;
+export const ENEMY_SMALL_HEIGHT = 40;
+export const ENEMY_LARGE_HEIGHT = 94;
 export const CRATE_SMALL_HEIGHT = 32;
 export const CRATE_BIG_HEIGHT = 64;
 export const BARREL_HEIGHT = 48;
@@ -32,7 +33,7 @@ export const BARREL_WIDTH = 40;
 export const PLATFORM_DISPLAY_HEIGHT = 32; // May not be needed directly here but good for context
 
 // Generation constraints
-export const MIN_PLATFORM_LENGTH_WITH_ENEMY = 6;
+export const MIN_PLATFORM_LENGTH_WITH_ENEMY = 12; // Enemies only on platforms with 12 segments or more
 export const MIN_COIN_SPACING = 80;
 export const MIN_ABS_VERTICAL_GAP = 20;
 

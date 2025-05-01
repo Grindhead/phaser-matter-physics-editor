@@ -44,7 +44,7 @@ export class MainMenu extends Scene {
     this.playButton = this.add
       .image(
         width / 2,
-        height * 0.6,
+        height * 0.75,
         TEXTURE_ATLAS,
         "ui/main-menu/play-game.png"
       )

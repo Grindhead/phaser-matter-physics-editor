@@ -94,10 +94,7 @@ export function placeItemsOnPlatforms(
   eligiblePlatforms: Platform[],
   prng: SimplePRNG,
   params: LevelGenerationParams,
-  levelNumber: number,
   enemiesArray: (EnemyLarge | EnemySmall)[]
-  // cratesArray: (CrateBig | CrateSmall)[] // Removed Crate Array Parameter
-  // barrelsArray: Barrel[] // REMOVED
 ): void {
   if (eligiblePlatforms.length === 0) return;
 
@@ -146,13 +143,14 @@ export function placeItemsOnPlatforms(
 
       // Determine enemy type and height *before* calculating Y
       let isLargeEnemy = false;
-      if (!(levelNumber === 1 && enemiesPlaced < 3)) {
-        // Not the first 3 on level 1
+      // Force the first enemy placed to be small
+      if (enemiesPlaced > 0) {
+        // Randomly choose type for subsequent enemies
         if (prng.next() >= 0.5) {
-          // Randomly choose for others
           isLargeEnemy = true;
         }
       }
+      // If enemiesPlaced === 0, isLargeEnemy remains false, resulting in EnemySmall
 
       const enemyHeight = isLargeEnemy
         ? ENEMY_LARGE_HEIGHT

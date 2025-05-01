@@ -835,7 +835,6 @@ export class LevelGenerator {
       eligiblePlatforms,
       this.prng,
       params,
-      this.levelNumber,
       this.enemies
     );
   }
@@ -863,5 +862,37 @@ export class LevelGenerator {
     }
 
     return false;
+  }
+
+  /**
+   * Respawns crates at the specified positions
+   * @param cratePositions - Array of positions and types for crates to respawn
+   * @returns Array of created crates
+   */
+  respawnCrates(
+    cratePositions: { x: number; y: number; type: string }[]
+  ): (CrateBig | CrateSmall)[] {
+    // First, remove any existing crates
+    this.crates.forEach((crate) => {
+      if (crate && crate.body) {
+        crate.destroy();
+      }
+    });
+    this.crates = [];
+
+    // Then create new crates at the specified positions
+    cratePositions.forEach((pos) => {
+      let crate: CrateBig | CrateSmall;
+
+      if (pos.type === "big") {
+        crate = new CrateBig(this.scene, pos.x, pos.y);
+      } else {
+        crate = new CrateSmall(this.scene, pos.x, pos.y);
+      }
+
+      this.crates.push(crate);
+    });
+
+    return this.crates;
   }
 }

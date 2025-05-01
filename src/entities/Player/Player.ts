@@ -32,6 +32,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   private isNearLeftEdge = false;
   private isNearRightEdge = false;
   private currentPlatformBounds: { left: number; right: number } | null = null;
+  private coinCollectionTimer?: Phaser.Time.TimerEvent;
+  private coinCollectedDuringLanding = false; // Track coin collection during landing
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -67,6 +69,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.isNearLeftEdge = false;
     this.isNearRightEdge = false;
     this.currentPlatformBounds = null;
+    this.coinCollectedDuringLanding = false;
     scene.add.existing(this);
   }
 
@@ -253,6 +256,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
   ) {
     this.isGrounded = false; // Reset grounded state, check contacts below
 
+    // Check if we're landing before processing collisions
+    const wasGroundedBefore = this.groundContacts.size > 0;
+
     for (const pair of event.pairs) {
       const { bodyA, bodyB } = pair;
       // Use processCollision to handle different body types
@@ -266,16 +272,25 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     // Update final state based on contacts found
     this.isGrounded = this.groundContacts.size > 0;
 
+    // Check if this is a landing event (was not grounded, now is grounded)
+    const isLandingEvent = !wasGroundedBefore && this.isGrounded;
+
     // Reset platform bounds only if landing on new ground
-    if (this.isGrounded) {
+    if (isLandingEvent) {
       this.currentPlatformBounds = null;
-      // Play landing effect only if newly grounded
-      new FXLand(this.scene, this.x, this.getBounds().bottom);
+
+      // Only create FXLand effect if the coin wasn't collected during THIS landing
+      // We use our landing flag to track this specific landing event
+      if (!this.coinCollectedDuringLanding) {
+        // Play landing effect
+        new FXLand(this.scene, this.x, this.getBounds().bottom);
+      }
 
       // Play landing animation after barrel jump, level completion, or when falling from a height
       if (
         !this.isPlayingLandAnimation &&
-        (this.recentlyExitedBarrel || this.isLevelComplete)
+        (this.recentlyExitedBarrel || this.isLevelComplete) &&
+        !this.coinCollectedDuringLanding // Only check coins collected during THIS landing
       ) {
         this.isPlayingLandAnimation = true;
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, true);
@@ -296,6 +311,9 @@ export class Player extends Phaser.Physics.Matter.Sprite {
           this.recentlyExitedBarrel = false;
         }
       }
+
+      // Reset coin collection during landing flag after handling the landing
+      this.coinCollectedDuringLanding = false;
     }
   }
 
@@ -449,7 +467,11 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     }
 
     // If already grounded, initiate cool landing animation
-    if (this.isGrounded && !this.isPlayingLandAnimation) {
+    if (
+      this.isGrounded &&
+      !this.isPlayingLandAnimation &&
+      !this.coinCollectedDuringLanding
+    ) {
       this.isPlayingLandAnimation = true;
       // Use regular landing animation until cool landing animation assets are available
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, true);
@@ -469,5 +491,24 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.setVelocityX(0);
     this.setVelocityY(0);
     this.setStatic(true);
+  }
+
+  /**
+   * Indicates that the player has just collected a coin.
+   * Will flag that a coin was collected during landing if this happens during a landing.
+   * The flag automatically resets after the landing is processed.
+   */
+  public setRecentCoinCollection(): void {
+    // Set flag for coin collection during landing
+    // If the player has landed or is in the process of landing,
+    // flag that a coin was collected during this landing event
+    if (!this.isGrounded && this.groundContacts.size > 0) {
+      this.coinCollectedDuringLanding = true;
+    }
+
+    // Clear any existing reset timer
+    if (this.coinCollectionTimer) {
+      this.scene.time.removeEvent(this.coinCollectionTimer);
+    }
   }
 }

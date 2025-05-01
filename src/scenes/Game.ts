@@ -68,7 +68,7 @@ export class Game extends Scene {
     this.parallaxManager = new ParallaxManager(this);
     this.setupWorldBounds();
     this.initGame();
-    this.showUIOverlay(GAME_STATE.WAITING_TO_START);
+    this.startGame(); // Start the game immediately
 
     this.createDebugUI();
 
@@ -193,15 +193,6 @@ export class Game extends Scene {
     let callback: () => void;
 
     switch (state) {
-      case GAME_STATE.WAITING_TO_START:
-        texture = "ui/start.png";
-        callback = () => {
-          // Hide the overlay and start the game
-          this.overlayButton?.destroy();
-          this.overlayButton = undefined;
-          this.startGame();
-        };
-        break;
       case GAME_STATE.GAME_OVER:
         texture = "ui/game-over.png";
         callback = () => {
@@ -209,7 +200,7 @@ export class Game extends Scene {
         };
         break;
       case GAME_STATE.LEVEL_COMPLETE:
-        texture = "ui/start.png"; // Using start.png as requested
+        texture = "ui/continue.png"; // Use continue texture for level complete
         callback = () => {
           if (!this.restartTriggered) this.restartLevel();
         };
@@ -513,7 +504,7 @@ export class Game extends Scene {
 
   private createMobileControls() {
     const yPos = 800;
-    console.log("Creating mobile controls");
+
     // Left Button
     this.createMobileButton(
       100,
@@ -593,22 +584,16 @@ export class Game extends Scene {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
     const currentDebugState = this.physicsDebugActive; // Capture state BEFORE stopping/restarting
-    console.log(
-      `[Game] Restarting level. Passing debug state: ${currentDebugState}`
-    ); // Added log
 
     // Explicitly remove world collision listeners before restart
     if (this.matter.world) {
       this.matter.world.off("collisionstart", this.handleCollisionStart);
-    } else {
-      console.warn("[Game] Matter world not found during restart cleanup."); // Added log
     }
     // Also remove the debug toggle listener to prevent duplicates on restart
     this.game.events.off("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
     // Shut down the DebugUI scene if it's active
     if (this.scene.isActive(SCENES.DEBUG_UI)) {
-      console.log("[Game Restart] Stopping Debug UI scene."); // Added log
       this.scene.stop(SCENES.DEBUG_UI);
     }
     // Restart this scene, passing the captured debug state

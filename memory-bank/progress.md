@@ -16,14 +16,17 @@
 - Player-Barrel Interaction Logic (Collision Detection, Player State) Implemented.
 - Improved Platform Visibility (Reduced Max Y Distance).
 - Immediate Game Start (No Click-to-Play).
+- Level Generation Enhancements:
+  - Vertical walls (using rotated platforms) implemented at the end of platforms to help reach higher platforms.
+  - Wall placement algorithm improved with correct positioning and height calculations.
+  - Barrel substitution for impassable gaps refined.
+  - Strategic crate placement specifically near walls to help players climb.
+  - Debug visualization for wall and crate placement.
 
 ## What's Left to Build
 
 - The entire editor application.
 - Asset organization and processing pipelines.
-- **Level Generation Enhancements:**
-  - Vertical walls (using rotated platforms).
-  - Barrel substitution for impassable gaps.
 - **Gameplay Enhancements (Based on Feedback):**
   - Keyboard restart (Space/Enter).
   - Single-input restart (dismiss + start).
@@ -37,7 +40,7 @@
 
 ## Current Status
 
-- Implementing Level Generation and Gameplay Enhancements.
+- Implementing Gameplay Enhancements.
 
 ## Known Issues
 
@@ -46,3 +49,6 @@
 ## Evolution of Decisions
 
 - Initial decision made to standardize asset naming conventions (lowercase, hyphens).
+- Evolution of level generation strategy: from randomly placed vertical walls to strategically positioned walls at platform edges, improving navigation and game flow.
+- Evolution of crate placement: from random placement to strategic positioning specifically near walls to help players climb.
+- Addition of debug visualization to verify correct object placement during level generation.

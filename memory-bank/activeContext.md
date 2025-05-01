@@ -2,14 +2,30 @@
 
 ## Current Focus
 
-- Initial project setup and organization.
-- Implement new level generation features:
-  - Vertical walls using rotated platforms.
-  - Barrel substitution for impassable gaps.
-- Implement player-barrel interaction logic.
+- Implement gameplay enhancements:
+  - Add keyboard input (Space/Enter) for restarting.
+  - Combine game over dismissal and restart into a single action.
+  - Implement multiple, dynamic death zone colliders.
+  - Ensure boxes respawn on level restart.
+  - Implement crate destruction upon hitting a death zone.
+  - Increase enemy density and level length, refine placement.
+  - Implement the "cool landing" animation for level completion.
+  - Ensure player sprite renders in front of the finish line.
+  - Implement conditional logic for the 'fx_land' animation.
 
 ## Recent Changes
 
+- **Refined Level Generation Strategy:**
+  - Fixed wall generation logic to correctly place vertical walls at platform edges.
+  - Improved wall positioning calculations for better gameplay accessibility.
+  - Added forced test wall when no natural height differences are found.
+  - Modified crate placement to only position crates where needed for jumping up walls.
+  - Added debug visualization for walls and crates during level generation.
+- **Improved Level Generation Strategy:**
+  - Modified vertical wall placement to position walls at the end of platforms that lead to higher platforms.
+  - Enhanced crate placement logic to strategically position crates to help players reach higher platforms.
+- **Implemented Vertical Walls:** Added support for vertical wall generation using rotated platform sprites. Updated the Platform class, platformBuilder, and LevelGenerator to handle vertical orientation.
+- **Enhanced Barrel Substitution Logic:** Refined barrel substitution to work properly with vertical walls and prevent conflicting placements.
 - **Implemented Immediate Game Start:** Removed any "click to play" state.
 - **Adjusted Platform Visibility:** Reduced `maxVerticalGap` in `LevelGenerator.ts`.
 - **Implemented Player-Barrel Interaction Logic:** Added collision detection and state management (`isInBarrel`, `enterBarrel`, etc.) in `Game.ts` and `Player.ts`.
@@ -25,8 +41,6 @@
 
 ## Next Steps
 
-- Implement vertical wall generation in `LevelGenerator.ts`.
-- Implement barrel substitution logic in `LevelGenerator.ts`.
 - Test the updated level generation thoroughly.
 - Implement conditional logic for the 'fx_land' animation (prevent playing if coin collected).
 - **Implement Gameplay Enhancements:**
@@ -43,6 +57,15 @@
 
 ## Active Decisions
 
+- **Vertical Wall Placement Strategy:**
+  - Walls now placed at the end of platforms leading to higher platforms.
+  - Wall height calculated based on the vertical gap between platforms.
+  - Wall position aligned to ensure proper access from the lower platform.
+  - Debug visualization added to verify proper wall placement.
+- **Strategic Crate Placement:**
+  - Crates only placed near walls to help players climb.
+  - Crate type (big/small) selected based on wall height.
+  - Crate positioned on platform edge near wall.
 - **Immediate Start:** Game starts automatically after asset loading.
 - **Orientation Handling:** Display message in portrait mode; use `window.matchMedia`.
 - **Asset Naming:** Use lowercase, hyphens: `[description]-[framenumber].[extension]`.
@@ -69,9 +92,14 @@
 - **State Management:** Use state machines or flags within entities.
 - **Interaction Logic:** Coordinate state changes across interacting entities (e.g., Player, Barrel) using flags/methods.
 - **Conditional Animation:** Check game state to conditionally play/suppress animations.
+- **Level Design Strategy:** Place vertical walls at platform edges to help reach higher platforms; position crates to help vertical navigation.
+- **Debug Visualization:** For complex procedural level generation, add debug visualization to verify correct placement.
 
 ## Learnings & Project Insights
 
+- **Wall Placement Physics:** Vertical wall position is critical for gameplay; center of wall should be positioned to make bottom align with platform and top extend above target height.
+- **Strategic Level Design:** Positioning vertical walls at platform edges and using crates for vertical navigation creates more deliberate paths through levels.
+- **Debug Visualization Importance:** Visual feedback during level generation helps identify issues with placement algorithms.
 - **Orientation Handling:** `window.matchMedia` is effective; manage game instance creation/destruction carefully.
 - **Scene Restart Lifecycle:** Explicitly passing state via `restart(data)` is safer than reading potentially reset state in `create()`.
 - Implementing interactive mechanics requires coordinating state across entities.

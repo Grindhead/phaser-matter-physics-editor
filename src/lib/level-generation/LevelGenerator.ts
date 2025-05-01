@@ -21,6 +21,8 @@ import {
   MAX_JUMP_HEIGHT_UP,
   MIN_ABS_VERTICAL_GAP,
   PLATFORM_SEGMENT_WIDTH,
+  CRATE_BIG_HEIGHT,
+  CRATE_SMALL_HEIGHT,
 } from "./LevelGenerationConfig";
 import { WORLD_HEIGHT } from "../constants";
 import { setTotalCoinsInLevel } from "../helpers/coinManager";
@@ -93,6 +95,10 @@ export class LevelGenerator {
   private barrels: Barrel[] = [];
   private player: Player;
 
+  // Debugging
+  private debugGraphics: Phaser.GameObjects.Graphics | null = null;
+  private isDebugActive: boolean = false;
+
   // Calculated bounds after generation
   private levelMinX: number = 0;
   private levelMaxX: number = 0;
@@ -103,8 +109,14 @@ export class LevelGenerator {
 
   private bridgeBarrelRanges: { start: number; end: number }[] = []; // Track bridge barrel horizontal ranges
 
-  constructor(scene: Scene) {
+  constructor(
+    scene: Scene,
+    debugGraphics: Phaser.GameObjects.Graphics | null,
+    isDebugActive: boolean
+  ) {
     this.scene = scene;
+    this.debugGraphics = debugGraphics;
+    this.isDebugActive = isDebugActive;
   }
 
   /**
@@ -128,6 +140,9 @@ export class LevelGenerator {
     let totalCoins = 0;
     let lastPlatform: Platform | null = null;
     const itemPlacementPlatforms: Platform[] = [];
+    // Store all platforms with their positions for later wall and crate placement
+    const platformPositions: { platform: Platform; x: number; y: number }[] =
+      [];
 
     this.platforms = [];
     this.enemies = [];
@@ -150,9 +165,14 @@ export class LevelGenerator {
       0
     );
     lastPlatform = startPlatform;
+    platformPositions.push({
+      platform: startPlatform,
+      x: currentPlatformX,
+      y: currentPlatformY,
+    });
     // Don't add start platform to item placement list
 
-    // Loop to generate the remaining platforms (or barrels)
+    // Loop to generate the remaining platforms (or barrels or vertical walls)
     // Need numPlatforms - 1 because we created the start platform already
     for (let i = 1; i < numPlatforms; i++) {
       let platformLength = this.prng.nextInt(
@@ -161,12 +181,15 @@ export class LevelGenerator {
       );
 
       // Calculate potential position and gaps for the *next* platform
-      const { nextX, nextY, dX } = this.calculateNextPlatformPosition(
+      const { nextX, nextY, dX, dY } = this.calculateNextPlatformPosition(
         { x: currentPlatformX, y: currentPlatformY },
         platformLength,
         lastPlatform,
         params
       );
+
+      // Remove random vertical wall placement and focus on wall placement after all platforms
+      const shouldPlaceVerticalWall = false;
 
       let placeBridgeBarrel = false;
       let barrelX = 0;
@@ -175,7 +198,12 @@ export class LevelGenerator {
 
       // --- Barrel Substitution Logic --- START
       // Only consider placing a bridge barrel if it's NOT the very last segment before the finish
-      if (dX > params.maxHorizontalGap && i < numPlatforms - 1) {
+      // And not placing a vertical wall
+      if (
+        dX > params.maxHorizontalGap &&
+        i < numPlatforms - 1 &&
+        !shouldPlaceVerticalWall
+      ) {
         barrelX = lastPlatform.getBounds().right + dX / 2;
         newBarrelRange = {
           start: barrelX - BARREL_WIDTH / 2,
@@ -208,7 +236,9 @@ export class LevelGenerator {
       }
 
       // --- Placement Decision ---
-      if (placeBridgeBarrel) {
+      if (shouldPlaceVerticalWall) {
+        // No longer randomly placing vertical walls mid-generation
+      } else if (placeBridgeBarrel) {
         const bridgeBarrel = new Barrel(this.scene, barrelX, barrelY);
         this.barrels.push(bridgeBarrel);
         this.bridgeBarrelRanges.push(newBarrelRange!); // Add range to tracker
@@ -235,10 +265,18 @@ export class LevelGenerator {
         );
         itemPlacementPlatforms.push(platform); // Add eligible platforms for items
         lastPlatform = platform;
+        platformPositions.push({ platform, x: nextX, y: nextY });
         currentPlatformX = nextX; // Update position based on the newly placed platform
         currentPlatformY = nextY;
       }
     }
+
+    // After all platforms are placed, add vertical walls at the end of platforms
+    // that lead to higher platforms
+    console.log(
+      `Generated ${platformPositions.length} platforms, checking for wall placement...`
+    );
+    this.addVerticalWallsAtPlatformEdges(platformPositions);
 
     // --- Post-Generation Item Placement ---
     // Create the finish point after the last platform/barrel logic
@@ -257,17 +295,8 @@ export class LevelGenerator {
       );
     }
 
-    // Place Enemies, Crates using the helper
-    // Pass the potentially filtered list and the class member arrays
-    placeItemsOnPlatforms(
-      this.scene,
-      finalItemPlacementPlatforms, // Use the filtered list
-      this.prng,
-      params,
-      this.levelNumber,
-      this.enemies, // Pass class member array
-      this.crates // Pass class member array
-    );
+    // Place Enemies using the helper
+    this.placeEnemies(finalItemPlacementPlatforms, params);
 
     this.platforms.forEach((platform) => {
       totalCoins += populatePlatformWithCoins(
@@ -415,7 +444,8 @@ export class LevelGenerator {
   private createPlatform(
     pos: PlacementPosition,
     length: number,
-    index: number
+    index: number,
+    isVertical: boolean = false
   ): Platform {
     // Determine platform type based on index
     let platformType = "middle";
@@ -425,18 +455,32 @@ export class LevelGenerator {
       platformType = "end";
     }
 
-    // Generate a unique key based on type and length for texture caching
-    const platformKey = `platform-${platformType}-${length}`;
+    // Generate a unique key based on type, length and orientation for texture caching
+    const orientationSuffix = isVertical ? "-vertical" : "";
+    const platformKey = `platform-${platformType}-${length}${orientationSuffix}`;
 
     const platform = new Platform(
       this.scene,
       pos.x,
       pos.y,
       length,
-      platformKey // Use the unique key
+      platformKey,
+      isVertical // Pass the isVertical flag to the Platform constructor
     );
     this.platforms.push(platform);
     return platform;
+  }
+
+  /**
+   * Creates a vertical wall at a specified position.
+   * @param pos The position to place the vertical wall
+   * @param height The height of the wall in segments
+   * @returns The created Platform instance representing the wall
+   */
+  private createVerticalWall(pos: PlacementPosition, height: number): Platform {
+    // Create a vertical platform with the specified height
+    // Use a regular index (-2 to differentiate from end platforms)
+    return this.createPlatform(pos, height, -2, true);
   }
 
   /**
@@ -532,5 +576,222 @@ export class LevelGenerator {
       maxX: this.levelMaxX,
       lowestY: this.levelLowestY,
     };
+  }
+
+  /**
+   * Places vertical walls at the end of platforms that lead to higher platforms
+   * @param platformPositions Array of platforms with their positions
+   */
+  private addVerticalWallsAtPlatformEdges(
+    platformPositions: { platform: Platform; x: number; y: number }[]
+  ): void {
+    // Sort platforms by x position
+    const sortedPlatforms = [...platformPositions].sort((a, b) => a.x - b.x);
+
+    // Track all wall positions for crate placement
+    const wallPositions: {
+      wallX: number;
+      wallY: number;
+      wallHeight: number;
+      platformBelow: Platform;
+    }[] = [];
+
+    console.log(
+      `Processing ${sortedPlatforms.length} platforms for wall placement`
+    );
+
+    // First check if any platforms have significant height differences (removed for clarity)
+    // Forcing test wall removed
+
+    // Only process platform pairs where we can potentially place walls
+    for (let i = 0; i < sortedPlatforms.length - 1; i++) {
+      const currentPlatform = sortedPlatforms[i].platform;
+      const nextPlatform = sortedPlatforms[i + 1].platform;
+
+      // Skip if either platform is vertical (avoid placing walls next to walls)
+      if (currentPlatform.isVertical || nextPlatform.isVertical) {
+        console.log(`Skipping pair ${i} - one platform is already vertical`);
+        continue;
+      }
+
+      const currentBounds = currentPlatform.getBounds();
+      const nextBounds = nextPlatform.getBounds();
+
+      // Calculate the horizontal gap between platforms
+      const gap = nextBounds.left - currentBounds.right;
+
+      // In Phaser, lower Y values are higher on screen
+      // So nextBounds.top < currentBounds.top means the next platform is higher
+      const heightDifference = nextBounds.top - currentBounds.top;
+
+      console.log(
+        `Platform pair ${i}: gap=${gap}, heightDiff=${heightDifference}, MAX_JUMP_HEIGHT_UP=${MAX_JUMP_HEIGHT_UP}`
+      );
+
+      // Only place a wall if there is significant height difference and reasonable gap
+      // heightDifference < 0 means the next platform is higher (smaller Y value is higher in Phaser)
+      // Increase the allowed horizontal gap for wall placement
+      if (
+        heightDifference < -MAX_JUMP_HEIGHT_UP * 0.7 &&
+        gap > 20 &&
+        gap < MAX_JUMP_DISTANCE_X * 1.5
+      ) {
+        // Calculate wall height based on the absolute height difference
+        const absHeightDiff = Math.abs(heightDifference);
+        const wallHeight =
+          Math.ceil(absHeightDiff / PLATFORM_SEGMENT_WIDTH) + 2; // Add 2 segments for safety
+
+        // Place the wall at the end of the current platform
+        const wallX = currentBounds.right + 20; // Place 20px from edge
+
+        // Calculate optimal wall position:
+        // Bottom of wall should be at current platform height,
+        // Top of wall should reach slightly above next platform
+        const wallTotalHeight = wallHeight * PLATFORM_SEGMENT_WIDTH;
+
+        // Center of wall should be at: current platform top - (wall height/2)
+        // This positions the bottom of the wall at the current platform level
+        const wallY = currentBounds.top - wallTotalHeight / 2;
+
+        console.log(
+          `Placing wall at platform ${i}: heightDiff=${heightDifference}, wallHeight=${wallHeight}, wallX=${wallX}, wallY=${wallY}`
+        );
+
+        const wall = this.createVerticalWall(
+          { x: wallX, y: wallY },
+          wallHeight
+        );
+
+        // Store this wall position for crate placement
+        wallPositions.push({
+          wallX,
+          wallY,
+          wallHeight,
+          platformBelow: currentPlatform, // The platform below the wall
+        });
+
+        // Draw debug visualization only if debug is active
+        if (this.isDebugActive && this.debugGraphics) {
+          const graphics = this.debugGraphics;
+          graphics.lineStyle(4, 0xff0000, 1); // Red for walls
+          graphics.strokeRect(
+            wallX - 5,
+            wallY - wallTotalHeight / 2,
+            10,
+            wallTotalHeight
+          );
+        }
+      } else {
+        console.log(
+          `Not placing wall between platforms ${i} and ${
+            i + 1
+          }: conditions not met`
+        );
+      }
+    }
+
+    console.log(
+      `Finished wall placement. Placed ${wallPositions.length} walls.`
+    );
+
+    // Now place crates strategically near walls
+    this.placeStrategicCratesNearWalls(wallPositions);
+  }
+
+  /**
+   * Places crates specifically to help players jump up to walls
+   * @param wallPositions Array of wall positions and their associated platforms
+   */
+  private placeStrategicCratesNearWalls(
+    wallPositions: {
+      wallX: number;
+      wallY: number;
+      wallHeight: number;
+      platformBelow: Platform;
+    }[]
+  ): void {
+    // If no walls, no need for crates
+    if (wallPositions.length === 0) {
+      console.log("No walls to place crates near");
+      return;
+    }
+
+    console.log(`Placing crates near ${wallPositions.length} walls`);
+
+    // Track platforms that have crates placed on them
+    const platformsWithCrates = new Set<Platform>();
+
+    for (let i = 0; i < wallPositions.length; i++) {
+      const wallPos = wallPositions[i];
+      const platform = wallPos.platformBelow;
+
+      // Skip if platform already has a crate
+      if (platformsWithCrates.has(platform)) {
+        console.log(`Skipping wall ${i} - platform already has a crate`);
+        continue;
+      }
+
+      const bounds = platform.getBounds();
+
+      // Position the crate near the wall, but still on the platform
+      // Place it 40px from the right edge (where the wall is)
+      const placeX = Math.min(bounds.right - 40, wallPos.wallX - 30);
+
+      // Determine if we need a big crate based on the wall height
+      // For taller walls, use big crates
+      const needsBigCrate = wallPos.wallHeight > 4;
+
+      // Choose appropriate crate type based on the height needed
+      const crateHeight = needsBigCrate ? CRATE_BIG_HEIGHT : CRATE_SMALL_HEIGHT;
+      const placeY = bounds.top - crateHeight / 2;
+
+      console.log(
+        `Placing ${
+          needsBigCrate ? "big" : "small"
+        } crate near wall ${i} at x=${placeX}, y=${placeY}`
+      );
+
+      // Create the crate
+      const crate = needsBigCrate
+        ? new CrateBig(this.scene, placeX, placeY)
+        : new CrateSmall(this.scene, placeX, placeY);
+
+      this.crates.push(crate);
+      platformsWithCrates.add(platform);
+
+      // Draw debug visualization only if debug is active
+      if (this.isDebugActive && this.debugGraphics) {
+        const graphics = this.debugGraphics;
+        graphics.lineStyle(4, 0x00ff00, 1); // Green for crates
+        graphics.strokeRect(
+          placeX - crateHeight / 2,
+          placeY - crateHeight / 2,
+          crateHeight,
+          crateHeight
+        );
+      }
+    }
+
+    // Report on crate placement
+    console.log(`Placed ${this.crates.length} crates near walls`);
+  }
+
+  /**
+   * Places enemies on platforms
+   */
+  private placeEnemies(
+    eligiblePlatforms: Platform[],
+    params: LevelGenerationParams
+  ): void {
+    // Use the existing placeItemsOnPlatforms function for enemies
+    placeItemsOnPlatforms(
+      this.scene,
+      eligiblePlatforms,
+      this.prng,
+      params,
+      this.levelNumber,
+      this.enemies,
+      [] // Empty array for crates since we're placing them separately
+    );
   }
 }

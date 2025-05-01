@@ -133,7 +133,12 @@ export class Game extends Scene {
    * Uses LevelGenerator to create the entities for the current level.
    */
   private generateLevelEntities(): void {
-    this.levelGenerator = new LevelGenerator(this);
+    // Pass the scene, debug graphics object, and current debug state to the generator
+    this.levelGenerator = new LevelGenerator(
+      this,
+      this.debugGraphics,
+      this.physicsDebugActive
+    );
     this.player = this.levelGenerator.generateLevel();
     this.enemies = this.levelGenerator.getEnemies();
     this.barrels = this.levelGenerator.getBarrels();

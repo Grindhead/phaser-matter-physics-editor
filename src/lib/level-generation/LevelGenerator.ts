@@ -322,7 +322,7 @@ export class LevelGenerator {
     const maxPlatforms = Math.floor(
       (15 + levelNumber) * LEVEL_LENGTH_MULTIPLIER
     );
-    const requiredCoins = 100;
+    const requiredCoins = 150;
 
     // Increase enemy probability with the enemy density multiplier
     const enemyProbability = Math.min(

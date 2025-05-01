@@ -22,9 +22,9 @@ export interface LevelGenerationParams {
 
 // --- Configuration Constants ---
 // Estimated player jump capabilities
-export const MAX_JUMP_DISTANCE_X = 300; // Maximum horizontal distance player can jump
-export const MAX_JUMP_HEIGHT_UP = 170; // Maximum jump height
-export const MAX_FALL_HEIGHT = 250; // Maximum safe fall height
+export const MAX_JUMP_DISTANCE_X = 180; // Maximum horizontal distance player can jump
+export const MAX_JUMP_HEIGHT_UP = 140; // Maximum jump height
+export const MAX_FALL_HEIGHT = 210; // Maximum safe fall height
 
 // Entity heights/dimensions for placement calculations
 export const COIN_HEIGHT = 28;
@@ -38,7 +38,7 @@ export const PLATFORM_DISPLAY_HEIGHT = 32; // May not be needed directly here bu
 
 // Generation constraints
 export const MIN_PLATFORM_LENGTH_WITH_ENEMY = 12; // Enemies only on platforms with 12 segments or more
-export const MIN_COIN_SPACING = 80;
+export const MIN_COIN_SPACING = 50;
 export const MIN_ABS_VERTICAL_GAP = 40;
 
 // Platform segment width (pixels)

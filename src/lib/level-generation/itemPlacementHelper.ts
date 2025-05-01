@@ -32,7 +32,12 @@ export function populatePlatformWithCoins(
   let coinsAdded = 0;
 
   const maxPossibleCoins = Math.floor(platformWidth / MIN_COIN_SPACING);
-  const targetCoinsForPlatform = prng.nextInt(0, maxPossibleCoins + 1);
+  // Increase number of coins placed by using a higher minimum number and multiplier
+  const minCoins = Math.min(1, Math.floor(maxPossibleCoins * 0.3));
+  const targetCoinsForPlatform = Math.max(
+    minCoins,
+    prng.nextInt(0, maxPossibleCoins + 1)
+  );
 
   if (targetCoinsForPlatform > 0) {
     const startOffset =

@@ -15,8 +15,6 @@ import {
 } from "./LevelGenerationConfig";
 import { Coin } from "../../entities/Coin/Coin";
 import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
-import { CrateBig } from "../../entities/CrateBig/CrateBig";
-import { CrateSmall } from "../../entities/CrateSmall/CrateSmall";
 import { Barrel } from "../../entities/Barrel/Barrel";
 import { WORLD_HEIGHT } from "../constants";
 import { EnemySmall } from "../../entities/Enemies/EnemySmall";
@@ -67,8 +65,8 @@ export function placeItemsOnPlatforms(
   prng: SimplePRNG,
   params: LevelGenerationParams,
   levelNumber: number,
-  enemiesArray: (EnemyLarge | EnemySmall)[],
-  cratesArray: (CrateBig | CrateSmall)[]
+  enemiesArray: (EnemyLarge | EnemySmall)[]
+  // cratesArray: (CrateBig | CrateSmall)[] // Removed Crate Array Parameter
   // barrelsArray: Barrel[] // REMOVED
 ): void {
   if (eligiblePlatforms.length === 0) return;
@@ -85,9 +83,10 @@ export function placeItemsOnPlatforms(
   const shuffledPlatforms = shuffleArray([...eligiblePlatforms]);
 
   const targetEnemies = params.targetEnemies;
-  const targetCrates = params.targetCrates;
+  // const targetCrates = params.targetCrates; // Removed crate target calculation
 
-  const totalPlatformsNeeded = targetEnemies + targetCrates;
+  // const totalPlatformsNeeded = targetEnemies + targetCrates; // Simplified total platforms needed
+  const totalPlatformsNeeded = targetEnemies;
 
   const placementPool = shuffledPlatforms.slice(
     0,
@@ -98,7 +97,7 @@ export function placeItemsOnPlatforms(
   const usedPlatformIndices = new Set<number>();
 
   let enemiesPlaced = 0;
-  let cratesPlaced = 0;
+  // let cratesPlaced = 0; // Removed crate placed counter
 
   // --- Place Enemies ---
   for (
@@ -142,7 +141,8 @@ export function placeItemsOnPlatforms(
     // Note: We don't automatically use the platform if too short
   }
 
-  // --- Place Crates ---
+  // --- REMOVED CRATE PLACEMENT LOGIC ---
+  /*
   for (
     let i = 0;
     i < placementPool.length && cratesPlaced < targetCrates;
@@ -163,6 +163,7 @@ export function placeItemsOnPlatforms(
     cratesPlaced++;
     usedPlatformIndices.add(i); // Mark platform as used
   }
+  */
 }
 
 /**

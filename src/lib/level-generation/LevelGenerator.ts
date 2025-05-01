@@ -720,60 +720,115 @@ export class LevelGenerator {
 
     // Track platforms that have crates placed on them
     const platformsWithCrates = new Set<Platform>();
+    let cratesPlacedCount = 0; // Keep track of actual crates placed
 
     for (let i = 0; i < wallPositions.length; i++) {
       const wallPos = wallPositions[i];
       const platform = wallPos.platformBelow;
 
-      // Skip if platform already has a crate
+      // Skip if platform already has a crate (redundant check now, but safe)
       if (platformsWithCrates.has(platform)) {
-        console.log(`Skipping wall ${i} - platform already has a crate`);
+        console.log(
+          `Skipping wall ${i} check - platform already assigned a crate`
+        );
         continue;
       }
 
-      const bounds = platform.getBounds();
+      const platformBounds = platform.getBounds();
+      const platformTopY = platformBounds.top;
 
-      // Position the crate near the wall, but still on the platform
-      // Place it 40px from the right edge (where the wall is)
-      const placeX = Math.min(bounds.right - 40, wallPos.wallX - 30);
+      // Calculate wall's physical top edge Y coordinate
+      // Wall Y is the center, height is in segments
+      const wallPhysicalHeight = wallPos.wallHeight * PLATFORM_SEGMENT_WIDTH;
+      const wallTopY = wallPos.wallY - wallPhysicalHeight / 2;
 
-      // Determine if we need a big crate based on the wall height
-      // For taller walls, use big crates
-      const needsBigCrate = wallPos.wallHeight > 4;
-
-      // Choose appropriate crate type based on the height needed
-      const crateHeight = needsBigCrate ? CRATE_BIG_HEIGHT : CRATE_SMALL_HEIGHT;
-      const placeY = bounds.top - crateHeight / 2;
+      // Calculate the vertical distance the player needs to jump
+      // Player starts on platformTopY and needs to reach wallTopY (or slightly above)
+      // Smaller Y is higher, so a higher wall means a smaller wallTopY
+      // Required jump = StartY - EndY
+      const requiredVerticalJump = platformTopY - wallTopY;
 
       console.log(
-        `Placing ${
-          needsBigCrate ? "big" : "small"
-        } crate near wall ${i} at x=${placeX}, y=${placeY}`
+        `Wall ${i}: PlatformTopY=${platformTopY.toFixed(
+          2
+        )}, WallTopY=${wallTopY.toFixed(
+          2
+        )}, RequiredJump=${requiredVerticalJump.toFixed(2)}`
+      );
+      console.log(
+        `  - MaxJump=${MAX_JUMP_HEIGHT_UP}, +SmallCrate=${(
+          MAX_JUMP_HEIGHT_UP + CRATE_SMALL_HEIGHT
+        ).toFixed(2)}, +BigCrate=${(
+          MAX_JUMP_HEIGHT_UP + CRATE_BIG_HEIGHT
+        ).toFixed(2)}`
       );
 
-      // Create the crate
-      const crate = needsBigCrate
-        ? new CrateBig(this.scene, placeX, placeY)
-        : new CrateSmall(this.scene, placeX, placeY);
+      let crateToPlace: CrateSmall | CrateBig | null = null;
+      let placeX = 0;
+      let placeY = 0;
+      let crateHeight = 0;
 
-      this.crates.push(crate);
-      platformsWithCrates.add(platform);
-
-      // Draw debug visualization only if debug is active
-      if (this.isDebugActive && this.debugGraphics) {
-        const graphics = this.debugGraphics;
-        graphics.lineStyle(4, 0x00ff00, 1); // Green for crates
-        graphics.strokeRect(
-          placeX - crateHeight / 2,
-          placeY - crateHeight / 2,
-          crateHeight,
-          crateHeight
+      // Determine if a crate is needed and which type
+      if (requiredVerticalJump <= MAX_JUMP_HEIGHT_UP) {
+        // No crate needed, player can make the jump
+        console.log(`  - Crate not needed for wall ${i}.`);
+      } else if (
+        requiredVerticalJump <=
+        MAX_JUMP_HEIGHT_UP + CRATE_SMALL_HEIGHT
+      ) {
+        // Small crate is sufficient
+        console.log(`  - Small crate needed for wall ${i}.`);
+        crateHeight = CRATE_SMALL_HEIGHT;
+        placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
+        placeY = platformBounds.top - crateHeight / 2;
+        crateToPlace = new CrateSmall(this.scene, placeX, placeY);
+      } else if (
+        requiredVerticalJump <=
+        MAX_JUMP_HEIGHT_UP + CRATE_BIG_HEIGHT
+      ) {
+        // Big crate is needed
+        console.log(`  - Big crate needed for wall ${i}.`);
+        crateHeight = CRATE_BIG_HEIGHT;
+        placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
+        placeY = platformBounds.top - crateHeight / 2;
+        crateToPlace = new CrateBig(this.scene, placeX, placeY);
+      } else {
+        // Wall is too high even with a big crate - place big crate anyway?
+        // Or potentially log an error/warning about impossible jump
+        console.warn(
+          `  - Wall ${i} might be too high (${requiredVerticalJump.toFixed(
+            2
+          )}) even with a big crate! Placing big crate.`
         );
+        crateHeight = CRATE_BIG_HEIGHT;
+        placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
+        placeY = platformBounds.top - crateHeight / 2;
+        crateToPlace = new CrateBig(this.scene, placeX, placeY);
+      }
+
+      // If a crate needs to be placed
+      if (crateToPlace) {
+        this.crates.push(crateToPlace);
+        platformsWithCrates.add(platform); // Mark platform as having a crate
+        cratesPlacedCount++; // Increment count of placed crates
+
+        // Draw debug visualization only if debug is active
+        if (this.isDebugActive && this.debugGraphics) {
+          const graphics = this.debugGraphics;
+          graphics.lineStyle(4, 0x00ff00, 1); // Green for crates
+          // Use calculated crateHeight for visualization size
+          graphics.strokeRect(
+            placeX - crateHeight / 2, // Center the rect
+            placeY - crateHeight / 2,
+            crateHeight,
+            crateHeight
+          );
+        }
       }
     }
 
     // Report on crate placement
-    console.log(`Placed ${this.crates.length} crates near walls`);
+    console.log(`Placed ${cratesPlacedCount} crates near walls`); // Use actual count
   }
 
   /**

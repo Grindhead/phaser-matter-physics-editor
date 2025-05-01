@@ -149,6 +149,11 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       // --- Modified Jump Logic --- END
     }
 
+    // Skip animation changes if we're playing the landing animation
+    if (this.isPlayingLandAnimation) {
+      return;
+    }
+
     if (
       !this.isGrounded &&
       this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_JUMP &&
@@ -156,12 +161,12 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     ) {
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_FALL);
     } else if (this.isGrounded) {
-      if (this.isPlayingLandAnimation) {
-        // Skip animation changes if we're playing the landing animation
-        return;
-      }
-
-      if (this.isNearEdge && !this.leftIsDown && !this.rightIsDown) {
+      if (
+        this.isNearEdge &&
+        !this.leftIsDown &&
+        !this.rightIsDown &&
+        !this.isLevelComplete
+      ) {
         // Play wobble animation when near edge and not moving
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_WOBBLE);
 
@@ -179,13 +184,14 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         !this.rightIsDown &&
         this.currentAnimKey !== PLAYER_ANIMATION_KEYS.DUCK_LAND
       ) {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
-      } else if (this.leftIsDown || this.rightIsDown) {
+        if (!this.isLevelComplete) {
+          this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
+        }
+      } else if (
+        (this.leftIsDown || this.rightIsDown) &&
+        !this.isLevelComplete
+      ) {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
-      }
-
-      if (this.isLevelComplete) {
-        this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE, false);
       }
     }
   }
@@ -263,7 +269,7 @@ export class Player extends Phaser.Physics.Matter.Sprite {
       // Play landing effect only if newly grounded
       new FXLand(this.scene, this.x, this.getBounds().bottom);
 
-      // Play landing animation only after barrel jump or level completion
+      // Play landing animation after barrel jump, level completion, or when falling from a height
       if (
         !this.isPlayingLandAnimation &&
         (this.recentlyExitedBarrel || this.isLevelComplete)
@@ -272,7 +278,8 @@ export class Player extends Phaser.Physics.Matter.Sprite {
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, true);
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
           this.isPlayingLandAnimation = false;
-          if (this.isGrounded) {
+          // If level is complete, keep the final frame of DUCK_LAND animation
+          if (this.isGrounded && !this.isLevelComplete) {
             this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_IDLE);
           }
         });
@@ -432,6 +439,17 @@ export class Player extends Phaser.Physics.Matter.Sprite {
     this.setVelocityX(0);
     if (this.isInBarrel) {
       this.exitBarrel();
+    }
+
+    // If already grounded, initiate landing animation
+    if (this.isGrounded && !this.isPlayingLandAnimation) {
+      this.isPlayingLandAnimation = true;
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, true);
+      this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+        this.isPlayingLandAnimation = false;
+        // Do not change to idle animation when level is complete
+        // Keep the final frame of the landing animation
+      });
     }
   }
 

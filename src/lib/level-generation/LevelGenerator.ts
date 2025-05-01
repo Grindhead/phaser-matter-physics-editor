@@ -309,6 +309,9 @@ export class LevelGenerator {
     // Place Enemies using the helper
     this.placeEnemies(finalItemPlacementPlatforms, params);
 
+    // Place additional random crates across platforms for more variety
+    this.placeAdditionalRandomCrates(finalItemPlacementPlatforms, params);
+
     // Sort platforms: platforms without enemies or crates should be fully populated
     this.platforms.forEach((platform, index) => {
       const hasEnemy = this.platformHasEnemy(platform);
@@ -774,27 +777,27 @@ export class LevelGenerator {
       let placeY = 0;
       let crateHeight = 0;
 
-      if (requiredVerticalJump <= MAX_JUMP_HEIGHT_UP + CRATE_SMALL_HEIGHT) {
-        // Small crate is sufficient
-        crateHeight = CRATE_SMALL_HEIGHT;
-        placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
-        placeY = platformBounds.top - crateHeight / 2;
-        crateToPlace = new CrateSmall(this.scene, placeX, placeY);
-      } else if (
-        requiredVerticalJump <=
-        MAX_JUMP_HEIGHT_UP + CRATE_BIG_HEIGHT
-      ) {
-        // Big crate is needed
+      // Determine if we MUST use a big crate based on jump height
+      const requiresBigCrate =
+        requiredVerticalJump > MAX_JUMP_HEIGHT_UP + CRATE_SMALL_HEIGHT;
 
+      // If not required, randomly choose between small and big crates
+      // For variety, 60% chance of small, 40% chance of big when both would work
+      const useBigCrate =
+        requiresBigCrate || (!requiresBigCrate && this.prng.next() > 0.6);
+
+      if (useBigCrate) {
+        // Use big crate
         crateHeight = CRATE_BIG_HEIGHT;
         placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
         placeY = platformBounds.top - crateHeight / 2;
         crateToPlace = new CrateBig(this.scene, placeX, placeY);
       } else {
-        crateHeight = CRATE_BIG_HEIGHT;
+        // Use small crate
+        crateHeight = CRATE_SMALL_HEIGHT;
         placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
         placeY = platformBounds.top - crateHeight / 2;
-        crateToPlace = new CrateBig(this.scene, placeX, placeY);
+        crateToPlace = new CrateSmall(this.scene, placeX, placeY);
       }
 
       // If a crate needs to be placed
@@ -894,5 +897,94 @@ export class LevelGenerator {
     });
 
     return this.crates;
+  }
+
+  /**
+   * Places additional random crates on platforms not already containing crates.
+   * This ensures both CrateBig and CrateSmall types are used in the level.
+   *
+   * @param platforms Array of platforms eligible for crate placement
+   * @param params Level generation parameters
+   */
+  private placeAdditionalRandomCrates(
+    platforms: Platform[],
+    params: LevelGenerationParams
+  ): void {
+    // Skip if no platforms available
+    if (platforms.length === 0) return;
+
+    // Create a filtered list of platforms without crates or enemies
+    const eligiblePlatforms = platforms.filter((platform) => {
+      // Skip platforms that already have crates
+      if (platform.hasCrate) return false;
+
+      // Skip platforms with enemies
+      if (this.platformHasEnemy(platform)) return false;
+
+      return true;
+    });
+
+    // Determine how many additional crates to place (about 10-20% of eligible platforms)
+    const targetAdditionalCrates = Math.max(
+      1,
+      Math.floor(eligiblePlatforms.length * this.prng.next() * 0.1 + 0.1)
+    );
+
+    // Place crates randomly on eligible platforms
+    for (
+      let i = 0;
+      i < targetAdditionalCrates && i < eligiblePlatforms.length;
+      i++
+    ) {
+      // Pick a random platform
+      const randomIndex = this.prng.nextInt(0, eligiblePlatforms.length);
+      const platform = eligiblePlatforms[randomIndex];
+
+      // Remove the platform from eligible list to avoid duplicate placement
+      eligiblePlatforms.splice(randomIndex, 1);
+
+      const platformBounds = platform.getBounds();
+
+      // Randomly decide between small and big crate (50/50 chance)
+      const useSmallCrate = this.prng.next() > 0.5;
+      let crateToPlace: CrateSmall | CrateBig;
+      let crateHeight: number;
+
+      // Determine crate position on platform (avoid edges)
+      const minX = platformBounds.left + 40;
+      const maxX = platformBounds.right - 40;
+
+      // If platform is too small, skip placement
+      if (maxX - minX < 20) continue;
+
+      // Random X position within safe range
+      const placeX = this.prng.nextInt(minX, maxX);
+
+      if (useSmallCrate) {
+        crateHeight = CRATE_SMALL_HEIGHT;
+        const placeY = platformBounds.top - crateHeight / 2;
+        crateToPlace = new CrateSmall(this.scene, placeX, placeY);
+      } else {
+        crateHeight = CRATE_BIG_HEIGHT;
+        const placeY = platformBounds.top - crateHeight / 2;
+        crateToPlace = new CrateBig(this.scene, placeX, placeY);
+      }
+
+      // Add crate to the level
+      this.crates.push(crateToPlace);
+      platform.hasCrate = true;
+
+      // Debug visualization
+      if (this.isDebugActive && this.debugGraphics) {
+        const graphics = this.debugGraphics;
+        graphics.lineStyle(4, 0x00ffff, 1); // Cyan for random crates
+        graphics.strokeRect(
+          placeX - crateHeight / 2,
+          platformBounds.top - crateHeight,
+          crateHeight,
+          crateHeight
+        );
+      }
+    }
   }
 }

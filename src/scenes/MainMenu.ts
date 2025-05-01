@@ -51,7 +51,23 @@ export class MainMenu extends Scene {
       .setInteractive({ useHandCursor: true });
 
     this.playButton.on("pointerdown", () => {
-      this.scene.start(SCENES.GAME);
+      this.startGame();
     });
+
+    if (this.input.keyboard) {
+      this.input.keyboard.on("keydown-SPACE", () => {
+        this.startGame();
+      });
+    }
+
+    if (this.input.keyboard) {
+      this.input.keyboard.on("keydown-ENTER", () => {
+        this.startGame();
+      });
+    }
+  }
+
+  private startGame() {
+    this.scene.start(SCENES.GAME);
   }
 }

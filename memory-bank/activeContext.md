@@ -20,6 +20,8 @@
 - **Ensured Player Renders in Front of Finish Line:** Set proper depth values to ensure the player sprite (depth 10) always renders in front of the finish line (depth 5).
 - **Increased Enemy Density and Level Length:** Modified level generation parameters to increase the number of platforms and enemies per level, creating a more challenging experience.
 - **Refined Crate Placement Logic:** Updated `LevelGenerator.ts` (`placeStrategicCratesNearWalls`) to only place crates when the vertical jump distance to clear the wall exceeds the player's base jump height, considering small/big crate heights. Removed redundant crate placement from `itemPlacementHelper.ts`.
+- **Fixed Keyboard Restart:** Implemented keyboard input (Space/Enter) to restart the level.
+- **Fixed Conditional Landing Animation:** Implemented logic to prevent the 'fx_land' animation from playing if the player collects a coin during landing.
 - **Refined Level Generation Strategy:**
   - Fixed wall generation logic to correctly place vertical walls at platform edges.
   - Improved wall positioning calculations for better gameplay accessibility.
@@ -47,11 +49,9 @@
 ## Next Steps
 
 - Test the updated level generation thoroughly.
-- Implement conditional logic for the 'fx_land' animation (prevent playing if coin collected).
 - **Implement Gameplay Enhancements:**
-  - Add keyboard input (Space/Enter) for restarting.
-  - Combine game over dismissal and restart into a single action.
-  - Implement multiple, dynamic death zone colliders.
+  - Single-input restart (dismiss + start).
+  - Multiple dynamic death zones (500px below platforms).
   - Ensure boxes respawn on level restart.
   - Implement crate destruction upon hitting a death zone.
 - Implement Player-Barrel collision detection in `Game.ts::handleCollisionStart`.
@@ -77,7 +77,7 @@
 - **Asset Naming:** Use lowercase, hyphens: `[description]-[framenumber].[extension]`.
 - **Vertical Walls:** Implement using rotated platform sprites.
 - **Barrel Substitution:** Replace platforms with barrels in gaps > `maxHorizontalGap`.
-- **Conditional Landing Animation:** Check game state (e.g., coin collection) before playing `fx_land`.
+- **Conditional Landing Animation:** Check game state (e.g., coin collection during landing) before playing/suppressing animations (e.g., `fx_land`).
 - **Scale Manager Strategy:** `Phaser.Scale.EXPAND` with `autoCenter: Phaser.Scale.CENTER_BOTH`.
 - **UI Positioning:** Use relative positioning and resize listeners.
 - **Level Generation Logic:** Extend `LevelGenerator.ts` for walls and barrels.
@@ -100,7 +100,7 @@
 - **Encapsulation:** Keep entity-specific logic within the entity's class.
 - **State Management:** Use state machines or flags within entities.
 - **Interaction Logic:** Coordinate state changes across interacting entities (e.g., Player, Barrel) using flags/methods.
-- **Conditional Animation:** Check game state to conditionally play/suppress animations.
+- **Conditional Animation:** Check game state (e.g., coin collection during landing) before playing/suppressing animations (e.g., `fx_land`).
 - **Level Design Strategy:** Place vertical walls at platform edges to help reach higher platforms; position crates to help vertical navigation.
 - **Debug Visualization:** For complex procedural level generation, add debug visualization to verify correct placement.
 

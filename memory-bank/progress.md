@@ -29,18 +29,18 @@
   - No coins on the initial platform.
   - `MIN_COIN_SPACING` is strictly enforced.
   - Coins placed evenly without gaps.
+- Keyboard controls (Space/Enter) for restarting level are implemented.
+- Conditional landing animation logic ('fx_land' suppressed when coin collected) implemented.
 
 ## What's Left to Build
 
 - The entire editor application.
 - Asset organization and processing pipelines.
 - **Gameplay Enhancements (Based on Feedback):**
-  - Keyboard restart (Space/Enter).
   - Single-input restart (dismiss + start).
   - Multiple dynamic death zones (500px below platforms).
   - Box respawning on restart.
   - Crate destruction in death zones.
-  - Prevent 'fx_land' animation when collecting a coin on landing.
 
 ## Current Status
 
@@ -48,7 +48,7 @@
 
 ## Known Issues
 
-- None identified yet.
+- None identified.
 
 ## Evolution of Decisions
 

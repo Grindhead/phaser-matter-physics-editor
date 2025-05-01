@@ -23,6 +23,7 @@
   - Level completion "cool landing" animation implementation.
   - Player/Finish line depth sorting implementation.
   - Enemy placement restriction for first two platforms (level 1).
+  - Prevent 'fx_land' animation when collecting a coin on landing.
 
 ## Current Status
 

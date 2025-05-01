@@ -31,3 +31,4 @@ Users will interact with a graphical interface representing the Phaser/Matter.js
 - **Enemy Placement (Level 1):** The first two generated platforms in level 1 must never contain enemies.
 - **Vertical Walls:** Introduce vertical walls made from rotated platforms.
 - **Barrel Substitution:** When the horizontal gap between generated platforms exceeds the maximum jump distance, substitute the next platform with a barrel to create a mandatory barrel jump sequence.
+- **Conditional Landing Animation:** The 'fx_land' animation should _not_ play if the player collects a coin during the landing action.

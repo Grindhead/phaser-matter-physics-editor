@@ -16,12 +16,17 @@
 - Implement vertical wall generation in `LevelGenerator.ts`.
 - Implement barrel substitution logic in `LevelGenerator.ts`.
 - Test the updated level generation thoroughly.
+- If overlap is prevented for bridge barrels, revert `MAX_JUMP_DISTANCE_X` to 200.
+- Then, uncomment `placeBarrelsBetweenPlatforms`.
+- Perform final test for barrel placements.
+- Implement conditional logic for the 'fx_land' animation (prevent playing if coin collected).
 
 ## Active Decisions
 
 - Asset filenames should be lowercase, use hyphens as separators, and follow the pattern `[description]-[framenumber].[extension]`.
 - **Vertical Walls:** Implement walls by placing standard platform sprites vertically (rotated 90 degrees).
 - **Barrel Substitution:** Identify gaps larger than `maxHorizontalGap` and replace the subsequent platform placement with a barrel placement. Ensure the barrel is positioned appropriately for a jump.
+- **Conditional Landing Animation:** The player state or animation manager needs to check if a coin was collected in the same frame/action as landing to prevent the 'fx_land' animation from playing.
 
 ## Patterns and Preferences
 
@@ -71,6 +76,7 @@
 - If overlap is prevented for bridge barrels, revert `MAX_JUMP_DISTANCE_X` to 200.
 - Then, uncomment `placeBarrelsBetweenPlatforms`.
 - Perform final test for barrel placements.
+- Implement conditional logic for the 'fx_land' animation (prevent playing if coin collected).
 
 ## Active Decisions
 
@@ -81,6 +87,8 @@
 - **UI Anchoring/Positioning:** Relative positioning (top-left, top-right, center) implemented in UI elements works well with `FIT` mode.
 - **`ENVELOP` Issues:** Determined that `ENVELOP` is unsuitable without redesigning levels/entity placement to account for potential cropping on different aspect ratios.
 - **Mobile Controls:** Add interactive UI elements (`Phaser.GameObjects.Image`) to the scene for touch input. Use `setInteractive()`, `setScrollFactor(0)`, and pointer events (`pointerdown`, `pointerup`, `pointerout`) to manage state flags (e.g., `mobileLeftActive`). Player logic reads these flags.
+- **Level Generation Logic:** Extend `LevelGenerator.ts` to handle wall placement and barrel substitution conditions.
+- **Conditional Animation:** Animation playback logic should check relevant game state (e.g., coin collection) to conditionally suppress animations like landing FX.
 
 ## Important Patterns & Preferences
 
@@ -94,6 +102,7 @@
 - **State Management for Interaction:** Using boolean flags and methods across interacting entities to manage complex interaction flows.
 - **Mobile Controls:** Add interactive UI elements (`Phaser.GameObjects.Image`) to the scene for touch input. Use `setInteractive()`, `setScrollFactor(0)`, and pointer events (`pointerdown`, `pointerup`, `pointerout`) to manage state flags (e.g., `mobileLeftActive`). Player logic reads these flags.
 - **Level Generation Logic:** Extend `LevelGenerator.ts` to handle wall placement and barrel substitution conditions.
+- **Conditional Animation:** Animation playback logic should check relevant game state (e.g., coin collection) to conditionally suppress animations like landing FX.
 
 ## Learnings & Project Insights
 

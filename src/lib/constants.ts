@@ -30,6 +30,9 @@ export const WORLD_HEIGHT = Infinity;
 export const BARREL_ROTATION_SPEED = 2;
 export const BARREL_LAUNCH_SPEED = 15;
 
+export const TILE_WIDTH = 24;
+export const TILE_HEIGHT = 24;
+
 export const GAME_STATE = {
   WAITING_TO_START: "waiting_to_start",
   PLAYING: "playing",

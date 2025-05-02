@@ -2,11 +2,9 @@ import {
   PLATFORM_ANIMATION_KEYS,
   PLATFORM_ANIMATIONS,
 } from "../../entities/Platforms/platformAnimations";
-import { TEXTURE_ATLAS } from "../constants";
+import { TEXTURE_ATLAS, TILE_HEIGHT, TILE_WIDTH } from "../constants";
 
 // Tile dimensions
-const TILE_WIDTH = 24;
-const TILE_HEIGHT = 24;
 
 /**
  * Builds a platform with the given parameters and reuses existing textures if available.
@@ -61,13 +59,14 @@ function createTextureFromContainer(
   const container = scene.make.container({ x: 0, y: 0, add: false });
 
   const totalWidth = TILE_WIDTH * tileCount;
-  const totalHeight = TILE_HEIGHT + 1;
+  const totalHeight = TILE_HEIGHT;
 
-  // Create platform parts
+  // Create platform parts - position relative to container top-left (0,0)
   const leftPlatform = scene.make.image({
     key: TEXTURE_ATLAS,
     frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.LEFT].prefix,
-    x: TILE_WIDTH / 2 + 1,
+    // Position origin (0.5, 0.5) at (TILE_WIDTH/2, TILE_HEIGHT/2)
+    x: TILE_WIDTH / 2 + 2,
     y: TILE_HEIGHT / 2,
     add: false,
   });
@@ -76,7 +75,8 @@ function createTextureFromContainer(
     const sprite = scene.make.image({
       key: TEXTURE_ATLAS,
       frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.MIDDLE].prefix,
-      x: TILE_WIDTH * i,
+      // Position origin (0.5, 0.5) at (TILE_WIDTH * i + TILE_WIDTH/2, TILE_HEIGHT/2)
+      x: TILE_WIDTH * i + TILE_WIDTH / 2,
       y: TILE_HEIGHT / 2 + 1,
       add: false,
     });
@@ -87,7 +87,8 @@ function createTextureFromContainer(
   const rightPlatform = scene.make.image({
     key: TEXTURE_ATLAS,
     frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.RIGHT].prefix,
-    x: totalWidth - TILE_WIDTH + 1,
+    // Position origin (0.5, 0.5) at (totalWidth - TILE_WIDTH/2, TILE_HEIGHT/2)
+    x: totalWidth - TILE_WIDTH / 2 - 2,
     y: TILE_HEIGHT / 2,
     add: false,
   });
@@ -103,6 +104,9 @@ function createTextureFromContainer(
     },
     false
   );
+
+  renderTexture.width += 4;
+  renderTexture.height += 4;
 
   if (isVertical) {
     // For vertical platforms, we rotate the container before drawing

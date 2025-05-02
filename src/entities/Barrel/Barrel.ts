@@ -37,9 +37,7 @@ export class Barrel
     this.angle = -90;
     this.setOrigin(0.22, 0.5); // Set visual origin correctly
 
-    this.play(
-      BARREL_ANIMATIONS[BARREL_ANIMATION_KEYS.BARREL_IDLE].prefix + ".png"
-    );
+    this.play(BARREL_ANIMATION_KEYS.BARREL_IDLE);
 
     scene.add.existing(this);
   }

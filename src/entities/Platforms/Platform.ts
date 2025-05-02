@@ -66,11 +66,6 @@ export class Platform extends Phaser.Physics.Matter.Sprite {
     this.segmentCount = width;
     this.isVertical = isVertical;
 
-    // 8. Apply visual rotation AFTER setting the body if vertical
-    if (isVertical) {
-      this.setAngle(90);
-    }
-
     // Add to scene
     scene.add.existing(this);
   }

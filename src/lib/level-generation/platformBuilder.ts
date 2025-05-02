@@ -110,8 +110,8 @@ function createTextureFromContainer(
 
   if (isVertical) {
     // For vertical platforms, we rotate the container before drawing
-    container.setRotation(Math.PI / 2); // 90 degrees in radians
-    container.setPosition(totalHeight, 0); // Adjust position to keep it in frame
+    container.setRotation(-Math.PI / 2); // -90 degrees in radians
+    container.setPosition(0, totalWidth); // Adjust position for counter-clockwise rotation
   }
 
   renderTexture.draw(container);

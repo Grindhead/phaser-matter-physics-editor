@@ -47,8 +47,8 @@ export class EditorEntityManager {
 
       // If in placement mode (an entity type is selected)
       if (this.selectedEntityType) {
-        if (clickedEntity && pointer.getDuration() > 300) {
-          // Long press on an entity while in placement mode - select the entity
+        if (clickedEntity) {
+          // Clicking on an entity while in placement mode - select the entity
           this.selectEntity(clickedEntity);
 
           // Start entity dragging
@@ -109,6 +109,24 @@ export class EditorEntityManager {
           (
             this.selectedEntity.gameObject as EnemyLarge | EnemySmall
           ).setPosition(snappedX, snappedY);
+        } else if (this.selectedEntity.type === "barrel") {
+          (this.selectedEntity.gameObject as Barrel).setPosition(
+            snappedX,
+            snappedY
+          );
+        } else if (this.selectedEntity.type === "finish-line") {
+          (this.selectedEntity.gameObject as Finish).setPosition(
+            snappedX,
+            snappedY
+          );
+        } else if (
+          this.selectedEntity.type === "crate-small" ||
+          this.selectedEntity.type === "crate-big"
+        ) {
+          (this.selectedEntity.gameObject as Crate).setPosition(
+            snappedX,
+            snappedY
+          );
         } else {
           (
             this.selectedEntity.gameObject as Phaser.GameObjects.Image
@@ -122,7 +140,13 @@ export class EditorEntityManager {
 
     // Handle end of entity dragging
     this.scene.input.on("pointerup", () => {
-      this.isEntityDragging = false;
+      if (this.isEntityDragging && this.selectedEntity) {
+        // Update entity data one last time to ensure all changes are saved
+        this.updateEntityInLevelData(this.selectedEntity);
+
+        // Reset dragging state
+        this.isEntityDragging = false;
+      }
     });
   }
 
@@ -200,6 +224,9 @@ export class EditorEntityManager {
     if (platform.body) {
       (platform.body as MatterJS.BodyType).collisionFilter.group = -1;
     }
+
+    // Ensure it's interactive for selection and dragging
+    platform.setInteractive();
 
     // Return entity
     return {
@@ -402,6 +429,27 @@ export class EditorEntityManager {
         if (bounds.contains(x, y)) {
           return entity;
         }
+      } else if (entity.type === "barrel") {
+        // For barrels
+        const barrel = gameObject as Barrel;
+        const bounds = barrel.getBounds();
+        if (bounds.contains(x, y)) {
+          return entity;
+        }
+      } else if (entity.type === "finish-line") {
+        // For finish line
+        const finish = gameObject as Finish;
+        const bounds = finish.getBounds();
+        if (bounds.contains(x, y)) {
+          return entity;
+        }
+      } else if (entity.type === "crate-small" || entity.type === "crate-big") {
+        // For crates
+        const crate = gameObject as Crate;
+        const bounds = crate.getBounds();
+        if (bounds.contains(x, y)) {
+          return entity;
+        }
       } else {
         // For other entities using images
         const image = gameObject as Phaser.GameObjects.Image;
@@ -436,6 +484,30 @@ export class EditorEntityManager {
       this.scene.time.delayedCall(300, () => {
         enemy.clearTint();
       });
+    } else if (entity.type === "barrel") {
+      const barrel = entity.gameObject as Barrel;
+      barrel.setTint(0x00ffff);
+
+      // Clear tint after a short delay
+      this.scene.time.delayedCall(300, () => {
+        barrel.clearTint();
+      });
+    } else if (entity.type === "finish-line") {
+      const finish = entity.gameObject as Finish;
+      finish.setTint(0x00ffff);
+
+      // Clear tint after a short delay
+      this.scene.time.delayedCall(300, () => {
+        finish.clearTint();
+      });
+    } else if (entity.type === "crate-small" || entity.type === "crate-big") {
+      const crate = entity.gameObject as Crate;
+      crate.setTint(0x00ffff);
+
+      // Clear tint after a short delay
+      this.scene.time.delayedCall(300, () => {
+        crate.clearTint();
+      });
     } else {
       const image = entity.gameObject as Phaser.GameObjects.Image;
       image.setTint(0x00ffff);
@@ -464,6 +536,18 @@ export class EditorEntityManager {
         // For enemies, clear tint
         const enemy = this.selectedEntity.gameObject as EnemyLarge | EnemySmall;
         enemy.clearTint();
+      } else if (this.selectedEntity.type === "barrel") {
+        const barrel = this.selectedEntity.gameObject as Barrel;
+        barrel.clearTint();
+      } else if (this.selectedEntity.type === "finish-line") {
+        const finish = this.selectedEntity.gameObject as Finish;
+        finish.clearTint();
+      } else if (
+        this.selectedEntity.type === "crate-small" ||
+        this.selectedEntity.type === "crate-big"
+      ) {
+        const crate = this.selectedEntity.gameObject as Crate;
+        crate.clearTint();
       } else {
         // For other entities using images
         (
@@ -487,6 +571,15 @@ export class EditorEntityManager {
         // For enemies, set tint
         const enemy = entity.gameObject as EnemyLarge | EnemySmall;
         enemy.setTint(0x00ffff);
+      } else if (entity.type === "barrel") {
+        const barrel = entity.gameObject as Barrel;
+        barrel.setTint(0x00ffff);
+      } else if (entity.type === "finish-line") {
+        const finish = entity.gameObject as Finish;
+        finish.setTint(0x00ffff);
+      } else if (entity.type === "crate-small" || entity.type === "crate-big") {
+        const crate = entity.gameObject as Crate;
+        crate.setTint(0x00ffff);
       } else {
         // For other entities using images
         (entity.gameObject as Phaser.GameObjects.Image).setTint(0x00ffff);

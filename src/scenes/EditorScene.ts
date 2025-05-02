@@ -39,11 +39,6 @@ export class EditorScene extends Scene {
     // Create UI manager with callbacks
     const handleEntityTypeSelection = (type: string) => {
       this.entityManager.setSelectedEntityType(type);
-
-      // If an entity is currently selected, deselect it
-      if (this.entityManager.getSelectedEntity()) {
-        this.entityManager.selectEntity(null);
-      }
     };
 
     const handlePropertyChange = (

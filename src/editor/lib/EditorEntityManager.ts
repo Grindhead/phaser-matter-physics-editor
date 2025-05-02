@@ -20,6 +20,7 @@ export class EditorEntityManager {
   private selectedEntityType: string | null = null;
   private selectedEntity: EditorEntity | null = null;
   private isEntityDragging: boolean = false;
+  private newEntityDragging: boolean = false;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -37,6 +38,9 @@ export class EditorEntityManager {
     this.scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       // Skip if not left-click or if camera is being dragged
       if (!pointer.leftButtonDown()) return;
+
+      // If we're already dragging a new entity, ignore this click
+      if (this.newEntityDragging) return;
 
       // Get world position (accounting for camera)
       const worldX = pointer.worldX;
@@ -146,6 +150,13 @@ export class EditorEntityManager {
 
         // Reset dragging state
         this.isEntityDragging = false;
+
+        // If this was a new entity being dragged, we're done with it now
+        // The specific one-time handler in createAndDragEntity will handle
+        // most cases, but this is a fallback
+        if (this.newEntityDragging) {
+          this.newEntityDragging = false;
+        }
       }
     });
   }
@@ -153,7 +164,7 @@ export class EditorEntityManager {
   /**
    * Places a new entity of the specified type at the given coordinates
    */
-  private placeEntity(type: string, x: number, y: number): void {
+  public placeEntity(type: string, x: number, y: number): EditorEntity | null {
     // Snap to grid
     const snappedX = Math.floor(x / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
     const snappedY =
@@ -191,6 +202,8 @@ export class EditorEntityManager {
       // Temporarily highlight the newly placed entity
       this.temporarilyHighlightEntity(entity);
     }
+
+    return entity;
   }
 
   /**
@@ -1025,5 +1038,54 @@ export class EditorEntityManager {
    */
   public setSelectedEntityType(type: string | null): void {
     this.selectedEntityType = type;
+
+    // If a type is selected, immediately create and start dragging the entity
+    if (type) {
+      this.createAndDragEntity(type);
+    }
+  }
+
+  /**
+   * Immediately creates an entity of the specified type and attaches it to the cursor
+   * for dragging until mouse up
+   */
+  public createAndDragEntity(type: string): void {
+    // Get current mouse position
+    const pointer = this.scene.input.activePointer;
+    const worldX = pointer.worldX;
+    const worldY = pointer.worldY;
+
+    // Create the entity at the current mouse position
+    const entity = this.placeEntity(type, worldX, worldY);
+
+    // If entity creation succeeded
+    if (entity) {
+      // Select this entity
+      this.selectEntity(entity);
+
+      // Start dragging immediately
+      this.isEntityDragging = true;
+      this.newEntityDragging = true;
+
+      // No need to keep the selected entity type since we've already created it
+      this.selectedEntityType = null;
+
+      // Add a one-time pointerup event to complete the placement when the user releases the mouse
+      const completeHandler = () => {
+        if (this.isEntityDragging && this.selectedEntity) {
+          // Update entity data to ensure all changes are saved
+          this.updateEntityInLevelData(this.selectedEntity);
+
+          // Reset dragging states
+          this.isEntityDragging = false;
+          this.newEntityDragging = false;
+
+          // Clean up this one-time handler
+          this.scene.input.off("pointerup", completeHandler);
+        }
+      };
+
+      this.scene.input.once("pointerup", completeHandler);
+    }
   }
 }

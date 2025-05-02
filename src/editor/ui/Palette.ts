@@ -312,44 +312,39 @@ export class Palette {
     });
   }
 
+  /**
+   * Handles the selection of an entity type button
+   */
   selectButton(type: string): void {
-    // Don't do anything if this button is already selected
-    if (this.selectedButton === type) {
-      return;
-    }
-
-    // Deselect previous button
+    // Deselect previous button if any
     if (this.selectedButton) {
       const prevButton = this.buttons[this.selectedButton];
-      if (prevButton) {
-        (prevButton.getAt(0) as Phaser.GameObjects.Rectangle).setFillStyle(
-          0x444444
-        );
-      }
+      const prevBg = prevButton.getAt(0) as Phaser.GameObjects.Rectangle;
+      prevBg.setFillStyle(0x444444);
     }
 
     // Select new button
-    this.selectedButton = type;
     const button = this.buttons[type];
-    if (button) {
-      (button.getAt(0) as Phaser.GameObjects.Rectangle).setFillStyle(0x88aaff);
-    }
+    const bg = button.getAt(0) as Phaser.GameObjects.Rectangle;
+    bg.setFillStyle(0x88aaff); // Use a blue highlight to make selection obvious
 
-    // Call callback
-    this.onSelectCallback(type);
+    this.selectedButton = type;
+
+    // Notify about selection
+    if (this.onSelectCallback) {
+      this.onSelectCallback(type);
+    }
   }
 
   /**
-   * Clears the currently selected button
+   * Clears the current selection
    */
   clearSelection(): void {
-    // Deselect current button
     if (this.selectedButton) {
       const button = this.buttons[this.selectedButton];
       if (button) {
-        (button.getAt(0) as Phaser.GameObjects.Rectangle).setFillStyle(
-          0x444444
-        );
+        const bg = button.getAt(0) as Phaser.GameObjects.Rectangle;
+        bg.setFillStyle(0x444444);
       }
       this.selectedButton = null;
     }

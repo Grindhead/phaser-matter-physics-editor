@@ -8,7 +8,6 @@ export class EnemyLarge extends EnemyBase {
     super(scene, x, y, {
       shapeKey: PHYSICS_ENTITIES.ENEMY,
       animKey: ENEMY_ANIMATIONS[ENEMY_ANIMATION_KEYS.ENEMY_IDLE].prefix,
-      speed: 1,
       scale: 1,
     });
   }

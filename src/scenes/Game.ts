@@ -37,6 +37,7 @@ import { LevelGenerator } from "../lib/level-generation/LevelGenerator";
 import { ParallaxManager } from "../lib/parralax/ParallaxManager";
 import { CrateBig } from "../entities/CrateBig/CrateBig";
 import { UIScene } from "./UIScene";
+import { createDeathZones } from "../lib/level-generation/createDeathZones";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -162,108 +163,13 @@ export class Game extends Scene {
       });
     });
 
-    // Get overall bounds directly from the generator
-    const levelBounds = this.levelGenerator.getOverallLevelBounds();
-    const {
-      minX: minPlatformX,
-      maxX: maxPlatformX,
-      lowestY: lowestPlatformY,
-    } = levelBounds;
-
-    // Calculate actual level width
-    const startX = minPlatformX === -Infinity ? 0 : minPlatformX;
-    const endX = maxPlatformX === Infinity ? startX : maxPlatformX;
-    const levelWidth = Math.max(endX - startX, this.scale.width);
-
     // Initialize parallax background layers with the calculated level width
     if (this.parallaxManager) {
-      this.parallaxManager.initialize(levelWidth);
+      this.parallaxManager.initialize();
     }
 
     // Create multiple death zones instead of a single one
-    this.createDeathZones(levelWidth, startX, endX, lowestPlatformY);
-  }
-
-  /**
-   * Creates multiple death zone sensors at strategic positions throughout the level.
-   *
-   * @param levelWidth - The total width of the level
-   * @param startX - The starting X coordinate of the level
-   * @param endX - The ending X coordinate of the level
-   * @param lowestPlatformY - The Y coordinate of the lowest platform
-   */
-  private createDeathZones(
-    levelWidth: number,
-    startX: number,
-    endX: number,
-    lowestPlatformY: number
-  ): void {
-    // If the level is short, just create one death zone
-    if (levelWidth < 2000) {
-      this.createFallSensor(
-        lowestPlatformY,
-        startX + (endX - startX) / 2,
-        levelWidth + 1000
-      );
-      return;
-    }
-
-    // For longer levels, create multiple death zones spaced throughout the level
-    const segmentWidth = 2000; // Width of each death zone segment
-    const overlapMargin = 200; // Ensure some overlap between segments
-
-    const numSegments = Math.ceil(levelWidth / (segmentWidth - overlapMargin));
-
-    for (let i = 0; i < numSegments; i++) {
-      const segmentStartX = startX + i * (segmentWidth - overlapMargin);
-      const segmentEndX = Math.min(segmentStartX + segmentWidth, endX);
-      const segmentCenter = segmentStartX + (segmentEndX - segmentStartX) / 2;
-      const currentSegmentWidth = segmentEndX - segmentStartX;
-
-      this.createFallSensor(
-        lowestPlatformY,
-        segmentCenter,
-        currentSegmentWidth
-      );
-    }
-  }
-
-  /**
-   * Creates a fall sensor (death zone) at the specified position.
-   *
-   * @param lowestPlatformBottomY The Y coordinate of the bottom edge of the lowest platform.
-   * @param centerX The calculated center X coordinate for the sensor.
-   * @param width The calculated width for the sensor (level width + padding).
-   */
-  private createFallSensor(
-    lowestPlatformBottomY: number,
-    centerX: number,
-    width: number
-  ): void {
-    const sensorHeight = 100; // Increased height to 100px
-    const offsetBelowPlatform = 500;
-    // Calculate the sensor's center Y position
-    const yPosition =
-      lowestPlatformBottomY + offsetBelowPlatform + sensorHeight / 2;
-
-    // we set the collision filter to match the platform collision filter
-    // so that matterjs recognizes the fall sensor as a platform
-    this.matter.add.rectangle(
-      centerX, // Use calculated center X
-      yPosition,
-      width, // Use calculated width
-      sensorHeight, // Use updated height
-      {
-        isSensor: true,
-        isStatic: true,
-        label: "fallSensor",
-        collisionFilter: {
-          group: 0,
-          category: 16,
-          mask: 23,
-        },
-      }
-    );
+    createDeathZones(this, this.levelGenerator.getPlatforms());
   }
 
   /**

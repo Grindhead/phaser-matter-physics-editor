@@ -14,7 +14,6 @@ export class ParallaxManager {
   private backgroundLayer: ParallaxBackground;
   private middleLayer: ParallaxBackground;
   private foregroundLayer: ParallaxBackground;
-  private levelWidth: number = 0;
 
   // Store scroll factors
   private bgScrollFactorX: number;
@@ -29,8 +28,7 @@ export class ParallaxManager {
    * Initializes the parallax layers after the level width is known.
    * @param levelWidth The total width of the level.
    */
-  public initialize(levelWidth: number): void {
-    this.levelWidth = Math.max(levelWidth, this.scene.scale.width); // Ensure at least screen width
+  public initialize(): void {
     this.createLayers();
   }
 
@@ -95,15 +93,11 @@ export class ParallaxManager {
       this.scene,
       atlasKey,
       frameName,
-      this.levelWidth,
-      scaledTextureHeight,
       scrollFactorX
     );
 
     layer.y = layerY; // Set Y position
     layer.setDepth(depth); // Set depth
-
-    // No need to set origin, scrollFactor, tileScale as ParallaxBackground handles them
 
     return layer;
   };

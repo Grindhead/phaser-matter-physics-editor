@@ -11,11 +11,17 @@ export class ParallaxBackground extends Phaser.GameObjects.TileSprite {
     scene: Phaser.Scene,
     atlasKey: string,
     frameName: string,
-    width: number,
-    height: number,
     scrollFactorX: number = 0.5
   ) {
-    super(scene, 0, 0, width, height, atlasKey, frameName);
+    super(
+      scene,
+      0,
+      0,
+      scene.scale.width,
+      scene.scale.height,
+      atlasKey,
+      frameName
+    );
 
     this.customScrollFactorX = scrollFactorX;
 

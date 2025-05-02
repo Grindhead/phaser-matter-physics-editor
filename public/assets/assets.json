@@ -58,7 +58,7 @@
 			"format": "RGBA8888",
 			"size": {
 				"w": 2048,
-				"h": 2013
+				"h": 2029
 			},
 			"scale": 1,
 			"frames": [
@@ -72,15 +72,15 @@
 					},
 					"spriteSourceSize": {
 						"x": 0,
-						"y": 438,
+						"y": 437,
 						"w": 2048,
-						"h": 586
+						"h": 587
 					},
 					"frame": {
 						"x": 0,
 						"y": 0,
 						"w": 2048,
-						"h": 586
+						"h": 587
 					}
 				},
 				{
@@ -99,7 +99,7 @@
 					},
 					"frame": {
 						"x": 0,
-						"y": 586,
+						"y": 587,
 						"w": 2048,
 						"h": 205
 					}
@@ -120,7 +120,7 @@
 					},
 					"frame": {
 						"x": 0,
-						"y": 791,
+						"y": 792,
 						"w": 879,
 						"h": 875
 					}
@@ -141,7 +141,7 @@
 					},
 					"frame": {
 						"x": 0,
-						"y": 1666,
+						"y": 1667,
 						"w": 500,
 						"h": 282
 					}
@@ -162,7 +162,7 @@
 					},
 					"frame": {
 						"x": 879,
-						"y": 791,
+						"y": 792,
 						"w": 500,
 						"h": 261
 					}
@@ -183,7 +183,7 @@
 					},
 					"frame": {
 						"x": 500,
-						"y": 1666,
+						"y": 1667,
 						"w": 256,
 						"h": 225
 					}
@@ -204,7 +204,7 @@
 					},
 					"frame": {
 						"x": 879,
-						"y": 1052,
+						"y": 1053,
 						"w": 256,
 						"h": 223
 					}
@@ -225,7 +225,7 @@
 					},
 					"frame": {
 						"x": 1379,
-						"y": 791,
+						"y": 792,
 						"w": 256,
 						"h": 221
 					}
@@ -246,7 +246,7 @@
 					},
 					"frame": {
 						"x": 879,
-						"y": 1275,
+						"y": 1276,
 						"w": 256,
 						"h": 218
 					}
@@ -267,7 +267,7 @@
 					},
 					"frame": {
 						"x": 1635,
-						"y": 791,
+						"y": 792,
 						"w": 250,
 						"h": 215
 					}
@@ -288,7 +288,7 @@
 					},
 					"frame": {
 						"x": 1885,
-						"y": 791,
+						"y": 792,
 						"w": 163,
 						"h": 152
 					}
@@ -309,7 +309,7 @@
 					},
 					"frame": {
 						"x": 1135,
-						"y": 1052,
+						"y": 1053,
 						"w": 240,
 						"h": 212
 					}
@@ -330,7 +330,7 @@
 					},
 					"frame": {
 						"x": 1135,
-						"y": 1264,
+						"y": 1265,
 						"w": 230,
 						"h": 208
 					}
@@ -351,7 +351,7 @@
 					},
 					"frame": {
 						"x": 879,
-						"y": 1493,
+						"y": 1494,
 						"w": 300,
 						"h": 154
 					}
@@ -372,72 +372,9 @@
 					},
 					"frame": {
 						"x": 1179,
-						"y": 1472,
+						"y": 1473,
 						"w": 220,
 						"h": 203
-					}
-				},
-				{
-					"filename": "player/blast/duck-blast-0009.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 137,
-						"h": 67
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 1,
-						"w": 137,
-						"h": 65
-					},
-					"frame": {
-						"x": 0,
-						"y": 1948,
-						"w": 137,
-						"h": 65
-					}
-				},
-				{
-					"filename": "player/blast/duck-blast-0011.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 137,
-						"h": 67
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 1,
-						"w": 135,
-						"h": 65
-					},
-					"frame": {
-						"x": 137,
-						"y": 1948,
-						"w": 135,
-						"h": 65
-					}
-				},
-				{
-					"filename": "player/blast/duck-blast-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 137,
-						"h": 67
-					},
-					"spriteSourceSize": {
-						"x": 4,
-						"y": 1,
-						"w": 133,
-						"h": 65
-					},
-					"frame": {
-						"x": 272,
-						"y": 1948,
-						"w": 133,
-						"h": 65
 					}
 				},
 				{
@@ -456,7 +393,7 @@
 					},
 					"frame": {
 						"x": 756,
-						"y": 1666,
+						"y": 1667,
 						"w": 208,
 						"h": 197
 					}
@@ -477,7 +414,7 @@
 					},
 					"frame": {
 						"x": 964,
-						"y": 1647,
+						"y": 1648,
 						"w": 197,
 						"h": 186
 					}
@@ -498,30 +435,9 @@
 					},
 					"frame": {
 						"x": 1161,
-						"y": 1675,
+						"y": 1676,
 						"w": 186,
 						"h": 174
-					}
-				},
-				{
-					"filename": "player/blast/duck-blast-0015.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 137,
-						"h": 67
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 1,
-						"w": 132,
-						"h": 65
-					},
-					"frame": {
-						"x": 405,
-						"y": 1948,
-						"w": 132,
-						"h": 65
 					}
 				},
 				{
@@ -540,7 +456,7 @@
 					},
 					"frame": {
 						"x": 1379,
-						"y": 1012,
+						"y": 1013,
 						"w": 175,
 						"h": 162
 					}
@@ -561,7 +477,7 @@
 					},
 					"frame": {
 						"x": 1375,
-						"y": 1174,
+						"y": 1175,
 						"w": 151,
 						"h": 141
 					}
@@ -582,9 +498,51 @@
 					},
 					"frame": {
 						"x": 1365,
-						"y": 1315,
+						"y": 1316,
 						"w": 138,
 						"h": 131
+					}
+				},
+				{
+					"filename": "player/blast/duck-blast-0010.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 137,
+						"h": 67
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 0,
+						"w": 136,
+						"h": 67
+					},
+					"frame": {
+						"x": 0,
+						"y": 1949,
+						"w": 136,
+						"h": 67
+					}
+				},
+				{
+					"filename": "player/blast/duck-blast-0009.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 137,
+						"h": 67
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 1,
+						"w": 137,
+						"h": 65
+					},
+					"frame": {
+						"x": 136,
+						"y": 1949,
+						"w": 137,
+						"h": 65
 					}
 				},
 				{
@@ -603,7 +561,7 @@
 					},
 					"frame": {
 						"x": 1554,
-						"y": 1012,
+						"y": 1013,
 						"w": 126,
 						"h": 119
 					}
@@ -624,7 +582,7 @@
 					},
 					"frame": {
 						"x": 1680,
-						"y": 1006,
+						"y": 1007,
 						"w": 112,
 						"h": 109
 					}
@@ -645,13 +603,13 @@
 					},
 					"frame": {
 						"x": 1792,
-						"y": 1006,
+						"y": 1007,
 						"w": 92,
 						"h": 109
 					}
 				},
 				{
-					"filename": "player/blast/duck-blast-0010.png",
+					"filename": "player/blast/duck-blast-0011.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -659,16 +617,37 @@
 						"h": 67
 					},
 					"spriteSourceSize": {
-						"x": 1,
-						"y": 0,
-						"w": 136,
+						"x": 2,
+						"y": 1,
+						"w": 135,
+						"h": 65
+					},
+					"frame": {
+						"x": 273,
+						"y": 1949,
+						"w": 135,
+						"h": 65
+					}
+				},
+				{
+					"filename": "player/blast/duck-blast-0005.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 137,
 						"h": 67
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 1,
+						"w": 133,
+						"h": 65
 					},
 					"frame": {
 						"x": 1885,
-						"y": 943,
-						"w": 136,
-						"h": 67
+						"y": 944,
+						"w": 133,
+						"h": 65
 					}
 				},
 				{
@@ -687,13 +666,34 @@
 					},
 					"frame": {
 						"x": 1884,
-						"y": 1010,
+						"y": 1009,
 						"w": 119,
 						"h": 92
 					}
 				},
 				{
-					"filename": "player/blast/duck-blast-0007.png",
+					"filename": "player/blast/duck-blast-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 137,
+						"h": 67
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 4,
+						"w": 136,
+						"h": 59
+					},
+					"frame": {
+						"x": 500,
+						"y": 1892,
+						"w": 136,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/blast/duck-blast-0012.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -702,78 +702,15 @@
 					},
 					"spriteSourceSize": {
 						"x": 2,
-						"y": 6,
+						"y": 4,
 						"w": 135,
-						"h": 55
+						"h": 59
 					},
 					"frame": {
-						"x": 500,
-						"y": 1891,
+						"x": 636,
+						"y": 1892,
 						"w": 135,
-						"h": 55
-					}
-				},
-				{
-					"filename": "player/blast/duck-blast-0004.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 137,
-						"h": 67
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 0,
-						"w": 132,
-						"h": 67
-					},
-					"frame": {
-						"x": 537,
-						"y": 1946,
-						"w": 132,
-						"h": 67
-					}
-				},
-				{
-					"filename": "player/blast/duck-blast-0013.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 137,
-						"h": 67
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 6,
-						"w": 134,
-						"h": 55
-					},
-					"frame": {
-						"x": 635,
-						"y": 1891,
-						"w": 134,
-						"h": 55
-					}
-				},
-				{
-					"filename": "player/blast/duck-blast-0016.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 137,
-						"h": 67
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 0,
-						"w": 132,
-						"h": 67
-					},
-					"frame": {
-						"x": 669,
-						"y": 1946,
-						"w": 132,
-						"h": 67
+						"h": 59
 					}
 				},
 				{
@@ -792,7 +729,7 @@
 					},
 					"frame": {
 						"x": 1399,
-						"y": 1446,
+						"y": 1447,
 						"w": 90,
 						"h": 109
 					}
@@ -813,7 +750,7 @@
 					},
 					"frame": {
 						"x": 1399,
-						"y": 1555,
+						"y": 1556,
 						"w": 90,
 						"h": 108
 					}
@@ -834,13 +771,13 @@
 					},
 					"frame": {
 						"x": 1399,
-						"y": 1555,
+						"y": 1556,
 						"w": 90,
 						"h": 108
 					}
 				},
 				{
-					"filename": "player/blast/duck-blast-0008.png",
+					"filename": "player/blast/duck-blast-0004.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -848,20 +785,41 @@
 						"h": 67
 					},
 					"spriteSourceSize": {
-						"x": 1,
-						"y": 4,
-						"w": 136,
-						"h": 59
+						"x": 5,
+						"y": 0,
+						"w": 132,
+						"h": 67
 					},
 					"frame": {
-						"x": 1554,
-						"y": 1131,
-						"w": 136,
-						"h": 59
+						"x": 771,
+						"y": 1864,
+						"w": 132,
+						"h": 67
 					}
 				},
 				{
-					"filename": "player/blast/duck-blast-0003.png",
+					"filename": "fx-land/fx-land-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 256,
+						"h": 256
+					},
+					"spriteSourceSize": {
+						"x": 79,
+						"y": 79,
+						"w": 98,
+						"h": 98
+					},
+					"frame": {
+						"x": 771,
+						"y": 1931,
+						"w": 98,
+						"h": 98
+					}
+				},
+				{
+					"filename": "player/blast/duck-blast-0007.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -869,16 +827,37 @@
 						"h": 67
 					},
 					"spriteSourceSize": {
-						"x": 6,
-						"y": 1,
-						"w": 131,
-						"h": 65
+						"x": 2,
+						"y": 6,
+						"w": 135,
+						"h": 55
 					},
 					"frame": {
-						"x": 1690,
-						"y": 1115,
-						"w": 131,
-						"h": 65
+						"x": 1554,
+						"y": 1132,
+						"w": 135,
+						"h": 55
+					}
+				},
+				{
+					"filename": "player/blast/duck-blast-0016.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 137,
+						"h": 67
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 0,
+						"w": 132,
+						"h": 67
+					},
+					"frame": {
+						"x": 1689,
+						"y": 1116,
+						"w": 132,
+						"h": 67
 					}
 				},
 				{
@@ -897,7 +876,7 @@
 					},
 					"frame": {
 						"x": 1526,
-						"y": 1190,
+						"y": 1187,
 						"w": 89,
 						"h": 108
 					}
@@ -918,7 +897,7 @@
 					},
 					"frame": {
 						"x": 1526,
-						"y": 1190,
+						"y": 1187,
 						"w": 89,
 						"h": 108
 					}
@@ -939,55 +918,55 @@
 					},
 					"frame": {
 						"x": 1615,
-						"y": 1190,
+						"y": 1187,
 						"w": 78,
 						"h": 109
 					}
 				},
 				{
-					"filename": "fx-land/fx-land-0001.png",
+					"filename": "finish/finish-active/finish-active-0001.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 256,
-						"h": 256
+						"w": 100,
+						"h": 125
 					},
 					"spriteSourceSize": {
-						"x": 79,
-						"y": 79,
-						"w": 98,
-						"h": 98
+						"x": 7,
+						"y": 17,
+						"w": 88,
+						"h": 108
 					},
 					"frame": {
 						"x": 1693,
-						"y": 1180,
-						"w": 98,
-						"h": 98
+						"y": 1183,
+						"w": 88,
+						"h": 108
 					}
 				},
 				{
-					"filename": "player/blast/duck-blast-0017.png",
+					"filename": "finish/finish-active/finish-active-0002.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 137,
-						"h": 67
+						"w": 100,
+						"h": 125
 					},
 					"spriteSourceSize": {
-						"x": 6,
-						"y": 1,
-						"w": 131,
-						"h": 65
+						"x": 7,
+						"y": 17,
+						"w": 88,
+						"h": 108
 					},
 					"frame": {
-						"x": 769,
-						"y": 1863,
-						"w": 131,
-						"h": 65
+						"x": 1693,
+						"y": 1183,
+						"w": 88,
+						"h": 108
 					}
 				},
 				{
-					"filename": "player/blast/duck-blast-0012.png",
+					"filename": "player/blast/duck-blast-0006.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -995,15 +974,15 @@
 						"h": 67
 					},
 					"spriteSourceSize": {
-						"x": 2,
+						"x": 3,
 						"y": 4,
-						"w": 135,
+						"w": 134,
 						"h": 59
 					},
 					"frame": {
 						"x": 964,
-						"y": 1833,
-						"w": 135,
+						"y": 1834,
+						"w": 134,
 						"h": 59
 					}
 				},
@@ -1023,7 +1002,7 @@
 					},
 					"frame": {
 						"x": 1347,
-						"y": 1675,
+						"y": 1676,
 						"w": 59,
 						"h": 110
 					}
@@ -1044,76 +1023,55 @@
 					},
 					"frame": {
 						"x": 1406,
-						"y": 1663,
+						"y": 1664,
 						"w": 84,
 						"h": 109
 					}
 				},
 				{
-					"filename": "player/run/duck-run-0004.png",
+					"filename": "player/land/duck-land-0036.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 60,
-						"h": 69
+						"w": 74,
+						"h": 66
 					},
 					"spriteSourceSize": {
-						"x": 8,
+						"x": 2,
 						"y": 0,
-						"w": 45,
-						"h": 69
+						"w": 61,
+						"h": 66
 					},
 					"frame": {
-						"x": 2003,
-						"y": 1010,
-						"w": 45,
-						"h": 69
+						"x": 903,
+						"y": 1864,
+						"w": 61,
+						"h": 66
 					}
 				},
 				{
-					"filename": "barrel/launch/barrel-launch-0003.png",
+					"filename": "player/blast/duck-blast-0013.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 132,
-						"h": 110
+						"w": 137,
+						"h": 67
 					},
 					"spriteSourceSize": {
-						"x": 0,
-						"y": 20,
-						"w": 107,
-						"h": 71
+						"x": 3,
+						"y": 6,
+						"w": 134,
+						"h": 55
 					},
 					"frame": {
-						"x": 801,
-						"y": 1928,
-						"w": 107,
-						"h": 71
+						"x": 964,
+						"y": 1893,
+						"w": 134,
+						"h": 55
 					}
 				},
 				{
-					"filename": "finish/finish-activated/finish-activated-0006.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 10,
-						"y": 1,
-						"w": 35,
-						"h": 124
-					},
-					"frame": {
-						"x": 1503,
-						"y": 1315,
-						"w": 35,
-						"h": 124
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0015.png",
+					"filename": "finish/finish-activated/finish-activated-0012.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -1123,123 +1081,18 @@
 					"spriteSourceSize": {
 						"x": 7,
 						"y": 16,
-						"w": 72,
+						"w": 60,
 						"h": 108
 					},
 					"frame": {
-						"x": 1538,
-						"y": 1298,
-						"w": 72,
+						"x": 1098,
+						"y": 1834,
+						"w": 60,
 						"h": 108
 					}
 				},
 				{
-					"filename": "finish/finish-active/finish-active-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 17,
-						"w": 88,
-						"h": 108
-					},
-					"frame": {
-						"x": 1610,
-						"y": 1299,
-						"w": 88,
-						"h": 108
-					}
-				},
-				{
-					"filename": "finish/finish-active/finish-active-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 17,
-						"w": 88,
-						"h": 108
-					},
-					"frame": {
-						"x": 1610,
-						"y": 1299,
-						"w": 88,
-						"h": 108
-					}
-				},
-				{
-					"filename": "finish/finish-active/finish-active-0007.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 17,
-						"w": 88,
-						"h": 108
-					},
-					"frame": {
-						"x": 1698,
-						"y": 1278,
-						"w": 88,
-						"h": 108
-					}
-				},
-				{
-					"filename": "finish/finish-active/finish-active-0008.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 17,
-						"w": 88,
-						"h": 108
-					},
-					"frame": {
-						"x": 1698,
-						"y": 1278,
-						"w": 88,
-						"h": 108
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0035.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 1,
-						"w": 62,
-						"h": 65
-					},
-					"frame": {
-						"x": 1099,
-						"y": 1833,
-						"w": 62,
-						"h": 65
-					}
-				},
-				{
-					"filename": "player/blast/duck-blast-0006.png",
+					"filename": "player/blast/duck-blast-0015.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -1247,57 +1100,15 @@
 						"h": 67
 					},
 					"spriteSourceSize": {
-						"x": 3,
-						"y": 4,
-						"w": 134,
-						"h": 59
-					},
-					"frame": {
-						"x": 1161,
-						"y": 1849,
-						"w": 134,
-						"h": 59
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0007.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 9,
-						"y": 4,
-						"w": 38,
-						"h": 121
-					},
-					"frame": {
-						"x": 1489,
-						"y": 1446,
-						"w": 38,
-						"h": 121
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0037.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 2,
+						"x": 5,
 						"y": 1,
-						"w": 61,
+						"w": 132,
 						"h": 65
 					},
 					"frame": {
-						"x": 900,
-						"y": 1863,
-						"w": 61,
+						"x": 1158,
+						"y": 1850,
+						"w": 132,
 						"h": 65
 					}
 				},
@@ -1316,115 +1127,10 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 961,
-						"y": 1892,
+						"x": 1158,
+						"y": 1915,
 						"w": 133,
 						"h": 59
-					}
-				},
-				{
-					"filename": "player/idle/duck-idle-0006.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 59,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 5,
-						"w": 53,
-						"h": 61
-					},
-					"frame": {
-						"x": 908,
-						"y": 1928,
-						"w": 53,
-						"h": 61
-					}
-				},
-				{
-					"filename": "player/blast/duck-blast-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 137,
-						"h": 67
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 4,
-						"w": 130,
-						"h": 59
-					},
-					"frame": {
-						"x": 961,
-						"y": 1951,
-						"w": 130,
-						"h": 59
-					}
-				},
-				{
-					"filename": "ui/direction-button.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 95,
-						"h": 94
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 95,
-						"h": 94
-					},
-					"frame": {
-						"x": 1489,
-						"y": 1567,
-						"w": 95,
-						"h": 94
-					}
-				},
-				{
-					"filename": "finish/finish-active/finish-active-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 17,
-						"w": 87,
-						"h": 108
-					},
-					"frame": {
-						"x": 1490,
-						"y": 1661,
-						"w": 87,
-						"h": 108
-					}
-				},
-				{
-					"filename": "finish/finish-active/finish-active-0006.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 17,
-						"w": 87,
-						"h": 108
-					},
-					"frame": {
-						"x": 1490,
-						"y": 1661,
-						"w": 87,
-						"h": 108
 					}
 				},
 				{
@@ -1442,8 +1148,8 @@
 						"h": 55
 					},
 					"frame": {
-						"x": 1884,
-						"y": 1102,
+						"x": 869,
+						"y": 1974,
 						"w": 129,
 						"h": 55
 					}
@@ -1463,14 +1169,56 @@
 						"h": 55
 					},
 					"frame": {
-						"x": 1884,
-						"y": 1102,
+						"x": 869,
+						"y": 1974,
 						"w": 129,
 						"h": 55
 					}
 				},
 				{
-					"filename": "coin/coin-collect/coin-collect-0006.png",
+					"filename": "player/run/duck-run-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 69
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 0,
+						"w": 45,
+						"h": 69
+					},
+					"frame": {
+						"x": 2003,
+						"y": 1009,
+						"w": 45,
+						"h": 69
+					}
+				},
+				{
+					"filename": "finish/finish-activated/finish-activated-0015.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 16,
+						"w": 72,
+						"h": 108
+					},
+					"frame": {
+						"x": 1781,
+						"y": 1183,
+						"w": 72,
+						"h": 108
+					}
+				},
+				{
+					"filename": "coin/coin-collect/coin-collect-0008.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -1478,16 +1226,184 @@
 						"h": 70
 					},
 					"spriteSourceSize": {
-						"x": 4,
-						"y": 4,
-						"w": 63,
-						"h": 63
+						"x": 1,
+						"y": 2,
+						"w": 68,
+						"h": 67
 					},
 					"frame": {
 						"x": 1821,
-						"y": 1115,
-						"w": 63,
-						"h": 63
+						"y": 1116,
+						"w": 68,
+						"h": 67
+					}
+				},
+				{
+					"filename": "player/blast/duck-blast-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 137,
+						"h": 67
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 1,
+						"w": 131,
+						"h": 65
+					},
+					"frame": {
+						"x": 1889,
+						"y": 1101,
+						"w": 131,
+						"h": 65
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 12,
+						"y": 0,
+						"w": 83,
+						"h": 65
+					},
+					"frame": {
+						"x": 408,
+						"y": 1949,
+						"w": 83,
+						"h": 65
+					}
+				},
+				{
+					"filename": "player/blast/duck-blast-0017.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 137,
+						"h": 67
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 1,
+						"w": 131,
+						"h": 65
+					},
+					"frame": {
+						"x": 491,
+						"y": 1951,
+						"w": 131,
+						"h": 65
+					}
+				},
+				{
+					"filename": "player/blast/duck-blast-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 137,
+						"h": 67
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 4,
+						"w": 130,
+						"h": 59
+					},
+					"frame": {
+						"x": 622,
+						"y": 1951,
+						"w": 130,
+						"h": 59
+					}
+				},
+				{
+					"filename": "finish/finish-activated/finish-activated-0006.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 1,
+						"w": 35,
+						"h": 124
+					},
+					"frame": {
+						"x": 1503,
+						"y": 1316,
+						"w": 35,
+						"h": 124
+					}
+				},
+				{
+					"filename": "finish/finish-activated/finish-activated-0014.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 15,
+						"w": 65,
+						"h": 109
+					},
+					"frame": {
+						"x": 1538,
+						"y": 1295,
+						"w": 65,
+						"h": 109
+					}
+				},
+				{
+					"filename": "finish/finish-active/finish-active-0007.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 17,
+						"w": 88,
+						"h": 108
+					},
+					"frame": {
+						"x": 1603,
+						"y": 1296,
+						"w": 88,
+						"h": 108
+					}
+				},
+				{
+					"filename": "finish/finish-active/finish-active-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 17,
+						"w": 88,
+						"h": 108
+					},
+					"frame": {
+						"x": 1603,
+						"y": 1296,
+						"w": 88,
+						"h": 108
 					}
 				},
 				{
@@ -1505,140 +1421,14 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 1884,
-						"y": 1157,
+						"x": 1538,
+						"y": 1404,
 						"w": 130,
 						"h": 59
 					}
 				},
 				{
-					"filename": "enemy/enemy.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 94
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 93,
-						"h": 91
-					},
-					"frame": {
-						"x": 1791,
-						"y": 1180,
-						"w": 93,
-						"h": 91
-					}
-				},
-				{
-					"filename": "barrel/launch/barrel-launch-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 132,
-						"h": 110
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 29,
-						"w": 94,
-						"h": 52
-					},
-					"frame": {
-						"x": 1884,
-						"y": 1216,
-						"w": 94,
-						"h": 52
-					}
-				},
-				{
-					"filename": "player/fall/duck-fall-0006.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 62,
-						"h": 62
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 62,
-						"h": 62
-					},
-					"frame": {
-						"x": 1091,
-						"y": 1951,
-						"w": 62,
-						"h": 62
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0011.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 6,
-						"w": 65,
-						"h": 53
-					},
-					"frame": {
-						"x": 1094,
-						"y": 1898,
-						"w": 65,
-						"h": 53
-					}
-				},
-				{
-					"filename": "player/fall/duck-fall-0007.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 62,
-						"h": 62
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 62,
-						"h": 62
-					},
-					"frame": {
-						"x": 1153,
-						"y": 1951,
-						"w": 62,
-						"h": 62
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 6,
-						"w": 39,
-						"h": 119
-					},
-					"frame": {
-						"x": 1527,
-						"y": 1439,
-						"w": 39,
-						"h": 119
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0008.png",
+					"filename": "finish/finish-active/finish-active-0005.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -1647,15 +1437,36 @@
 					},
 					"spriteSourceSize": {
 						"x": 7,
-						"y": 13,
-						"w": 44,
-						"h": 112
+						"y": 17,
+						"w": 87,
+						"h": 108
 					},
 					"frame": {
-						"x": 1566,
-						"y": 1406,
-						"w": 44,
-						"h": 112
+						"x": 1489,
+						"y": 1463,
+						"w": 87,
+						"h": 108
+					}
+				},
+				{
+					"filename": "finish/finish-active/finish-active-0006.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 17,
+						"w": 87,
+						"h": 108
+					},
+					"frame": {
+						"x": 1489,
+						"y": 1463,
+						"w": 87,
+						"h": 108
 					}
 				},
 				{
@@ -1673,8 +1484,8 @@
 						"h": 108
 					},
 					"frame": {
-						"x": 1610,
-						"y": 1407,
+						"x": 1576,
+						"y": 1463,
 						"w": 87,
 						"h": 108
 					}
@@ -1694,73 +1505,31 @@
 						"h": 108
 					},
 					"frame": {
-						"x": 1610,
-						"y": 1407,
+						"x": 1576,
+						"y": 1463,
 						"w": 87,
 						"h": 108
 					}
 				},
 				{
-					"filename": "finish/finish-activated/finish-activated-0014.png",
+					"filename": "enemy/enemy.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 100,
-						"h": 125
+						"w": 95,
+						"h": 94
 					},
 					"spriteSourceSize": {
-						"x": 7,
-						"y": 15,
-						"w": 65,
-						"h": 109
+						"x": 0,
+						"y": 0,
+						"w": 93,
+						"h": 91
 					},
 					"frame": {
-						"x": 1347,
-						"y": 1785,
-						"w": 65,
-						"h": 109
-					}
-				},
-				{
-					"filename": "finish/finish-active/finish-active-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 17,
-						"w": 86,
-						"h": 108
-					},
-					"frame": {
-						"x": 1412,
-						"y": 1772,
-						"w": 86,
-						"h": 108
-					}
-				},
-				{
-					"filename": "finish/finish-active/finish-active-0004.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 17,
-						"w": 86,
-						"h": 108
-					},
-					"frame": {
-						"x": 1412,
-						"y": 1772,
-						"w": 86,
-						"h": 108
+						"x": 1489,
+						"y": 1571,
+						"w": 93,
+						"h": 91
 					}
 				},
 				{
@@ -1778,8 +1547,8 @@
 						"h": 108
 					},
 					"frame": {
-						"x": 1498,
-						"y": 1769,
+						"x": 1490,
+						"y": 1662,
 						"w": 87,
 						"h": 108
 					}
@@ -1799,35 +1568,14 @@
 						"h": 108
 					},
 					"frame": {
-						"x": 1498,
-						"y": 1769,
+						"x": 1490,
+						"y": 1662,
 						"w": 87,
 						"h": 108
 					}
 				},
 				{
-					"filename": "player/run/duck-run-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 60,
-						"h": 69
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 2,
-						"w": 52,
-						"h": 67
-					},
-					"frame": {
-						"x": 1295,
-						"y": 1849,
-						"w": 52,
-						"h": 67
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0012.png",
+					"filename": "finish/finish-active/finish-active-0003.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -1836,15 +1584,99 @@
 					},
 					"spriteSourceSize": {
 						"x": 7,
-						"y": 16,
-						"w": 60,
+						"y": 17,
+						"w": 86,
 						"h": 108
 					},
 					"frame": {
-						"x": 1577,
-						"y": 1661,
-						"w": 60,
+						"x": 1582,
+						"y": 1571,
+						"w": 86,
 						"h": 108
+					}
+				},
+				{
+					"filename": "finish/finish-active/finish-active-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 17,
+						"w": 86,
+						"h": 108
+					},
+					"frame": {
+						"x": 1582,
+						"y": 1571,
+						"w": 86,
+						"h": 108
+					}
+				},
+				{
+					"filename": "ui/direction-button.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 95,
+						"h": 94
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 95,
+						"h": 94
+					},
+					"frame": {
+						"x": 1577,
+						"y": 1679,
+						"w": 95,
+						"h": 94
+					}
+				},
+				{
+					"filename": "barrel/launch/barrel-launch-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 110
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 20,
+						"w": 107,
+						"h": 71
+					},
+					"frame": {
+						"x": 998,
+						"y": 1948,
+						"w": 107,
+						"h": 71
+					}
+				},
+				{
+					"filename": "finish/finish-activated/finish-activated-0007.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 9,
+						"y": 4,
+						"w": 38,
+						"h": 121
+					},
+					"frame": {
+						"x": 1853,
+						"y": 1183,
+						"w": 38,
+						"h": 121
 					}
 				},
 				{
@@ -1862,8 +1694,8 @@
 						"h": 108
 					},
 					"frame": {
-						"x": 1585,
-						"y": 1769,
+						"x": 1891,
+						"y": 1166,
 						"w": 85,
 						"h": 108
 					}
@@ -1883,262 +1715,10 @@
 						"h": 108
 					},
 					"frame": {
-						"x": 1585,
-						"y": 1769,
+						"x": 1891,
+						"y": 1166,
 						"w": 85,
 						"h": 108
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0011.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 6,
-						"y": 22,
-						"w": 60,
-						"h": 102
-					},
-					"frame": {
-						"x": 1215,
-						"y": 1908,
-						"w": 60,
-						"h": 102
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 28,
-						"w": 56,
-						"h": 97
-					},
-					"frame": {
-						"x": 1275,
-						"y": 1916,
-						"w": 56,
-						"h": 97
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 16,
-						"w": 41,
-						"h": 109
-					},
-					"frame": {
-						"x": 1786,
-						"y": 1278,
-						"w": 41,
-						"h": 109
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0010.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 24,
-						"w": 57,
-						"h": 100
-					},
-					"frame": {
-						"x": 1827,
-						"y": 1271,
-						"w": 57,
-						"h": 100
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0009.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 6,
-						"y": 21,
-						"w": 48,
-						"h": 103
-					},
-					"frame": {
-						"x": 1884,
-						"y": 1268,
-						"w": 48,
-						"h": 103
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0004.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 4,
-						"y": 17,
-						"w": 47,
-						"h": 107
-					},
-					"frame": {
-						"x": 1932,
-						"y": 1268,
-						"w": 47,
-						"h": 107
-					}
-				},
-				{
-					"filename": "finish/finish-idle/finish-idle.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 17,
-						"w": 41,
-						"h": 108
-					},
-					"frame": {
-						"x": 1697,
-						"y": 1407,
-						"w": 41,
-						"h": 108
-					}
-				},
-				{
-					"filename": "finish/finish-activated/finish-activated-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 100,
-						"h": 125
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 32,
-						"w": 57,
-						"h": 93
-					},
-					"frame": {
-						"x": 1331,
-						"y": 1916,
-						"w": 57,
-						"h": 93
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 8,
-						"w": 74,
-						"h": 49
-					},
-					"frame": {
-						"x": 1566,
-						"y": 1518,
-						"w": 74,
-						"h": 49
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 12,
-						"y": 0,
-						"w": 83,
-						"h": 65
-					},
-					"frame": {
-						"x": 1640,
-						"y": 1515,
-						"w": 83,
-						"h": 65
-					}
-				},
-				{
-					"filename": "player/run/duck-run-0012.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 60,
-						"h": 69
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 2,
-						"w": 55,
-						"h": 66
-					},
-					"frame": {
-						"x": 1584,
-						"y": 1567,
-						"w": 55,
-						"h": 66
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 2,
-						"w": 83,
-						"h": 61
-					},
-					"frame": {
-						"x": 1639,
-						"y": 1580,
-						"w": 83,
-						"h": 61
 					}
 				},
 				{
@@ -2156,8 +1736,8 @@
 						"h": 69
 					},
 					"frame": {
-						"x": 1637,
-						"y": 1641,
+						"x": 1976,
+						"y": 1166,
 						"w": 72,
 						"h": 69
 					}
@@ -2177,182 +1757,14 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 1637,
-						"y": 1710,
+						"x": 1976,
+						"y": 1235,
 						"w": 72,
 						"h": 59
 					}
 				},
 				{
-					"filename": "player/run/duck-run-0011.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 60,
-						"h": 69
-					},
-					"spriteSourceSize": {
-						"x": 9,
-						"y": 0,
-						"w": 44,
-						"h": 69
-					},
-					"frame": {
-						"x": 1670,
-						"y": 1769,
-						"w": 44,
-						"h": 69
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0032.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 7,
-						"w": 69,
-						"h": 59
-					},
-					"frame": {
-						"x": 1979,
-						"y": 1216,
-						"w": 69,
-						"h": 59
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0013.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 7,
-						"w": 69,
-						"h": 51
-					},
-					"frame": {
-						"x": 1979,
-						"y": 1275,
-						"w": 69,
-						"h": 51
-					}
-				},
-				{
-					"filename": "barrel/launch/barrel-launch-0006.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 132,
-						"h": 110
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 31,
-						"w": 69,
-						"h": 48
-					},
-					"frame": {
-						"x": 1979,
-						"y": 1326,
-						"w": 69,
-						"h": 48
-					}
-				},
-				{
-					"filename": "barrel/launch/barrel-launch-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 132,
-						"h": 110
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 36,
-						"w": 82,
-						"h": 38
-					},
-					"frame": {
-						"x": 1827,
-						"y": 1371,
-						"w": 82,
-						"h": 38
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 4,
-						"w": 81,
-						"h": 57
-					},
-					"frame": {
-						"x": 1412,
-						"y": 1880,
-						"w": 81,
-						"h": 57
-					}
-				},
-				{
-					"filename": "coin/coin-collect/coin-collect-0008.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 70,
-						"h": 70
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 2,
-						"w": 68,
-						"h": 67
-					},
-					"frame": {
-						"x": 1388,
-						"y": 1937,
-						"w": 68,
-						"h": 67
-					}
-				},
-				{
-					"filename": "player/run/duck-run-0010.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 60,
-						"h": 69
-					},
-					"spriteSourceSize": {
-						"x": 11,
-						"y": 2,
-						"w": 42,
-						"h": 67
-					},
-					"frame": {
-						"x": 1456,
-						"y": 1937,
-						"w": 42,
-						"h": 67
-					}
-				},
-				{
-					"filename": "player/idle/duck-idle-0001.png",
+					"filename": "player/idle/duck-idle-0006.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -2360,20 +1772,41 @@
 						"h": 66
 					},
 					"spriteSourceSize": {
-						"x": 6,
-						"y": 0,
-						"w": 47,
-						"h": 66
+						"x": 3,
+						"y": 5,
+						"w": 53,
+						"h": 61
 					},
 					"frame": {
-						"x": 1738,
-						"y": 1386,
-						"w": 47,
-						"h": 66
+						"x": 1105,
+						"y": 1942,
+						"w": 53,
+						"h": 61
 					}
 				},
 				{
-					"filename": "player/run/duck-run-0006.png",
+					"filename": "finish/finish-activated/finish-activated-0011.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 22,
+						"w": 60,
+						"h": 102
+					},
+					"frame": {
+						"x": 1347,
+						"y": 1786,
+						"w": 60,
+						"h": 102
+					}
+				},
+				{
+					"filename": "player/run/duck-run-0013.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -2381,58 +1814,226 @@
 						"h": 69
 					},
 					"spriteSourceSize": {
-						"x": 12,
-						"y": 8,
-						"w": 42,
-						"h": 60
+						"x": 2,
+						"y": 5,
+						"w": 57,
+						"h": 63
 					},
 					"frame": {
-						"x": 1785,
-						"y": 1387,
-						"w": 42,
-						"h": 60
+						"x": 1290,
+						"y": 1850,
+						"w": 57,
+						"h": 63
 					}
 				},
 				{
-					"filename": "barrel/enter/barrel-enter-0004.png",
+					"filename": "finish/finish-activated/finish-activated-0010.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 95,
-						"h": 65
+						"w": 100,
+						"h": 125
 					},
 					"spriteSourceSize": {
-						"x": 2,
-						"y": 7,
-						"w": 78,
-						"h": 51
+						"x": 5,
+						"y": 24,
+						"w": 57,
+						"h": 100
 					},
 					"frame": {
-						"x": 1827,
-						"y": 1409,
-						"w": 78,
-						"h": 51
+						"x": 1407,
+						"y": 1773,
+						"w": 57,
+						"h": 100
 					}
 				},
 				{
-					"filename": "coin/coin-collect/coin-collect-0007.png",
+					"filename": "finish/finish-activated/finish-activated-0005.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 70,
-						"h": 70
+						"w": 100,
+						"h": 125
 					},
 					"spriteSourceSize": {
-						"x": 2,
-						"y": 2,
-						"w": 66,
-						"h": 66
+						"x": 8,
+						"y": 6,
+						"w": 39,
+						"h": 119
 					},
 					"frame": {
-						"x": 1738,
-						"y": 1452,
-						"w": 66,
-						"h": 66
+						"x": 1464,
+						"y": 1773,
+						"w": 39,
+						"h": 119
+					}
+				},
+				{
+					"filename": "finish/finish-activated/finish-activated-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 13,
+						"w": 44,
+						"h": 112
+					},
+					"frame": {
+						"x": 1503,
+						"y": 1770,
+						"w": 44,
+						"h": 112
+					}
+				},
+				{
+					"filename": "finish/finish-activated/finish-activated-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 17,
+						"w": 47,
+						"h": 107
+					},
+					"frame": {
+						"x": 1547,
+						"y": 1773,
+						"w": 47,
+						"h": 107
+					}
+				},
+				{
+					"filename": "finish/finish-activated/finish-activated-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 28,
+						"w": 56,
+						"h": 97
+					},
+					"frame": {
+						"x": 1594,
+						"y": 1773,
+						"w": 56,
+						"h": 97
+					}
+				},
+				{
+					"filename": "barrel/launch/barrel-launch-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 110
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 29,
+						"w": 94,
+						"h": 52
+					},
+					"frame": {
+						"x": 1158,
+						"y": 1974,
+						"w": 94,
+						"h": 52
+					}
+				},
+				{
+					"filename": "finish/finish-activated/finish-activated-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 16,
+						"w": 41,
+						"h": 109
+					},
+					"frame": {
+						"x": 1650,
+						"y": 1773,
+						"w": 41,
+						"h": 109
+					}
+				},
+				{
+					"filename": "finish/finish-idle/finish-idle.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 17,
+						"w": 41,
+						"h": 108
+					},
+					"frame": {
+						"x": 1663,
+						"y": 1463,
+						"w": 41,
+						"h": 108
+					}
+				},
+				{
+					"filename": "finish/finish-activated/finish-activated-0009.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 21,
+						"w": 48,
+						"h": 103
+					},
+					"frame": {
+						"x": 1668,
+						"y": 1571,
+						"w": 48,
+						"h": 103
+					}
+				},
+				{
+					"filename": "finish/finish-activated/finish-activated-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 125
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 32,
+						"w": 57,
+						"h": 93
+					},
+					"frame": {
+						"x": 1672,
+						"y": 1674,
+						"w": 57,
+						"h": 93
 					}
 				},
 				{
@@ -2450,56 +2051,77 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 1723,
-						"y": 1518,
+						"x": 1668,
+						"y": 1404,
 						"w": 72,
 						"h": 59
 					}
 				},
 				{
-					"filename": "player/land/duck-land-0031.png",
+					"filename": "barrel/enter/barrel-enter-0002.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 74,
-						"h": 66
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 2,
+						"w": 83,
+						"h": 61
+					},
+					"frame": {
+						"x": 1291,
+						"y": 1913,
+						"w": 83,
+						"h": 61
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
 					},
 					"spriteSourceSize": {
 						"x": 2,
 						"y": 7,
-						"w": 72,
-						"h": 59
+						"w": 78,
+						"h": 51
 					},
 					"frame": {
-						"x": 1804,
-						"y": 1460,
-						"w": 72,
-						"h": 59
+						"x": 1252,
+						"y": 1974,
+						"w": 78,
+						"h": 51
 					}
 				},
 				{
-					"filename": "player/land/duck-land-0027.png",
+					"filename": "barrel/launch/barrel-launch-0001.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 74,
-						"h": 66
+						"w": 132,
+						"h": 110
 					},
 					"spriteSourceSize": {
-						"x": 2,
-						"y": 7,
-						"w": 68,
-						"h": 59
+						"x": 0,
+						"y": 36,
+						"w": 82,
+						"h": 38
 					},
 					"frame": {
-						"x": 1795,
-						"y": 1519,
-						"w": 68,
-						"h": 59
+						"x": 1891,
+						"y": 1274,
+						"w": 82,
+						"h": 38
 					}
 				},
 				{
-					"filename": "player/run/duck-run-0009.png",
+					"filename": "player/run/duck-run-0011.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -2507,20 +2129,125 @@
 						"h": 69
 					},
 					"spriteSourceSize": {
-						"x": 13,
-						"y": 6,
-						"w": 40,
-						"h": 62
+						"x": 9,
+						"y": 0,
+						"w": 44,
+						"h": 69
 					},
 					"frame": {
-						"x": 1876,
-						"y": 1460,
-						"w": 40,
-						"h": 62
+						"x": 1704,
+						"y": 1463,
+						"w": 44,
+						"h": 69
 					}
 				},
 				{
-					"filename": "player/land/duck-land-0036.png",
+					"filename": "player/run/duck-run-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 69
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 2,
+						"w": 52,
+						"h": 67
+					},
+					"frame": {
+						"x": 1691,
+						"y": 1767,
+						"w": 52,
+						"h": 67
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 4,
+						"w": 81,
+						"h": 57
+					},
+					"frame": {
+						"x": 1691,
+						"y": 1834,
+						"w": 81,
+						"h": 57
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0013.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 7,
+						"w": 69,
+						"h": 51
+					},
+					"frame": {
+						"x": 1330,
+						"y": 1974,
+						"w": 69,
+						"h": 51
+					}
+				},
+				{
+					"filename": "coin/coin-collect/coin-collect-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 21,
+						"y": 21,
+						"w": 30,
+						"h": 30
+					},
+					"frame": {
+						"x": 2018,
+						"y": 944,
+						"w": 30,
+						"h": 30
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0005.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 8,
+						"w": 74,
+						"h": 49
+					},
+					"frame": {
+						"x": 1973,
+						"y": 1294,
+						"w": 74,
+						"h": 49
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0033.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -2529,99 +2256,15 @@
 					},
 					"spriteSourceSize": {
 						"x": 2,
-						"y": 0,
-						"w": 61,
-						"h": 66
+						"y": 5,
+						"w": 66,
+						"h": 61
 					},
 					"frame": {
-						"x": 1863,
-						"y": 1522,
-						"w": 61,
-						"h": 66
-					}
-				},
-				{
-					"filename": "platforms/platform-left.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 27,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 27,
-						"h": 30
-					},
-					"frame": {
-						"x": 2021,
-						"y": 943,
-						"w": 27,
-						"h": 30
-					}
-				},
-				{
-					"filename": "platforms/platform-right.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 27,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 27,
-						"h": 30
-					},
-					"frame": {
-						"x": 2021,
-						"y": 973,
-						"w": 27,
-						"h": 30
-					}
-				},
-				{
-					"filename": "crate/crate-small.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 50,
-						"h": 50
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 47,
-						"h": 48
-					},
-					"frame": {
-						"x": 1670,
-						"y": 1838,
-						"w": 47,
-						"h": 48
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 28,
-						"h": 27
-					},
-					"frame": {
-						"x": 1538,
-						"y": 1406,
-						"w": 28,
-						"h": 27
+						"x": 1691,
+						"y": 1343,
+						"w": 66,
+						"h": 61
 					}
 				},
 				{
@@ -2639,35 +2282,14 @@
 						"h": 47
 					},
 					"frame": {
-						"x": 1909,
-						"y": 1375,
+						"x": 1691,
+						"y": 1296,
 						"w": 72,
 						"h": 47
 					}
 				},
 				{
-					"filename": "barrel/enter/barrel-enter-0014.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 7,
-						"w": 67,
-						"h": 51
-					},
-					"frame": {
-						"x": 1981,
-						"y": 1374,
-						"w": 67,
-						"h": 51
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0034.png",
+					"filename": "player/land/duck-land-0031.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -2676,13 +2298,139 @@
 					},
 					"spriteSourceSize": {
 						"x": 2,
-						"y": 3,
+						"y": 7,
+						"w": 72,
+						"h": 59
+					},
+					"frame": {
+						"x": 1763,
+						"y": 1291,
+						"w": 72,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0032.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 7,
+						"w": 69,
+						"h": 59
+					},
+					"frame": {
+						"x": 1757,
+						"y": 1350,
+						"w": 69,
+						"h": 59
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0007.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 9,
+						"w": 72,
+						"h": 47
+					},
+					"frame": {
+						"x": 1740,
+						"y": 1409,
+						"w": 72,
+						"h": 47
+					}
+				},
+				{
+					"filename": "coin/coin-collect/coin-collect-0007.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 2,
+						"w": 66,
+						"h": 66
+					},
+					"frame": {
+						"x": 1748,
+						"y": 1456,
+						"w": 66,
+						"h": 66
+					}
+				},
+				{
+					"filename": "player/run/duck-run-0012.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 69
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 2,
+						"w": 55,
+						"h": 66
+					},
+					"frame": {
+						"x": 1835,
+						"y": 1304,
+						"w": 55,
+						"h": 66
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0027.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 7,
+						"w": 68,
+						"h": 59
+					},
+					"frame": {
+						"x": 1890,
+						"y": 1312,
+						"w": 68,
+						"h": 59
+					}
+				},
+				{
+					"filename": "coin/coin-collect/coin-collect-0006.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 4,
 						"w": 63,
 						"h": 63
 					},
 					"frame": {
-						"x": 1916,
-						"y": 1422,
+						"x": 1826,
+						"y": 1370,
 						"w": 63,
 						"h": 63
 					}
@@ -2702,14 +2450,14 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 1979,
-						"y": 1425,
+						"x": 1889,
+						"y": 1371,
 						"w": 68,
 						"h": 59
 					}
 				},
 				{
-					"filename": "player/land/duck-land-0038.png",
+					"filename": "player/land/duck-land-0035.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -2718,61 +2466,19 @@
 					},
 					"spriteSourceSize": {
 						"x": 2,
-						"y": 2,
-						"w": 61,
-						"h": 64
+						"y": 1,
+						"w": 62,
+						"h": 65
 					},
 					"frame": {
-						"x": 1924,
-						"y": 1485,
-						"w": 61,
-						"h": 64
+						"x": 1814,
+						"y": 1433,
+						"w": 62,
+						"h": 65
 					}
 				},
 				{
-					"filename": "player/land/duck-land-0055.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 7,
-						"w": 63,
-						"h": 59
-					},
-					"frame": {
-						"x": 1985,
-						"y": 1484,
-						"w": 63,
-						"h": 59
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0056.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 7,
-						"w": 63,
-						"h": 59
-					},
-					"frame": {
-						"x": 1985,
-						"y": 1543,
-						"w": 63,
-						"h": 59
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0039.png",
+					"filename": "player/land/duck-land-0034.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -2781,120 +2487,15 @@
 					},
 					"spriteSourceSize": {
 						"x": 2,
-						"y": 2,
-						"w": 61,
-						"h": 64
+						"y": 3,
+						"w": 63,
+						"h": 63
 					},
 					"frame": {
-						"x": 1924,
-						"y": 1549,
-						"w": 61,
-						"h": 64
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 6,
-						"y": 0,
-						"w": 47,
-						"h": 66
-					},
-					"frame": {
-						"x": 1709,
-						"y": 1641,
-						"w": 47,
-						"h": 66
-					}
-				},
-				{
-					"filename": "player/fall/duck-fall-0008.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 62,
-						"h": 62
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 62,
-						"h": 62
-					},
-					"frame": {
-						"x": 1709,
-						"y": 1707,
-						"w": 62,
-						"h": 62
-					}
-				},
-				{
-					"filename": "player/run/duck-run-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 60,
-						"h": 69
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 5,
-						"w": 58,
-						"h": 64
-					},
-					"frame": {
-						"x": 1714,
-						"y": 1769,
-						"w": 58,
-						"h": 64
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0033.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 5,
-						"w": 66,
-						"h": 61
-					},
-					"frame": {
-						"x": 1717,
-						"y": 1833,
-						"w": 66,
-						"h": 61
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0050.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 5,
-						"w": 62,
-						"h": 61
-					},
-					"frame": {
-						"x": 1722,
-						"y": 1580,
-						"w": 62,
-						"h": 61
+						"x": 1814,
+						"y": 1498,
+						"w": 63,
+						"h": 63
 					}
 				},
 				{
@@ -2912,35 +2513,35 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 1784,
-						"y": 1578,
+						"x": 1748,
+						"y": 1522,
 						"w": 66,
 						"h": 59
 					}
 				},
 				{
-					"filename": "barrel/enter/barrel-enter-0007.png",
+					"filename": "player/land/duck-land-0037.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 95,
-						"h": 65
+						"w": 74,
+						"h": 66
 					},
 					"spriteSourceSize": {
-						"x": 0,
-						"y": 9,
-						"w": 72,
-						"h": 47
+						"x": 2,
+						"y": 1,
+						"w": 61,
+						"h": 65
 					},
 					"frame": {
-						"x": 1850,
-						"y": 1588,
-						"w": 72,
-						"h": 47
+						"x": 1716,
+						"y": 1581,
+						"w": 61,
+						"h": 65
 					}
 				},
 				{
-					"filename": "player/run/duck-run-0005.png",
+					"filename": "player/run/duck-run-0010.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -2948,37 +2549,142 @@
 						"h": 69
 					},
 					"spriteSourceSize": {
-						"x": 7,
-						"y": 4,
-						"w": 46,
-						"h": 63
+						"x": 11,
+						"y": 2,
+						"w": 42,
+						"h": 67
 					},
 					"frame": {
-						"x": 1756,
-						"y": 1641,
-						"w": 46,
-						"h": 63
+						"x": 1777,
+						"y": 1581,
+						"w": 42,
+						"h": 67
 					}
 				},
 				{
-					"filename": "player/dead/duck-dead-0002.png",
+					"filename": "player/land/duck-land-0038.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 54,
-						"h": 63
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 2,
+						"w": 61,
+						"h": 64
+					},
+					"frame": {
+						"x": 1819,
+						"y": 1561,
+						"w": 61,
+						"h": 64
+					}
+				},
+				{
+					"filename": "player/idle/duck-idle-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 59,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 0,
+						"w": 47,
+						"h": 66
+					},
+					"frame": {
+						"x": 1729,
+						"y": 1646,
+						"w": 47,
+						"h": 66
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 0,
+						"w": 47,
+						"h": 66
+					},
+					"frame": {
+						"x": 1776,
+						"y": 1648,
+						"w": 47,
+						"h": 66
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0039.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 2,
+						"w": 61,
+						"h": 64
+					},
+					"frame": {
+						"x": 1823,
+						"y": 1625,
+						"w": 61,
+						"h": 64
+					}
+				},
+				{
+					"filename": "crate/crate-small.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 50,
+						"h": 50
 					},
 					"spriteSourceSize": {
 						"x": 0,
 						"y": 0,
-						"w": 51,
-						"h": 63
+						"w": 47,
+						"h": 48
 					},
 					"frame": {
-						"x": 1802,
-						"y": 1637,
-						"w": 51,
-						"h": 63
+						"x": 1729,
+						"y": 1712,
+						"w": 47,
+						"h": 48
+					}
+				},
+				{
+					"filename": "player/run/duck-run-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 69
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 5,
+						"w": 58,
+						"h": 64
+					},
+					"frame": {
+						"x": 1776,
+						"y": 1714,
+						"w": 58,
+						"h": 64
 					}
 				},
 				{
@@ -2996,8 +2702,8 @@
 						"h": 63
 					},
 					"frame": {
-						"x": 1853,
-						"y": 1635,
+						"x": 1834,
+						"y": 1689,
 						"w": 61,
 						"h": 63
 					}
@@ -3017,30 +2723,9 @@
 						"h": 63
 					},
 					"frame": {
-						"x": 1853,
-						"y": 1635,
+						"x": 1834,
+						"y": 1689,
 						"w": 61,
-						"h": 63
-					}
-				},
-				{
-					"filename": "player/dead/duck-dead-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 54,
-						"h": 63
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 50,
-						"h": 63
-					},
-					"frame": {
-						"x": 1771,
-						"y": 1704,
-						"w": 50,
 						"h": 63
 					}
 				},
@@ -3059,31 +2744,73 @@
 						"h": 63
 					},
 					"frame": {
-						"x": 1772,
-						"y": 1767,
+						"x": 1834,
+						"y": 1752,
 						"w": 61,
 						"h": 63
 					}
 				},
 				{
-					"filename": "player/run/duck-run-0013.png",
+					"filename": "player/fall/duck-fall-0006.png",
 					"rotated": false,
-					"trimmed": true,
+					"trimmed": false,
 					"sourceSize": {
-						"w": 60,
-						"h": 69
+						"w": 62,
+						"h": 62
 					},
 					"spriteSourceSize": {
-						"x": 2,
-						"y": 5,
-						"w": 57,
-						"h": 63
+						"x": 0,
+						"y": 0,
+						"w": 62,
+						"h": 62
 					},
 					"frame": {
-						"x": 1783,
-						"y": 1830,
-						"w": 57,
-						"h": 63
+						"x": 1772,
+						"y": 1778,
+						"w": 62,
+						"h": 62
+					}
+				},
+				{
+					"filename": "player/fall/duck-fall-0007.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 62,
+						"h": 62
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 62,
+						"h": 62
+					},
+					"frame": {
+						"x": 1772,
+						"y": 1840,
+						"w": 62,
+						"h": 62
+					}
+				},
+				{
+					"filename": "player/fall/duck-fall-0008.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 62,
+						"h": 62
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 62,
+						"h": 62
+					},
+					"frame": {
+						"x": 1834,
+						"y": 1815,
+						"w": 62,
+						"h": 62
 					}
 				},
 				{
@@ -3101,119 +2828,14 @@
 						"h": 62
 					},
 					"frame": {
-						"x": 1821,
-						"y": 1700,
+						"x": 1834,
+						"y": 1877,
 						"w": 62,
 						"h": 62
 					}
 				},
 				{
-					"filename": "player/fall/duck-fall-0010.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 62,
-						"h": 62
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 62,
-						"h": 62
-					},
-					"frame": {
-						"x": 1833,
-						"y": 1762,
-						"w": 62,
-						"h": 62
-					}
-				},
-				{
-					"filename": "player/fall/duck-fall-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 62
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 0,
-						"w": 61,
-						"h": 62
-					},
-					"frame": {
-						"x": 1840,
-						"y": 1824,
-						"w": 61,
-						"h": 62
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0049.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 4,
-						"w": 60,
-						"h": 62
-					},
-					"frame": {
-						"x": 1883,
-						"y": 1698,
-						"w": 60,
-						"h": 62
-					}
-				},
-				{
-					"filename": "player/fall/duck-fall-0004.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 62
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 0,
-						"w": 59,
-						"h": 62
-					},
-					"frame": {
-						"x": 1895,
-						"y": 1760,
-						"w": 59,
-						"h": 62
-					}
-				},
-				{
-					"filename": "player/fall/duck-fall-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 62
-					},
-					"spriteSourceSize": {
-						"x": 4,
-						"y": 0,
-						"w": 55,
-						"h": 62
-					},
-					"frame": {
-						"x": 1901,
-						"y": 1822,
-						"w": 55,
-						"h": 62
-					}
-				},
-				{
-					"filename": "barrel/launch/barrel-launch-0008.png",
+					"filename": "barrel/launch/barrel-launch-0006.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -3222,99 +2844,15 @@
 					},
 					"spriteSourceSize": {
 						"x": 0,
-						"y": 30,
-						"w": 66,
-						"h": 50
+						"y": 31,
+						"w": 69,
+						"h": 48
 					},
 					"frame": {
-						"x": 1922,
-						"y": 1613,
-						"w": 66,
-						"h": 50
-					}
-				},
-				{
-					"filename": "player/run/duck-run-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 60,
-						"h": 69
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 8,
-						"w": 60,
-						"h": 60
-					},
-					"frame": {
-						"x": 1988,
-						"y": 1602,
-						"w": 60,
-						"h": 60
-					}
-				},
-				{
-					"filename": "player/run/duck-run-0014.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 60,
-						"h": 69
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 8,
-						"w": 60,
-						"h": 60
-					},
-					"frame": {
-						"x": 1988,
-						"y": 1662,
-						"w": 60,
-						"h": 60
-					}
-				},
-				{
-					"filename": "coin/coin-collect/coin-collect-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 70,
-						"h": 70
-					},
-					"spriteSourceSize": {
-						"x": 16,
-						"y": 16,
-						"w": 40,
-						"h": 40
-					},
-					"frame": {
-						"x": 1159,
-						"y": 1908,
-						"w": 40,
-						"h": 40
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0008.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 0,
-						"w": 18,
-						"h": 27
-					},
-					"frame": {
-						"x": 1161,
-						"y": 1647,
-						"w": 18,
-						"h": 27
+						"x": 1958,
+						"y": 1343,
+						"w": 69,
+						"h": 48
 					}
 				},
 				{
@@ -3332,8 +2870,8 @@
 						"h": 51
 					},
 					"frame": {
-						"x": 1498,
-						"y": 1877,
+						"x": 1957,
+						"y": 1391,
 						"w": 68,
 						"h": 51
 					}
@@ -3353,10 +2891,262 @@
 						"h": 50
 					},
 					"frame": {
-						"x": 1566,
-						"y": 1877,
+						"x": 1889,
+						"y": 1430,
 						"w": 68,
 						"h": 50
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0014.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 7,
+						"w": 67,
+						"h": 51
+					},
+					"frame": {
+						"x": 1957,
+						"y": 1442,
+						"w": 67,
+						"h": 51
+					}
+				},
+				{
+					"filename": "player/fall/duck-fall-0010.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 62,
+						"h": 62
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 62,
+						"h": 62
+					},
+					"frame": {
+						"x": 1877,
+						"y": 1480,
+						"w": 62,
+						"h": 62
+					}
+				},
+				{
+					"filename": "player/fall/duck-fall-0005.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 62
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 0,
+						"w": 61,
+						"h": 62
+					},
+					"frame": {
+						"x": 1880,
+						"y": 1542,
+						"w": 61,
+						"h": 62
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0049.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 4,
+						"w": 60,
+						"h": 62
+					},
+					"frame": {
+						"x": 1884,
+						"y": 1604,
+						"w": 60,
+						"h": 62
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 17,
+						"w": 60,
+						"h": 49
+					},
+					"frame": {
+						"x": 1939,
+						"y": 1493,
+						"w": 60,
+						"h": 49
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0009.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 0,
+						"w": 49,
+						"h": 60
+					},
+					"frame": {
+						"x": 1999,
+						"y": 1493,
+						"w": 49,
+						"h": 60
+					}
+				},
+				{
+					"filename": "player/fall/duck-fall-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 62
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 0,
+						"w": 55,
+						"h": 62
+					},
+					"frame": {
+						"x": 1941,
+						"y": 1542,
+						"w": 55,
+						"h": 62
+					}
+				},
+				{
+					"filename": "player/fall/duck-fall-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 62
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 0,
+						"w": 59,
+						"h": 62
+					},
+					"frame": {
+						"x": 1944,
+						"y": 1604,
+						"w": 59,
+						"h": 62
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0050.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 5,
+						"w": 62,
+						"h": 61
+					},
+					"frame": {
+						"x": 1895,
+						"y": 1666,
+						"w": 62,
+						"h": 61
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0055.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 7,
+						"w": 63,
+						"h": 59
+					},
+					"frame": {
+						"x": 1895,
+						"y": 1727,
+						"w": 63,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0006.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 5,
+						"w": 53,
+						"h": 61
+					},
+					"frame": {
+						"x": 1957,
+						"y": 1666,
+						"w": 53,
+						"h": 61
+					}
+				},
+				{
+					"filename": "player/idle/duck-idle-0005.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 59,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 6,
+						"w": 53,
+						"h": 60
+					},
+					"frame": {
+						"x": 1958,
+						"y": 1727,
+						"w": 53,
+						"h": 60
 					}
 				},
 				{
@@ -3374,8 +3164,71 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 1498,
-						"y": 1928,
+						"x": 1896,
+						"y": 1786,
+						"w": 62,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0056.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 7,
+						"w": 63,
+						"h": 59
+					},
+					"frame": {
+						"x": 1896,
+						"y": 1845,
+						"w": 63,
+						"h": 59
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0011.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 6,
+						"w": 65,
+						"h": 53
+					},
+					"frame": {
+						"x": 1958,
+						"y": 1787,
+						"w": 65,
+						"h": 53
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0051.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 7,
+						"w": 62,
+						"h": 59
+					},
+					"frame": {
+						"x": 1959,
+						"y": 1840,
 						"w": 62,
 						"h": 59
 					}
@@ -3395,371 +3248,35 @@
 						"h": 51
 					},
 					"frame": {
-						"x": 1634,
-						"y": 1886,
+						"x": 1896,
+						"y": 1904,
 						"w": 67,
 						"h": 51
 					}
 				},
 				{
-					"filename": "player/land/duck-land-0051.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 6,
-						"y": 7,
-						"w": 62,
-						"h": 59
-					},
-					"frame": {
-						"x": 1701,
-						"y": 1894,
-						"w": 62,
-						"h": 59
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0007.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 6,
-						"w": 55,
-						"h": 60
-					},
-					"frame": {
-						"x": 1560,
-						"y": 1953,
-						"w": 55,
-						"h": 60
-					}
-				},
-				{
-					"filename": "player/idle/duck-idle-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 59,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 6,
-						"w": 53,
-						"h": 60
-					},
-					"frame": {
-						"x": 1615,
-						"y": 1953,
-						"w": 53,
-						"h": 60
-					}
-				},
-				{
-					"filename": "player/idle/duck-idle-0007.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 59,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 6,
-						"w": 53,
-						"h": 60
-					},
-					"frame": {
-						"x": 1668,
-						"y": 1953,
-						"w": 53,
-						"h": 60
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 6,
-						"w": 53,
-						"h": 60
-					},
-					"frame": {
-						"x": 1721,
-						"y": 1953,
-						"w": 53,
-						"h": 60
-					}
-				},
-				{
-					"filename": "player/run/duck-run-0008.png",
+					"filename": "player/run/duck-run-0001.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
 						"w": 60,
 						"h": 69
-					},
-					"spriteSourceSize": {
-						"x": 12,
-						"y": 9,
-						"w": 42,
-						"h": 59
-					},
-					"frame": {
-						"x": 1763,
-						"y": 1894,
-						"w": 42,
-						"h": 59
-					}
-				},
-				{
-					"filename": "player/jump/duck-jump-0009.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 0,
-						"w": 49,
-						"h": 60
-					},
-					"frame": {
-						"x": 1774,
-						"y": 1953,
-						"w": 49,
-						"h": 60
-					}
-				},
-				{
-					"filename": "player/jump/duck-jump-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 0,
-						"w": 47,
-						"h": 60
-					},
-					"frame": {
-						"x": 1805,
-						"y": 1893,
-						"w": 47,
-						"h": 60
-					}
-				},
-				{
-					"filename": "player/jump/duck-jump-0012.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 0,
-						"w": 47,
-						"h": 60
-					},
-					"frame": {
-						"x": 1805,
-						"y": 1893,
-						"w": 47,
-						"h": 60
-					}
-				},
-				{
-					"filename": "player/jump/duck-jump-0011.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 0,
-						"w": 47,
-						"h": 60
-					},
-					"frame": {
-						"x": 1823,
-						"y": 1953,
-						"w": 47,
-						"h": 60
-					}
-				},
-				{
-					"filename": "player/fall/duck-fall-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 62
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 0,
-						"w": 51,
-						"h": 62
-					},
-					"frame": {
-						"x": 1852,
-						"y": 1886,
-						"w": 51,
-						"h": 62
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0006.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 5,
-						"w": 53,
-						"h": 61
-					},
-					"frame": {
-						"x": 1903,
-						"y": 1884,
-						"w": 53,
-						"h": 61
-					}
-				},
-				{
-					"filename": "player/fall/duck-fall-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 62
-					},
-					"spriteSourceSize": {
-						"x": 9,
-						"y": 0,
-						"w": 47,
-						"h": 61
-					},
-					"frame": {
-						"x": 1870,
-						"y": 1948,
-						"w": 47,
-						"h": 61
-					}
-				},
-				{
-					"filename": "player/jump/duck-jump-0004.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 6,
-						"y": 0,
-						"w": 46,
-						"h": 60
-					},
-					"frame": {
-						"x": 1917,
-						"y": 1945,
-						"w": 46,
-						"h": 60
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0012.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 0,
-						"w": 13,
-						"h": 27
-					},
-					"frame": {
-						"x": 756,
-						"y": 1863,
-						"w": 13,
-						"h": 27
-					}
-				},
-				{
-					"filename": "player/run/duck-run-0007.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 60,
-						"h": 69
-					},
-					"spriteSourceSize": {
-						"x": 12,
-						"y": 12,
-						"w": 42,
-						"h": 56
-					},
-					"frame": {
-						"x": 1943,
-						"y": 1663,
-						"w": 42,
-						"h": 56
-					}
-				},
-				{
-					"filename": "platforms/platform-middle.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 26,
-						"h": 24
 					},
 					"spriteSourceSize": {
 						"x": 0,
-						"y": 0,
-						"w": 26,
-						"h": 24
+						"y": 8,
+						"w": 60,
+						"h": 60
 					},
 					"frame": {
-						"x": 908,
-						"y": 1989,
-						"w": 26,
-						"h": 24
+						"x": 1963,
+						"y": 1899,
+						"w": 60,
+						"h": 60
 					}
 				},
 				{
-					"filename": "coin/coin-collect/coin-collect-0001.png",
+					"filename": "coin/coin-collect/coin-collect-0002.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -3767,205 +3284,37 @@
 						"h": 70
 					},
 					"spriteSourceSize": {
-						"x": 21,
-						"y": 21,
-						"w": 30,
-						"h": 30
+						"x": 16,
+						"y": 16,
+						"w": 40,
+						"h": 40
 					},
 					"frame": {
-						"x": 1943,
-						"y": 1719,
-						"w": 30,
-						"h": 30
+						"x": 1996,
+						"y": 1553,
+						"w": 40,
+						"h": 40
 					}
 				},
 				{
-					"filename": "player/jump/duck-jump-0007.png",
+					"filename": "player/run/duck-run-0009.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 10,
 						"w": 60,
-						"h": 45
-					},
-					"frame": {
-						"x": 1973,
-						"y": 1722,
-						"w": 60,
-						"h": 45
-					}
-				},
-				{
-					"filename": "coin/coin-collect/coin-collect-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 70,
-						"h": 70
+						"h": 69
 					},
 					"spriteSourceSize": {
-						"x": 12,
-						"y": 12,
-						"w": 47,
-						"h": 47
+						"x": 13,
+						"y": 6,
+						"w": 40,
+						"h": 62
 					},
 					"frame": {
-						"x": 1954,
-						"y": 1767,
-						"w": 47,
-						"h": 47
-					}
-				},
-				{
-					"filename": "player/jump/duck-jump-0010.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 10,
-						"y": 0,
-						"w": 46,
-						"h": 60
-					},
-					"frame": {
-						"x": 1956,
-						"y": 1814,
-						"w": 46,
-						"h": 60
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0010.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 0,
-						"w": 15,
-						"h": 27
-					},
-					"frame": {
-						"x": 2033,
-						"y": 1722,
-						"w": 15,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0011.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 0,
-						"w": 15,
-						"h": 27
-					},
-					"frame": {
-						"x": 2033,
-						"y": 1749,
-						"w": 15,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 0,
-						"w": 24,
-						"h": 27
-					},
-					"frame": {
-						"x": 1388,
-						"y": 1894,
-						"w": 24,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 0,
-						"w": 26,
-						"h": 27
-					},
-					"frame": {
-						"x": 1584,
-						"y": 1633,
-						"w": 26,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0022.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 0,
-						"w": 26,
-						"h": 27
-					},
-					"frame": {
-						"x": 1956,
-						"y": 1874,
-						"w": 26,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0023.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 0,
-						"w": 26,
-						"h": 27
-					},
-					"frame": {
-						"x": 2001,
-						"y": 1767,
-						"w": 26,
-						"h": 27
+						"x": 2003,
+						"y": 1593,
+						"w": 40,
+						"h": 62
 					}
 				},
 				{
@@ -3984,154 +3333,7 @@
 					},
 					"frame": {
 						"x": 2027,
-						"y": 1776,
-						"w": 21,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0004.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 0,
-						"w": 24,
-						"h": 27
-					},
-					"frame": {
-						"x": 1610,
-						"y": 1633,
-						"w": 24,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0021.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 0,
-						"w": 24,
-						"h": 27
-					},
-					"frame": {
-						"x": 1956,
-						"y": 1901,
-						"w": 24,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0018.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 4,
-						"y": 0,
-						"w": 20,
-						"h": 27
-					},
-					"frame": {
-						"x": 1982,
-						"y": 1874,
-						"w": 20,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 0,
-						"w": 22,
-						"h": 27
-					},
-					"frame": {
-						"x": 1980,
-						"y": 1901,
-						"w": 22,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0014.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 0,
-						"w": 15,
-						"h": 27
-					},
-					"frame": {
-						"x": 1199,
-						"y": 1908,
-						"w": 15,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0020.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 0,
-						"w": 22,
-						"h": 27
-					},
-					"frame": {
-						"x": 1914,
-						"y": 1663,
-						"w": 22,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0019.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 4,
-						"y": 0,
-						"w": 21,
-						"h": 27
-					},
-					"frame": {
-						"x": 1963,
-						"y": 1928,
+						"y": 1343,
 						"w": 21,
 						"h": 27
 					}
@@ -4151,9 +3353,807 @@
 						"h": 27
 					},
 					"frame": {
-						"x": 1963,
-						"y": 1955,
+						"x": 752,
+						"y": 1951,
 						"w": 19,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 0,
+						"w": 18,
+						"h": 27
+					},
+					"frame": {
+						"x": 1161,
+						"y": 1648,
+						"w": 18,
+						"h": 27
+					}
+				},
+				{
+					"filename": "player/run/duck-run-0005.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 69
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 4,
+						"w": 46,
+						"h": 63
+					},
+					"frame": {
+						"x": 1374,
+						"y": 1888,
+						"w": 46,
+						"h": 63
+					}
+				},
+				{
+					"filename": "player/run/duck-run-0006.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 69
+					},
+					"spriteSourceSize": {
+						"x": 12,
+						"y": 8,
+						"w": 42,
+						"h": 60
+					},
+					"frame": {
+						"x": 1420,
+						"y": 1873,
+						"w": 42,
+						"h": 60
+					}
+				},
+				{
+					"filename": "player/dead/duck-dead-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 54,
+						"h": 63
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 51,
+						"h": 63
+					},
+					"frame": {
+						"x": 1462,
+						"y": 1892,
+						"w": 51,
+						"h": 63
+					}
+				},
+				{
+					"filename": "player/dead/duck-dead-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 54,
+						"h": 63
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 50,
+						"h": 63
+					},
+					"frame": {
+						"x": 1513,
+						"y": 1882,
+						"w": 50,
+						"h": 63
+					}
+				},
+				{
+					"filename": "player/fall/duck-fall-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 62
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 0,
+						"w": 51,
+						"h": 62
+					},
+					"frame": {
+						"x": 1563,
+						"y": 1880,
+						"w": 51,
+						"h": 62
+					}
+				},
+				{
+					"filename": "player/run/duck-run-0014.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 69
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 8,
+						"w": 60,
+						"h": 60
+					},
+					"frame": {
+						"x": 1614,
+						"y": 1882,
+						"w": 60,
+						"h": 60
+					}
+				},
+				{
+					"filename": "barrel/launch/barrel-launch-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 110
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 30,
+						"w": 66,
+						"h": 50
+					},
+					"frame": {
+						"x": 1674,
+						"y": 1891,
+						"w": 66,
+						"h": 50
+					}
+				},
+				{
+					"filename": "player/run/duck-run-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 69
+					},
+					"spriteSourceSize": {
+						"x": 12,
+						"y": 9,
+						"w": 42,
+						"h": 59
+					},
+					"frame": {
+						"x": 1420,
+						"y": 1933,
+						"w": 42,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0007.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 6,
+						"w": 55,
+						"h": 60
+					},
+					"frame": {
+						"x": 1462,
+						"y": 1955,
+						"w": 55,
+						"h": 60
+					}
+				},
+				{
+					"filename": "player/fall/duck-fall-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 62
+					},
+					"spriteSourceSize": {
+						"x": 9,
+						"y": 0,
+						"w": 47,
+						"h": 61
+					},
+					"frame": {
+						"x": 1517,
+						"y": 1945,
+						"w": 47,
+						"h": 61
+					}
+				},
+				{
+					"filename": "player/idle/duck-idle-0007.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 59,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 6,
+						"w": 53,
+						"h": 60
+					},
+					"frame": {
+						"x": 1564,
+						"y": 1942,
+						"w": 53,
+						"h": 60
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0005.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 6,
+						"w": 53,
+						"h": 60
+					},
+					"frame": {
+						"x": 1617,
+						"y": 1942,
+						"w": 53,
+						"h": 60
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0010.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 0,
+						"w": 15,
+						"h": 27
+					},
+					"frame": {
+						"x": 756,
+						"y": 1864,
+						"w": 15,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0011.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 0,
+						"w": 15,
+						"h": 27
+					},
+					"frame": {
+						"x": 1958,
+						"y": 1312,
+						"w": 15,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0019.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 0,
+						"w": 21,
+						"h": 27
+					},
+					"frame": {
+						"x": 2027,
+						"y": 1370,
+						"w": 21,
+						"h": 27
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0006.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 5,
+						"w": 62,
+						"h": 46
+					},
+					"frame": {
+						"x": 1740,
+						"y": 1902,
+						"w": 62,
+						"h": 46
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0012.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 0,
+						"w": 13,
+						"h": 27
+					},
+					"frame": {
+						"x": 1716,
+						"y": 1646,
+						"w": 13,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0013.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 0,
+						"w": 13,
+						"h": 27
+					},
+					"frame": {
+						"x": 1876,
+						"y": 1433,
+						"w": 13,
+						"h": 27
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 0,
+						"w": 47,
+						"h": 60
+					},
+					"frame": {
+						"x": 1670,
+						"y": 1942,
+						"w": 47,
+						"h": 60
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0012.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 0,
+						"w": 47,
+						"h": 60
+					},
+					"frame": {
+						"x": 1670,
+						"y": 1942,
+						"w": 47,
+						"h": 60
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0007.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 10,
+						"w": 60,
+						"h": 45
+					},
+					"frame": {
+						"x": 1717,
+						"y": 1948,
+						"w": 60,
+						"h": 45
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0011.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 0,
+						"w": 47,
+						"h": 60
+					},
+					"frame": {
+						"x": 1777,
+						"y": 1948,
+						"w": 47,
+						"h": 60
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 0,
+						"w": 46,
+						"h": 60
+					},
+					"frame": {
+						"x": 1824,
+						"y": 1939,
+						"w": 46,
+						"h": 60
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 0,
+						"w": 26,
+						"h": 27
+					},
+					"frame": {
+						"x": 1870,
+						"y": 1939,
+						"w": 26,
+						"h": 27
+					}
+				},
+				{
+					"filename": "platforms/platform-left.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 27,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 27,
+						"h": 30
+					},
+					"frame": {
+						"x": 1824,
+						"y": 1999,
+						"w": 27,
+						"h": 30
+					}
+				},
+				{
+					"filename": "platforms/platform-right.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 27,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 27,
+						"h": 30
+					},
+					"frame": {
+						"x": 1851,
+						"y": 1999,
+						"w": 27,
+						"h": 30
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 28,
+						"h": 27
+					},
+					"frame": {
+						"x": 1564,
+						"y": 2002,
+						"w": 28,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0022.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 0,
+						"w": 26,
+						"h": 27
+					},
+					"frame": {
+						"x": 1592,
+						"y": 2002,
+						"w": 26,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0023.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 0,
+						"w": 26,
+						"h": 27
+					},
+					"frame": {
+						"x": 1618,
+						"y": 2002,
+						"w": 26,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 0,
+						"w": 24,
+						"h": 27
+					},
+					"frame": {
+						"x": 1644,
+						"y": 2002,
+						"w": 24,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 0,
+						"w": 24,
+						"h": 27
+					},
+					"frame": {
+						"x": 1668,
+						"y": 2002,
+						"w": 24,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0021.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 0,
+						"w": 24,
+						"h": 27
+					},
+					"frame": {
+						"x": 1692,
+						"y": 2002,
+						"w": 24,
+						"h": 27
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0010.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 0,
+						"w": 46,
+						"h": 60
+					},
+					"frame": {
+						"x": 1896,
+						"y": 1955,
+						"w": 46,
+						"h": 60
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0005.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 0,
+						"w": 22,
+						"h": 27
+					},
+					"frame": {
+						"x": 1716,
+						"y": 2002,
+						"w": 22,
+						"h": 27
+					}
+				},
+				{
+					"filename": "platforms/platform-middle.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 25,
+						"h": 24
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 25,
+						"h": 24
+					},
+					"frame": {
+						"x": 1365,
+						"y": 1447,
+						"w": 25,
+						"h": 24
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0020.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 0,
+						"w": 22,
+						"h": 27
+					},
+					"frame": {
+						"x": 869,
+						"y": 1931,
+						"w": 22,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0018.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 0,
+						"w": 20,
+						"h": 27
+					},
+					"frame": {
+						"x": 2018,
+						"y": 974,
+						"w": 20,
 						"h": 27
 					}
 				},
@@ -4172,8 +4172,8 @@
 						"h": 27
 					},
 					"frame": {
-						"x": 1984,
-						"y": 1928,
+						"x": 1704,
+						"y": 1532,
 						"w": 18,
 						"h": 27
 					}
@@ -4193,8 +4193,8 @@
 						"h": 27
 					},
 					"frame": {
-						"x": 1982,
-						"y": 1955,
+						"x": 752,
+						"y": 1978,
 						"w": 17,
 						"h": 27
 					}
@@ -4214,9 +4214,30 @@
 						"h": 27
 					},
 					"frame": {
-						"x": 1963,
-						"y": 1982,
+						"x": 1802,
+						"y": 1902,
 						"w": 17,
+						"h": 27
+					}
+				},
+				{
+					"filename": "coin/coin-idle/coin-idle-0014.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 31,
+						"h": 30
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 0,
+						"w": 15,
+						"h": 27
+					},
+					"frame": {
+						"x": 1819,
+						"y": 1902,
+						"w": 15,
 						"h": 27
 					}
 				},
@@ -4235,30 +4256,9 @@
 						"h": 27
 					},
 					"frame": {
-						"x": 1980,
-						"y": 1982,
+						"x": 1942,
+						"y": 1955,
 						"w": 15,
-						"h": 27
-					}
-				},
-				{
-					"filename": "coin/coin-idle/coin-idle-0013.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 31,
-						"h": 30
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 0,
-						"w": 13,
-						"h": 27
-					},
-					"frame": {
-						"x": 1995,
-						"y": 1982,
-						"w": 13,
 						"h": 27
 					}
 				}
@@ -4268,1040 +4268,11 @@
 			"image": "assets-2.png",
 			"format": "RGBA8888",
 			"size": {
-				"w": 256,
-				"h": 1020
+				"w": 507,
+				"h": 505
 			},
 			"scale": 1,
 			"frames": [
-				{
-					"filename": "player/jump/duck-jump-0006.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 5,
-						"w": 62,
-						"h": 46
-					},
-					"frame": {
-						"x": 0,
-						"y": 0,
-						"w": 62,
-						"h": 46
-					}
-				},
-				{
-					"filename": "player/jump/duck-jump-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 4,
-						"w": 56,
-						"h": 47
-					},
-					"frame": {
-						"x": 62,
-						"y": 0,
-						"w": 56,
-						"h": 47
-					}
-				},
-				{
-					"filename": "player/jump/duck-jump-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 8,
-						"w": 60,
-						"h": 48
-					},
-					"frame": {
-						"x": 118,
-						"y": 0,
-						"w": 60,
-						"h": 48
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 17,
-						"w": 60,
-						"h": 49
-					},
-					"frame": {
-						"x": 178,
-						"y": 0,
-						"w": 60,
-						"h": 49
-					}
-				},
-				{
-					"filename": "player/idle/duck-idle-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 59,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 17,
-						"w": 59,
-						"h": 49
-					},
-					"frame": {
-						"x": 0,
-						"y": 46,
-						"w": 59,
-						"h": 49
-					}
-				},
-				{
-					"filename": "player/jump/duck-jump-0008.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 6,
-						"y": 5,
-						"w": 55,
-						"h": 51
-					},
-					"frame": {
-						"x": 59,
-						"y": 47,
-						"w": 55,
-						"h": 51
-					}
-				},
-				{
-					"filename": "barrel/launch/barrel-launch-0010.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 132,
-						"h": 110
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 29,
-						"w": 63,
-						"h": 52
-					},
-					"frame": {
-						"x": 114,
-						"y": 48,
-						"w": 63,
-						"h": 52
-					}
-				},
-				{
-					"filename": "barrel/launch/barrel-launch-0009.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 132,
-						"h": 110
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 29,
-						"w": 65,
-						"h": 52
-					},
-					"frame": {
-						"x": 177,
-						"y": 49,
-						"w": 65,
-						"h": 52
-					}
-				},
-				{
-					"filename": "coin/coin-collect/coin-collect-0004.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 70,
-						"h": 70
-					},
-					"spriteSourceSize": {
-						"x": 9,
-						"y": 9,
-						"w": 53,
-						"h": 53
-					},
-					"frame": {
-						"x": 0,
-						"y": 95,
-						"w": 53,
-						"h": 53
-					}
-				},
-				{
-					"filename": "player/idle/duck-idle-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 59,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 12,
-						"w": 57,
-						"h": 54
-					},
-					"frame": {
-						"x": 53,
-						"y": 98,
-						"w": 57,
-						"h": 54
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0016.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 6,
-						"w": 65,
-						"h": 53
-					},
-					"frame": {
-						"x": 110,
-						"y": 100,
-						"w": 65,
-						"h": 53
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0017.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 6,
-						"w": 65,
-						"h": 53
-					},
-					"frame": {
-						"x": 175,
-						"y": 101,
-						"w": 65,
-						"h": 53
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0046.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 12,
-						"w": 53,
-						"h": 54
-					},
-					"frame": {
-						"x": 0,
-						"y": 148,
-						"w": 53,
-						"h": 54
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0018.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 6,
-						"w": 65,
-						"h": 53
-					},
-					"frame": {
-						"x": 53,
-						"y": 153,
-						"w": 65,
-						"h": 53
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0019.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 6,
-						"w": 65,
-						"h": 53
-					},
-					"frame": {
-						"x": 118,
-						"y": 154,
-						"w": 65,
-						"h": 53
-					}
-				},
-				{
-					"filename": "barrel/launch/barrel-launch-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 132,
-						"h": 110
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 28,
-						"w": 62,
-						"h": 54
-					},
-					"frame": {
-						"x": 183,
-						"y": 154,
-						"w": 62,
-						"h": 54
-					}
-				},
-				{
-					"filename": "player/jump/duck-jump-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 62,
-						"h": 60
-					},
-					"spriteSourceSize": {
-						"x": 9,
-						"y": 0,
-						"w": 48,
-						"h": 54
-					},
-					"frame": {
-						"x": 0,
-						"y": 202,
-						"w": 48,
-						"h": 54
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 12,
-						"w": 57,
-						"h": 54
-					},
-					"frame": {
-						"x": 48,
-						"y": 206,
-						"w": 57,
-						"h": 54
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0010.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 5,
-						"w": 61,
-						"h": 55
-					},
-					"frame": {
-						"x": 105,
-						"y": 207,
-						"w": 61,
-						"h": 55
-					}
-				},
-				{
-					"filename": "barrel/enter/barrel-enter-0008.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 95,
-						"h": 65
-					},
-					"spriteSourceSize": {
-						"x": 6,
-						"y": 5,
-						"w": 59,
-						"h": 55
-					},
-					"frame": {
-						"x": 166,
-						"y": 208,
-						"w": 59,
-						"h": 55
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0015.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 0,
-						"w": 48,
-						"h": 58
-					},
-					"frame": {
-						"x": 0,
-						"y": 256,
-						"w": 48,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/dead/duck-dead-0005.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 54,
-						"h": 63
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 4,
-						"w": 53,
-						"h": 55
-					},
-					"frame": {
-						"x": 48,
-						"y": 260,
-						"w": 53,
-						"h": 55
-					}
-				},
-				{
-					"filename": "player/idle/duck-idle-0004.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 59,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 10,
-						"w": 57,
-						"h": 56
-					},
-					"frame": {
-						"x": 101,
-						"y": 262,
-						"w": 57,
-						"h": 56
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0004.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 10,
-						"w": 57,
-						"h": 56
-					},
-					"frame": {
-						"x": 158,
-						"y": 263,
-						"w": 57,
-						"h": 56
-					}
-				},
-				{
-					"filename": "player/land/duck-land-0047.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 74,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 4,
-						"y": 9,
-						"w": 55,
-						"h": 57
-					},
-					"frame": {
-						"x": 0,
-						"y": 315,
-						"w": 55,
-						"h": 57
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0017.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 9,
-						"y": 0,
-						"w": 46,
-						"h": 58
-					},
-					"frame": {
-						"x": 55,
-						"y": 315,
-						"w": 46,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/dead/duck-dead-0006.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 54,
-						"h": 63
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 3,
-						"w": 54,
-						"h": 57
-					},
-					"frame": {
-						"x": 101,
-						"y": 318,
-						"w": 54,
-						"h": 57
-					}
-				},
-				{
-					"filename": "player/dead/duck-dead-0008.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 54,
-						"h": 63
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 3,
-						"w": 54,
-						"h": 57
-					},
-					"frame": {
-						"x": 155,
-						"y": 319,
-						"w": 54,
-						"h": 57
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0011.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 6,
-						"y": 0,
-						"w": 47,
-						"h": 58
-					},
-					"frame": {
-						"x": 209,
-						"y": 319,
-						"w": 47,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/dead/duck-dead-0009.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 54,
-						"h": 63
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 3,
-						"w": 54,
-						"h": 57
-					},
-					"frame": {
-						"x": 0,
-						"y": 372,
-						"w": 54,
-						"h": 57
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0012.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 6,
-						"y": 0,
-						"w": 47,
-						"h": 58
-					},
-					"frame": {
-						"x": 54,
-						"y": 373,
-						"w": 47,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/dead/duck-dead-0010.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 54,
-						"h": 63
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 3,
-						"w": 54,
-						"h": 57
-					},
-					"frame": {
-						"x": 101,
-						"y": 375,
-						"w": 54,
-						"h": 57
-					}
-				},
-				{
-					"filename": "player/dead/duck-dead-0004.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 54,
-						"h": 63
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 3,
-						"w": 52,
-						"h": 57
-					},
-					"frame": {
-						"x": 155,
-						"y": 376,
-						"w": 52,
-						"h": 57
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0010.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 0,
-						"w": 49,
-						"h": 58
-					},
-					"frame": {
-						"x": 207,
-						"y": 377,
-						"w": 49,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0001.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 0,
-						"w": 54,
-						"h": 58
-					},
-					"frame": {
-						"x": 0,
-						"y": 429,
-						"w": 54,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0013.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 0,
-						"w": 47,
-						"h": 58
-					},
-					"frame": {
-						"x": 54,
-						"y": 431,
-						"w": 47,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0022.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 0,
-						"w": 53,
-						"h": 58
-					},
-					"frame": {
-						"x": 101,
-						"y": 432,
-						"w": 53,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0009.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 0,
-						"w": 51,
-						"h": 58
-					},
-					"frame": {
-						"x": 154,
-						"y": 433,
-						"w": 51,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0021.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 5,
-						"y": 0,
-						"w": 51,
-						"h": 58
-					},
-					"frame": {
-						"x": 205,
-						"y": 435,
-						"w": 51,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0020.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 0,
-						"w": 49,
-						"h": 58
-					},
-					"frame": {
-						"x": 0,
-						"y": 487,
-						"w": 49,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0019.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 0,
-						"w": 48,
-						"h": 58
-					},
-					"frame": {
-						"x": 49,
-						"y": 489,
-						"w": 48,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0003.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 56,
-						"h": 58
-					},
-					"frame": {
-						"x": 97,
-						"y": 490,
-						"w": 56,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0014.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 7,
-						"y": 0,
-						"w": 47,
-						"h": 58
-					},
-					"frame": {
-						"x": 153,
-						"y": 491,
-						"w": 47,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0004.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 56,
-						"h": 58
-					},
-					"frame": {
-						"x": 200,
-						"y": 493,
-						"w": 56,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0016.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 0,
-						"w": 47,
-						"h": 58
-					},
-					"frame": {
-						"x": 0,
-						"y": 545,
-						"w": 47,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0018.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 10,
-						"y": 0,
-						"w": 46,
-						"h": 58
-					},
-					"frame": {
-						"x": 47,
-						"y": 547,
-						"w": 46,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0005.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 56,
-						"h": 58
-					},
-					"frame": {
-						"x": 93,
-						"y": 548,
-						"w": 56,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/dead/duck-dead-0003.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 54,
-						"h": 63
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 2,
-						"w": 51,
-						"h": 59
-					},
-					"frame": {
-						"x": 149,
-						"y": 549,
-						"w": 51,
-						"h": 59
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0006.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 56,
-						"h": 58
-					},
-					"frame": {
-						"x": 200,
-						"y": 551,
-						"w": 56,
-						"h": 58
-					}
-				},
 				{
 					"filename": "player/land/duck-land-0052.png",
 					"rotated": false,
@@ -5318,7 +4289,7 @@
 					},
 					"frame": {
 						"x": 0,
-						"y": 605,
+						"y": 0,
 						"w": 63,
 						"h": 58
 					}
@@ -5338,8 +4309,8 @@
 						"h": 58
 					},
 					"frame": {
-						"x": 63,
-						"y": 606,
+						"x": 0,
+						"y": 58,
 						"w": 63,
 						"h": 58
 					}
@@ -5359,72 +4330,9 @@
 						"h": 58
 					},
 					"frame": {
-						"x": 126,
-						"y": 608,
+						"x": 63,
+						"y": 0,
 						"w": 63,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0007.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 56,
-						"h": 58
-					},
-					"frame": {
-						"x": 189,
-						"y": 609,
-						"w": 56,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0002.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 1,
-						"y": 0,
-						"w": 55,
-						"h": 58
-					},
-					"frame": {
-						"x": 0,
-						"y": 663,
-						"w": 55,
-						"h": 58
-					}
-				},
-				{
-					"filename": "player/wobble/duck-wobble-0008.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 56,
-						"h": 58
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 55,
-						"h": 58
-					},
-					"frame": {
-						"x": 55,
-						"y": 664,
-						"w": 55,
 						"h": 58
 					}
 				},
@@ -5443,10 +4351,52 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 110,
-						"y": 666,
+						"x": 0,
+						"y": 116,
 						"w": 59,
 						"h": 59
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0016.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 6,
+						"w": 65,
+						"h": 53
+					},
+					"frame": {
+						"x": 126,
+						"y": 0,
+						"w": 65,
+						"h": 53
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0017.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 6,
+						"w": 65,
+						"h": 53
+					},
+					"frame": {
+						"x": 191,
+						"y": 0,
+						"w": 65,
+						"h": 53
 					}
 				},
 				{
@@ -5464,14 +4414,14 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 169,
-						"y": 667,
+						"x": 0,
+						"y": 175,
 						"w": 59,
 						"h": 59
 					}
 				},
 				{
-					"filename": "barrel/enter/barrel-enter-0009.png",
+					"filename": "barrel/enter/barrel-enter-0018.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -5479,36 +4429,78 @@
 						"h": 65
 					},
 					"spriteSourceSize": {
-						"x": 8,
-						"y": 3,
-						"w": 55,
-						"h": 59
+						"x": 3,
+						"y": 6,
+						"w": 65,
+						"h": 53
 					},
 					"frame": {
-						"x": 0,
-						"y": 721,
-						"w": 55,
-						"h": 59
+						"x": 256,
+						"y": 0,
+						"w": 65,
+						"h": 53
 					}
 				},
 				{
-					"filename": "player/idle/duck-idle-0008.png",
+					"filename": "barrel/enter/barrel-enter-0019.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 59,
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 6,
+						"w": 65,
+						"h": 53
+					},
+					"frame": {
+						"x": 321,
+						"y": 0,
+						"w": 65,
+						"h": 53
+					}
+				},
+				{
+					"filename": "barrel/launch/barrel-launch-0009.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 110
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 29,
+						"w": 65,
+						"h": 52
+					},
+					"frame": {
+						"x": 386,
+						"y": 0,
+						"w": 65,
+						"h": 52
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0011.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
 						"h": 66
 					},
 					"spriteSourceSize": {
 						"x": 2,
 						"y": 7,
-						"w": 55,
+						"w": 56,
 						"h": 59
 					},
 					"frame": {
-						"x": 55,
-						"y": 722,
-						"w": 55,
+						"x": 451,
+						"y": 0,
+						"w": 56,
 						"h": 59
 					}
 				},
@@ -5527,8 +4519,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 110,
-						"y": 725,
+						"x": 0,
+						"y": 234,
 						"w": 58,
 						"h": 59
 					}
@@ -5548,51 +4540,9 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 168,
-						"y": 726,
-						"w": 58,
-						"h": 59
-					}
-				},
-				{
-					"filename": "player/idle/duck-idle-0009.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 59,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 7,
-						"w": 55,
-						"h": 59
-					},
-					"frame": {
 						"x": 0,
-						"y": 780,
-						"w": 55,
-						"h": 59
-					}
-				},
-				{
-					"filename": "player/idle/duck-idle-0010.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 59,
-						"h": 66
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 7,
-						"w": 55,
-						"h": 59
-					},
-					"frame": {
-						"x": 55,
-						"y": 781,
-						"w": 55,
+						"y": 293,
+						"w": 58,
 						"h": 59
 					}
 				},
@@ -5611,8 +4561,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 110,
-						"y": 784,
+						"x": 0,
+						"y": 352,
 						"w": 58,
 						"h": 59
 					}
@@ -5632,52 +4582,94 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 168,
-						"y": 785,
+						"x": 0,
+						"y": 411,
 						"w": 58,
 						"h": 59
 					}
 				},
 				{
-					"filename": "player/land/duck-land-0008.png",
+					"filename": "barrel/launch/barrel-launch-0005.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 74,
-						"h": 66
+						"w": 132,
+						"h": 110
 					},
 					"spriteSourceSize": {
-						"x": 2,
-						"y": 7,
-						"w": 55,
-						"h": 59
+						"x": 0,
+						"y": 28,
+						"w": 62,
+						"h": 54
 					},
 					"frame": {
-						"x": 0,
-						"y": 839,
-						"w": 55,
-						"h": 59
+						"x": 63,
+						"y": 58,
+						"w": 62,
+						"h": 54
 					}
 				},
 				{
-					"filename": "player/land/duck-land-0009.png",
+					"filename": "barrel/launch/barrel-launch-0010.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 74,
-						"h": 66
+						"w": 132,
+						"h": 110
 					},
 					"spriteSourceSize": {
-						"x": 2,
-						"y": 7,
-						"w": 55,
-						"h": 59
+						"x": 0,
+						"y": 29,
+						"w": 63,
+						"h": 52
 					},
 					"frame": {
-						"x": 55,
-						"y": 840,
-						"w": 55,
-						"h": 59
+						"x": 126,
+						"y": 53,
+						"w": 63,
+						"h": 52
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0010.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 5,
+						"w": 61,
+						"h": 55
+					},
+					"frame": {
+						"x": 189,
+						"y": 53,
+						"w": 61,
+						"h": 55
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 5,
+						"w": 59,
+						"h": 55
+					},
+					"frame": {
+						"x": 250,
+						"y": 53,
+						"w": 59,
+						"h": 55
 					}
 				},
 				{
@@ -5695,8 +4687,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 110,
-						"y": 843,
+						"x": 309,
+						"y": 53,
 						"w": 57,
 						"h": 59
 					}
@@ -5716,9 +4708,282 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 167,
-						"y": 844,
+						"x": 366,
+						"y": 53,
 						"w": 57,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/idle/duck-idle-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 59,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 10,
+						"w": 57,
+						"h": 56
+					},
+					"frame": {
+						"x": 423,
+						"y": 59,
+						"w": 57,
+						"h": 56
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 8,
+						"w": 60,
+						"h": 48
+					},
+					"frame": {
+						"x": 125,
+						"y": 105,
+						"w": 60,
+						"h": 48
+					}
+				},
+				{
+					"filename": "player/idle/duck-idle-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 59,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 17,
+						"w": 59,
+						"h": 49
+					},
+					"frame": {
+						"x": 185,
+						"y": 108,
+						"w": 59,
+						"h": 49
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 10,
+						"w": 57,
+						"h": 56
+					},
+					"frame": {
+						"x": 244,
+						"y": 108,
+						"w": 57,
+						"h": 56
+					}
+				},
+				{
+					"filename": "player/idle/duck-idle-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 59,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 12,
+						"w": 57,
+						"h": 54
+					},
+					"frame": {
+						"x": 301,
+						"y": 112,
+						"w": 57,
+						"h": 54
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 12,
+						"w": 57,
+						"h": 54
+					},
+					"frame": {
+						"x": 358,
+						"y": 112,
+						"w": 57,
+						"h": 54
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0003.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 56,
+						"h": 58
+					},
+					"frame": {
+						"x": 415,
+						"y": 115,
+						"w": 56,
+						"h": 58
+					}
+				},
+				{
+					"filename": "barrel/enter/barrel-enter-0009.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 65
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 3,
+						"w": 55,
+						"h": 59
+					},
+					"frame": {
+						"x": 59,
+						"y": 116,
+						"w": 55,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/idle/duck-idle-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 59,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 7,
+						"w": 55,
+						"h": 59
+					},
+					"frame": {
+						"x": 59,
+						"y": 175,
+						"w": 55,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/idle/duck-idle-0009.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 59,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 7,
+						"w": 55,
+						"h": 59
+					},
+					"frame": {
+						"x": 58,
+						"y": 234,
+						"w": 55,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/idle/duck-idle-0010.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 59,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 7,
+						"w": 55,
+						"h": 59
+					},
+					"frame": {
+						"x": 58,
+						"y": 293,
+						"w": 55,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 7,
+						"w": 55,
+						"h": 59
+					},
+					"frame": {
+						"x": 58,
+						"y": 352,
+						"w": 55,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0009.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 7,
+						"w": 55,
+						"h": 59
+					},
+					"frame": {
+						"x": 58,
+						"y": 411,
+						"w": 55,
 						"h": 59
 					}
 				},
@@ -5737,10 +5002,115 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 0,
-						"y": 898,
+						"x": 114,
+						"y": 153,
 						"w": 55,
 						"h": 59
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0004.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 56,
+						"h": 58
+					},
+					"frame": {
+						"x": 169,
+						"y": 157,
+						"w": 56,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0005.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 56,
+						"h": 58
+					},
+					"frame": {
+						"x": 225,
+						"y": 164,
+						"w": 56,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0006.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 56,
+						"h": 58
+					},
+					"frame": {
+						"x": 281,
+						"y": 166,
+						"w": 56,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0007.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 56,
+						"h": 58
+					},
+					"frame": {
+						"x": 337,
+						"y": 166,
+						"w": 56,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0002.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 0,
+						"w": 55,
+						"h": 58
+					},
+					"frame": {
+						"x": 393,
+						"y": 173,
+						"w": 55,
+						"h": 58
 					}
 				},
 				{
@@ -5758,31 +5128,31 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 55,
-						"y": 899,
+						"x": 448,
+						"y": 173,
 						"w": 54,
 						"h": 59
 					}
 				},
 				{
-					"filename": "player/land/duck-land-0011.png",
+					"filename": "player/wobble/duck-wobble-0008.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 74,
-						"h": 66
+						"w": 56,
+						"h": 58
 					},
 					"spriteSourceSize": {
-						"x": 2,
-						"y": 7,
-						"w": 56,
-						"h": 59
+						"x": 0,
+						"y": 0,
+						"w": 55,
+						"h": 58
 					},
 					"frame": {
-						"x": 109,
-						"y": 902,
-						"w": 56,
-						"h": 59
+						"x": 114,
+						"y": 212,
+						"w": 55,
+						"h": 58
 					}
 				},
 				{
@@ -5800,8 +5170,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 165,
-						"y": 903,
+						"x": 113,
+						"y": 270,
 						"w": 54,
 						"h": 59
 					}
@@ -5821,9 +5191,198 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 0,
-						"y": 957,
+						"x": 113,
+						"y": 329,
 						"w": 53,
+						"h": 59
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0001.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 0,
+						"w": 54,
+						"h": 58
+					},
+					"frame": {
+						"x": 113,
+						"y": 388,
+						"w": 54,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 4,
+						"w": 56,
+						"h": 47
+					},
+					"frame": {
+						"x": 169,
+						"y": 215,
+						"w": 56,
+						"h": 47
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0047.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 9,
+						"w": 55,
+						"h": 57
+					},
+					"frame": {
+						"x": 225,
+						"y": 222,
+						"w": 55,
+						"h": 57
+					}
+				},
+				{
+					"filename": "player/dead/duck-dead-0006.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 54,
+						"h": 63
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 3,
+						"w": 54,
+						"h": 57
+					},
+					"frame": {
+						"x": 280,
+						"y": 224,
+						"w": 54,
+						"h": 57
+					}
+				},
+				{
+					"filename": "player/dead/duck-dead-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 54,
+						"h": 63
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 3,
+						"w": 54,
+						"h": 57
+					},
+					"frame": {
+						"x": 334,
+						"y": 224,
+						"w": 54,
+						"h": 57
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0008.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 5,
+						"w": 55,
+						"h": 51
+					},
+					"frame": {
+						"x": 388,
+						"y": 231,
+						"w": 55,
+						"h": 51
+					}
+				},
+				{
+					"filename": "player/dead/duck-dead-0009.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 54,
+						"h": 63
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 3,
+						"w": 54,
+						"h": 57
+					},
+					"frame": {
+						"x": 443,
+						"y": 232,
+						"w": 54,
+						"h": 57
+					}
+				},
+				{
+					"filename": "player/dead/duck-dead-0010.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 54,
+						"h": 63
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 3,
+						"w": 54,
+						"h": 57
+					},
+					"frame": {
+						"x": 113,
+						"y": 446,
+						"w": 54,
+						"h": 57
+					}
+				},
+				{
+					"filename": "player/dead/duck-dead-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 54,
+						"h": 63
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 2,
+						"w": 51,
+						"h": 59
+					},
+					"frame": {
+						"x": 166,
+						"y": 329,
+						"w": 51,
 						"h": 59
 					}
 				},
@@ -5842,8 +5401,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 53,
-						"y": 958,
+						"x": 167,
+						"y": 270,
 						"w": 51,
 						"h": 59
 					}
@@ -5863,8 +5422,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 53,
-						"y": 958,
+						"x": 167,
+						"y": 270,
 						"w": 51,
 						"h": 59
 					}
@@ -5884,8 +5443,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 53,
-						"y": 958,
+						"x": 167,
+						"y": 270,
 						"w": 51,
 						"h": 59
 					}
@@ -5905,8 +5464,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 53,
-						"y": 958,
+						"x": 167,
+						"y": 270,
 						"w": 51,
 						"h": 59
 					}
@@ -5926,8 +5485,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 53,
-						"y": 958,
+						"x": 167,
+						"y": 270,
 						"w": 51,
 						"h": 59
 					}
@@ -5947,8 +5506,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 53,
-						"y": 958,
+						"x": 167,
+						"y": 270,
 						"w": 51,
 						"h": 59
 					}
@@ -5968,8 +5527,8 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 53,
-						"y": 958,
+						"x": 167,
+						"y": 270,
 						"w": 51,
 						"h": 59
 					}
@@ -5989,10 +5548,451 @@
 						"h": 59
 					},
 					"frame": {
-						"x": 104,
-						"y": 961,
+						"x": 167,
+						"y": 388,
 						"w": 51,
 						"h": 59
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0022.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 0,
+						"w": 53,
+						"h": 58
+					},
+					"frame": {
+						"x": 167,
+						"y": 447,
+						"w": 53,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/dead/duck-dead-0005.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 54,
+						"h": 63
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 4,
+						"w": 53,
+						"h": 55
+					},
+					"frame": {
+						"x": 218,
+						"y": 279,
+						"w": 53,
+						"h": 55
+					}
+				},
+				{
+					"filename": "player/land/duck-land-0046.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 74,
+						"h": 66
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 12,
+						"w": 53,
+						"h": 54
+					},
+					"frame": {
+						"x": 217,
+						"y": 334,
+						"w": 53,
+						"h": 54
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0009.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 0,
+						"w": 51,
+						"h": 58
+					},
+					"frame": {
+						"x": 218,
+						"y": 388,
+						"w": 51,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0021.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 0,
+						"w": 51,
+						"h": 58
+					},
+					"frame": {
+						"x": 220,
+						"y": 446,
+						"w": 51,
+						"h": 58
+					}
+				},
+				{
+					"filename": "coin/coin-collect/coin-collect-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 9,
+						"y": 9,
+						"w": 53,
+						"h": 53
+					},
+					"frame": {
+						"x": 271,
+						"y": 281,
+						"w": 53,
+						"h": 53
+					}
+				},
+				{
+					"filename": "player/dead/duck-dead-0004.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 54,
+						"h": 63
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 3,
+						"w": 52,
+						"h": 57
+					},
+					"frame": {
+						"x": 270,
+						"y": 334,
+						"w": 52,
+						"h": 57
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0010.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 0,
+						"w": 49,
+						"h": 58
+					},
+					"frame": {
+						"x": 324,
+						"y": 281,
+						"w": 49,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/jump/duck-jump-0005.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 9,
+						"y": 0,
+						"w": 48,
+						"h": 54
+					},
+					"frame": {
+						"x": 269,
+						"y": 391,
+						"w": 48,
+						"h": 54
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0020.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 0,
+						"w": 49,
+						"h": 58
+					},
+					"frame": {
+						"x": 271,
+						"y": 445,
+						"w": 49,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0015.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 0,
+						"w": 48,
+						"h": 58
+					},
+					"frame": {
+						"x": 322,
+						"y": 339,
+						"w": 48,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0019.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 0,
+						"w": 48,
+						"h": 58
+					},
+					"frame": {
+						"x": 373,
+						"y": 282,
+						"w": 48,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0011.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 0,
+						"w": 47,
+						"h": 58
+					},
+					"frame": {
+						"x": 370,
+						"y": 340,
+						"w": 47,
+						"h": 58
+					}
+				},
+				{
+					"filename": "coin/coin-collect/coin-collect-0003.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 12,
+						"y": 12,
+						"w": 47,
+						"h": 47
+					},
+					"frame": {
+						"x": 317,
+						"y": 397,
+						"w": 47,
+						"h": 47
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0012.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 0,
+						"w": 47,
+						"h": 58
+					},
+					"frame": {
+						"x": 320,
+						"y": 444,
+						"w": 47,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0013.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 0,
+						"w": 47,
+						"h": 58
+					},
+					"frame": {
+						"x": 421,
+						"y": 289,
+						"w": 47,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0014.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 0,
+						"w": 47,
+						"h": 58
+					},
+					"frame": {
+						"x": 417,
+						"y": 347,
+						"w": 47,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/run/duck-run-0007.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 69
+					},
+					"spriteSourceSize": {
+						"x": 12,
+						"y": 12,
+						"w": 42,
+						"h": 56
+					},
+					"frame": {
+						"x": 464,
+						"y": 347,
+						"w": 42,
+						"h": 56
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0016.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 0,
+						"w": 47,
+						"h": 58
+					},
+					"frame": {
+						"x": 367,
+						"y": 398,
+						"w": 47,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0017.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 9,
+						"y": 0,
+						"w": 46,
+						"h": 58
+					},
+					"frame": {
+						"x": 414,
+						"y": 405,
+						"w": 46,
+						"h": 58
+					}
+				},
+				{
+					"filename": "player/wobble/duck-wobble-0018.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 56,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 0,
+						"w": 46,
+						"h": 58
+					},
+					"frame": {
+						"x": 460,
+						"y": 405,
+						"w": 46,
+						"h": 58
 					}
 				}
 			]
@@ -6001,6 +6001,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:88dc12a019c5d456edb5fdc8da4cd57a:647243ff5f409609c169c69cf8a6d3f0:80f8303a9cd2a0a1232cf2650af8f659$"
+		"smartupdate": "$TexturePacker:SmartUpdate:6690e70215a1f86a1db112eaff3fc8e5:e38a3931a49d8b81f1bf1226dca29649:80f8303a9cd2a0a1232cf2650af8f659$"
 	}
 }

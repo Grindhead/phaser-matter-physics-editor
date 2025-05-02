@@ -5,7 +5,7 @@ import {
 import { TEXTURE_ATLAS } from "../constants";
 
 // Tile dimensions
-const TILE_WIDTH = 26;
+const TILE_WIDTH = 24;
 const TILE_HEIGHT = 24;
 
 /**
@@ -61,37 +61,39 @@ function createTextureFromContainer(
   const container = scene.make.container({ x: 0, y: 0, add: false });
 
   const totalWidth = TILE_WIDTH * tileCount;
-  const totalHeight = TILE_HEIGHT;
+  const totalHeight = TILE_HEIGHT + 1;
 
   // Create platform parts
   const leftPlatform = scene.make.image({
     key: TEXTURE_ATLAS,
     frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.LEFT].prefix,
-    x: TILE_WIDTH / 2,
+    x: TILE_WIDTH / 2 + 1,
     y: TILE_HEIGHT / 2,
     add: false,
   });
 
-  const middlePlatform = scene.make.tileSprite({
-    key: TEXTURE_ATLAS,
-    frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.MIDDLE].prefix,
-    x: (TILE_WIDTH * tileCount) / 2,
-    y: TILE_HEIGHT / 2 + 1.5,
-    width: TILE_WIDTH * (tileCount - 2),
-    height: TILE_HEIGHT,
-    add: false,
-  });
+  for (let i = 1; i < tileCount - 1; i++) {
+    const sprite = scene.make.image({
+      key: TEXTURE_ATLAS,
+      frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.MIDDLE].prefix,
+      x: TILE_WIDTH * i,
+      y: TILE_HEIGHT / 2 + 1,
+      add: false,
+    });
+
+    container.add(sprite);
+  }
 
   const rightPlatform = scene.make.image({
     key: TEXTURE_ATLAS,
     frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.RIGHT].prefix,
-    x: totalWidth - TILE_WIDTH / 2,
+    x: totalWidth - TILE_WIDTH + 1,
     y: TILE_HEIGHT / 2,
     add: false,
   });
 
   // Add parts to the container
-  container.add([leftPlatform, middlePlatform, rightPlatform]);
+  container.add([leftPlatform, rightPlatform]);
 
   // Create RenderTexture with appropriate dimensions based on orientation
   const renderTexture = scene.make.renderTexture(

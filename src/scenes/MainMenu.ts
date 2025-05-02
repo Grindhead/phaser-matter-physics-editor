@@ -41,6 +41,8 @@ export class MainMenu extends Scene {
       "ui/main-menu/title.png"
     );
 
+    this.logo.setScale(0.8);
+
     this.playButton = this.add
       .image(
         width / 2,

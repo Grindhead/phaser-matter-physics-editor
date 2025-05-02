@@ -10,7 +10,7 @@ type AnimationKey = keyof typeof FINISH_ANIMATION_KEYS;
 
 export const FINISH_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
   FINISH_IDLE: {
-    prefix: "finish/finish-idle/finish-idle.png",
+    prefix: "finish/finish-idle/finish-idle",
     frames: 1,
     loop: 0,
     frameRate: 0,

@@ -10,12 +10,14 @@ export interface BarrelInterface {
   scene: Phaser.Scene;
   x: number;
   y: number;
+  type: string;
 }
 export class Barrel
   extends Phaser.Physics.Matter.Sprite
   implements BarrelInterface
 {
   public isEntered: boolean = false;
+  public type: string = "barrel";
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -24,7 +26,7 @@ export class Barrel
       x,
       y,
       TEXTURE_ATLAS,
-      BARREL_ANIMATIONS[BARREL_ANIMATION_KEYS.BARREL_IDLE].prefix,
+      BARREL_ANIMATIONS[BARREL_ANIMATION_KEYS.BARREL_IDLE].prefix + ".png",
       {
         shape: shapes[PHYSICS_ENTITIES.BARREL],
         isStatic: true,
@@ -35,7 +37,9 @@ export class Barrel
     this.angle = -90;
     this.setOrigin(0.22, 0.5); // Set visual origin correctly
 
-    this.play(BARREL_ANIMATION_KEYS.BARREL_IDLE);
+    this.play(
+      BARREL_ANIMATIONS[BARREL_ANIMATION_KEYS.BARREL_IDLE].prefix + ".png"
+    );
 
     scene.add.existing(this);
   }

@@ -156,11 +156,6 @@ export class Palette {
     const buttonWidth = config.width - padding * 2;
     const buttonHeight = 50;
 
-    // Create a temporary Matter.js world container for palette entities
-    // so they don't interact with the main world
-    const tempContainer = this.scene.add.container(0, 0);
-    tempContainer.setVisible(false);
-
     this.entities.forEach((entity, index) => {
       // Create button container
       const buttonContainer = this.scene.add.container(
@@ -182,137 +177,50 @@ export class Palette {
       // Create entity instance for display in the palette
       let entityInstance;
 
-      try {
-        // Create entity at position -1000, -1000 (off-screen)
-        // We'll only use it for visual purposes in the palette
-        switch (entity.type) {
-          case "player":
-            entityInstance = new Player(this.scene, -1000, -1000);
+      // Create the entity instance at the button position
+      const entityX = padding + buttonHeight / 2;
+      const entityY = buttonHeight / 2;
 
-            // For palette preview, ensure we're showing the idle frame
-            entityInstance.setFrame("player/idle/duck-idle-0001.png");
-            break;
-          case "platform":
-            entityInstance = new Platform(
-              this.scene,
-              -1000,
-              -1000,
-              entity.entityConfig.segmentCount,
-              entity.entityConfig.id,
-              entity.entityConfig.isVertical
-            );
-            break;
-          case "enemy-large":
-            entityInstance = new EnemyLarge(this.scene, -1000, -1000);
-            break;
-          case "enemy-small":
-            entityInstance = new EnemySmall(this.scene, -1000, -1000);
-            break;
-          case "crate-small":
-          case "crate-big":
-            entityInstance = new Crate(
-              this.scene,
-              -1000,
-              -1000,
-              entity.entityConfig.type
-            );
-            break;
-          case "barrel":
-            try {
-              entityInstance = new Barrel(this.scene, -1000, -1000);
-
-              // Set proper angle for barrel preview
-              entityInstance.angle = -90;
-
-              // For palette preview, don't try to play animations
-              // Just use a static frame instead
-              entityInstance.setFrame("barrel/barrel.png");
-            } catch (error) {
-              console.error("Failed to create barrel:", error);
-              entityInstance = null;
-            }
-            break;
-          case "finish-line":
-            try {
-              entityInstance = new Finish(this.scene, -1000, -1000);
-
-              // For palette preview, don't try to play animations
-              // Just use a static frame instead
-              entityInstance.setFrame("finish/finish-line.png");
-            } catch (error) {
-              console.error("Failed to create finish:", error);
-              entityInstance = null;
-            }
-            break;
-        }
-
-        // Only create sprite if we successfully created an entity instance
-        if (entityInstance) {
-          // Create a sprite copy of the entity to use in the palette
-          // This avoids physics issues with the actual entity
-          const entitySprite = this.scene.add.sprite(
-            padding + buttonHeight / 2,
-            buttonHeight / 2,
-            entityInstance.texture.key,
-            entityInstance.frame.name
+      switch (entity.type) {
+        case "player":
+          entityInstance = new Player(this.scene, entityX, entityY);
+          break;
+        case "platform":
+          entityInstance = new Platform(
+            this.scene,
+            entityX,
+            entityY,
+            entity.entityConfig.segmentCount,
+            entity.entityConfig.id,
+            entity.entityConfig.isVertical
           );
-
-          // Copy rotation/angle for entities that need it (like barrels)
-          if (entity.type === "barrel") {
-            entitySprite.angle = entityInstance.angle;
-          }
-
-          // Preserve special origins (like barrels)
-          if (entity.type === "barrel") {
-            entitySprite.setOrigin(0.22, 0.5);
-          } else if (entity.type === "finish-line") {
-            entitySprite.setOrigin(0.3, 0.5);
-          }
-
-          // Scale the sprite to fit the button
-          const scale =
-            (buttonHeight - 10) /
-            Math.max(entitySprite.width, entitySprite.height);
-          entitySprite.setScale(scale);
-
-          // Add to button container
-          buttonContainer.add(entitySprite);
-
-          // Remove the actual entity instance as we don't need it anymore
-          entityInstance.destroy();
-        } else {
-          throw new Error(
-            `Failed to create entity instance for ${entity.type}`
+          break;
+        case "enemy-large":
+          entityInstance = new EnemyLarge(this.scene, entityX, entityY);
+          break;
+        case "enemy-small":
+          entityInstance = new EnemySmall(this.scene, entityX, entityY);
+          break;
+        case "crate-small":
+        case "crate-big":
+          entityInstance = new Crate(
+            this.scene,
+            entityX,
+            entityY,
+            entity.entityConfig.type
           );
-        }
-      } catch (error) {
-        console.error(`Failed to create entity ${entity.type}:`, error);
+          break;
+        case "barrel":
+          entityInstance = new Barrel(this.scene, entityX, entityY);
+          // Use idle animation for barrel
 
-        // Fallback to using an image if entity creation fails
-        const icon = this.scene.add.image(
-          padding + buttonHeight / 2,
-          buttonHeight / 2,
-          TEXTURE_ATLAS,
-          entity.type.includes("platform")
-            ? "platform/platform-middle.png"
-            : entity.type.includes("enemy-large")
-            ? "enemy/enemy.png"
-            : entity.type.includes("enemy-small")
-            ? "enemy/enemy-small.png"
-            : entity.type.includes("crate-small")
-            ? "crates/crate-small.png"
-            : entity.type.includes("crate-big")
-            ? "crates/crate-big.png"
-            : entity.type.includes("barrel")
-            ? "barrel/barrel.png"
-            : entity.type.includes("player")
-            ? "player/idle/duck-idle-0001.png"
-            : "finish/finish-line.png"
-        );
-        icon.setScale((buttonHeight - 10) / Math.max(icon.width, icon.height));
-        buttonContainer.add(icon);
+          break;
+        case "finish-line":
+          entityInstance = new Finish(this.scene, entityX, entityY);
+          break;
       }
 
+      this.scene.add.existing(entityInstance!);
       // Create button text
       const text = this.scene.add.text(
         padding + buttonHeight,

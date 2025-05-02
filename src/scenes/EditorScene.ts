@@ -19,14 +19,12 @@ import { FinishLineInterface } from "../entities/Finish/Finish";
 import { Barrel } from "../entities/Barrel/Barrel";
 import { Finish } from "../entities/Finish/Finish";
 import { Crate } from "../entities/Crate/Crate";
-import {
-  BARREL_ANIMATION_KEYS,
-  BARREL_ANIMATIONS,
-} from "../entities/Barrel/barrelAnimations";
-import {
-  FINISH_ANIMATION_KEYS,
-  FINISH_ANIMATIONS,
-} from "../entities/Finish/finishAnimations";
+import { createAnimations } from "../lib/helpers/createAnimations";
+import { PLAYER_ANIMATIONS } from "../entities/Player/playerAnimations";
+import { FINISH_ANIMATIONS } from "../entities/Finish/finishAnimations";
+import { COIN_ANIMATIONS } from "../entities/Coin/coinAnimations";
+import { FX_ANIMATIONS } from "../entities/fx-land/fxAnimations";
+import { BARREL_ANIMATIONS } from "../entities/Barrel/barrelAnimations";
 
 export class EditorScene extends Scene {
   private isDragging: boolean = false;
@@ -55,12 +53,10 @@ export class EditorScene extends Scene {
     this.load.setPath("assets");
     this.load.multiatlas(TEXTURE_ATLAS, "assets.json");
     this.load.json(PHYSICS, "physics.json");
-
-    // Create animations that are needed for entities
-    this.createEntityAnimations();
   }
 
   create() {
+    this.setupAnimations();
     console.log("EditorScene create method called");
 
     // Create grid using graphics
@@ -505,6 +501,7 @@ export class EditorScene extends Scene {
       scene: this,
       x,
       y,
+      type: "barrel",
     };
 
     // Add to level data
@@ -531,6 +528,7 @@ export class EditorScene extends Scene {
       scene: this,
       x,
       y,
+      type: "finish-line",
     };
 
     // Handle case where a finish line already exists
@@ -828,6 +826,15 @@ export class EditorScene extends Scene {
     }
   }
 
+  private setupAnimations() {
+    // Create animations using the correct atlas key 'assets-1'
+    createAnimations(this.game.anims, TEXTURE_ATLAS, PLAYER_ANIMATIONS);
+    createAnimations(this.game.anims, TEXTURE_ATLAS, COIN_ANIMATIONS);
+    createAnimations(this.game.anims, TEXTURE_ATLAS, FINISH_ANIMATIONS);
+    createAnimations(this.game.anims, TEXTURE_ATLAS, FX_ANIMATIONS);
+    createAnimations(this.game.anims, TEXTURE_ATLAS, BARREL_ANIMATIONS);
+  }
+
   private updateEntityInLevelData(entity: EditorEntity) {
     if (!entity) return;
 
@@ -868,6 +875,7 @@ export class EditorScene extends Scene {
             scene: this,
             x: entity.x,
             y: entity.y,
+            type: "barrel",
           };
         }
         break;
@@ -885,12 +893,13 @@ export class EditorScene extends Scene {
           };
         }
         break;
-      case "finish-line":
+      case "finish":
         if (this.levelData.finishLine === entity.data) {
           this.levelData.finishLine = {
             scene: this,
             x: entity.x,
             y: entity.y,
+            type: "finish-line",
           };
         }
         break;
@@ -1032,57 +1041,5 @@ export class EditorScene extends Scene {
 
   update() {
     // Update logic for editor
-  }
-
-  /**
-   * Creates animations needed for entities in the editor
-   */
-  private createEntityAnimations() {
-    // Create barrel animations
-    Object.entries(BARREL_ANIMATIONS).forEach(([key, anim]) => {
-      if (!this.anims.exists(key)) {
-        this.anims.create({
-          key: key,
-          frames: this.getAnimationFrames(anim.prefix, anim.frames),
-          frameRate: anim.frameRate,
-          repeat: anim.loop === -1 ? -1 : 0,
-        });
-      }
-    });
-
-    // Create finish line animations
-    Object.entries(FINISH_ANIMATIONS).forEach(([key, anim]) => {
-      if (!this.anims.exists(key)) {
-        this.anims.create({
-          key: key,
-          frames: this.getAnimationFrames(anim.prefix, anim.frames),
-          frameRate: anim.frameRate,
-          repeat: anim.loop === -1 ? -1 : 0,
-        });
-      }
-    });
-  }
-
-  /**
-   * Helper to generate animation frames
-   */
-  private getAnimationFrames(prefix: string, frameCount: number) {
-    const frames = [];
-
-    if (frameCount === 1) {
-      // Single frame animation
-      frames.push({ key: TEXTURE_ATLAS, frame: prefix });
-    } else {
-      // Multi-frame animation
-      for (let i = 1; i <= frameCount; i++) {
-        const frameNumber = i.toString().padStart(4, "0");
-        frames.push({
-          key: TEXTURE_ATLAS,
-          frame: `${prefix}${frameNumber}.png`,
-        });
-      }
-    }
-
-    return frames;
   }
 }

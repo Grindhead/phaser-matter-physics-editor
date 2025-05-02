@@ -307,10 +307,8 @@ export class EditorScene extends Scene {
       this.selectEntity(null);
     }
 
-    // Ensure the palette button appears selected
-    if (this.palette) {
-      this.palette.selectButton(type);
-    }
+    // No need to call palette.selectButton here since this method
+    // is already called by the palette when a button is selected
   }
 
   private placeEntity(type: string, x: number, y: number) {
@@ -472,9 +470,9 @@ export class EditorScene extends Scene {
     // Add to level data
     this.levelData.crates.push(crateData);
 
-    // Create visual representation
+    // Create visual representation with texture atlas
     const crateImage = this.add
-      .image(x, y, `crate-${type}`)
+      .image(x, y, TEXTURE_ATLAS, `crates/crate-${type}.png`)
       .setInteractive()
       .setDepth(15);
 
@@ -498,9 +496,9 @@ export class EditorScene extends Scene {
     // Add to level data
     this.levelData.barrels.push(barrelData);
 
-    // Create visual representation
+    // Create visual representation with texture atlas
     const barrelImage = this.add
-      .image(x, y, "barrel")
+      .image(x, y, TEXTURE_ATLAS, "barrel/barrel.png")
       .setInteractive()
       .setDepth(15);
 
@@ -537,9 +535,9 @@ export class EditorScene extends Scene {
     // Set as the new finish line
     this.levelData.finishLine = finishLineData;
 
-    // Create visual representation
+    // Create visual representation with texture atlas
     const finishLineImage = this.add
-      .image(x, y, "finish-line")
+      .image(x, y, TEXTURE_ATLAS, "finish/finish-line.png")
       .setInteractive()
       .setDepth(5);
 
@@ -971,7 +969,7 @@ export class EditorScene extends Scene {
     // Create barrel entities
     this.levelData.barrels.forEach((barrelData) => {
       const barrelImage = this.add
-        .image(barrelData.x, barrelData.y, "barrel")
+        .image(barrelData.x, barrelData.y, TEXTURE_ATLAS, "barrel/barrel.png")
         .setInteractive()
         .setDepth(15);
 
@@ -987,7 +985,12 @@ export class EditorScene extends Scene {
     // Create crate entities
     this.levelData.crates.forEach((crateData) => {
       const crateImage = this.add
-        .image(crateData.x, crateData.y, `crate-${crateData.type}`)
+        .image(
+          crateData.x,
+          crateData.y,
+          TEXTURE_ATLAS,
+          `crates/crate-${crateData.type}.png`
+        )
         .setInteractive()
         .setDepth(15);
 
@@ -1004,7 +1007,12 @@ export class EditorScene extends Scene {
     if (this.levelData.finishLine) {
       const finishLineData = this.levelData.finishLine;
       const finishLineImage = this.add
-        .image(finishLineData.x, finishLineData.y, "finish-line")
+        .image(
+          finishLineData.x,
+          finishLineData.y,
+          TEXTURE_ATLAS,
+          "finish/finish-line.png"
+        )
         .setInteractive()
         .setDepth(5);
 

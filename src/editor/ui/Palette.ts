@@ -6,9 +6,15 @@ import { Crate } from "../../entities/Crate/Crate";
 import { Barrel } from "../../entities/Barrel/Barrel";
 import { Finish } from "../../entities/Finish/Finish";
 import { EnemyBase } from "../../entities/Enemies/EnemyBase";
+import { Player } from "../../entities/Player/Player";
 
 // Import a concrete Enemy class for large enemy
 import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
+
+// Import animation keys
+import { BARREL_ANIMATION_KEYS } from "../../entities/Barrel/barrelAnimations";
+import { FINISH_ANIMATION_KEYS } from "../../entities/Finish/finishAnimations";
+import { PLAYER_ANIMATION_KEYS } from "../../entities/Player/playerAnimations";
 
 export interface PaletteConfig {
   x: number;
@@ -30,7 +36,8 @@ export interface EntityButton {
     | typeof EnemyLarge
     | typeof Crate
     | typeof Barrel
-    | typeof Finish;
+    | typeof Finish
+    | typeof Player;
   entityConfig: any;
   displayName: string;
 }
@@ -54,6 +61,12 @@ export class Palette {
 
     // Setup entity definitions
     this.entities = [
+      {
+        type: "player",
+        entityClass: Player,
+        entityConfig: {},
+        displayName: "Player",
+      },
       {
         type: "platform",
         entityClass: Platform,
@@ -173,6 +186,12 @@ export class Palette {
         // Create entity at position -1000, -1000 (off-screen)
         // We'll only use it for visual purposes in the palette
         switch (entity.type) {
+          case "player":
+            entityInstance = new Player(this.scene, -1000, -1000);
+
+            // For palette preview, ensure we're showing the idle frame
+            entityInstance.setFrame("player/idle/duck-idle-0001.png");
+            break;
           case "platform":
             entityInstance = new Platform(
               this.scene,
@@ -199,10 +218,31 @@ export class Palette {
             );
             break;
           case "barrel":
-            entityInstance = new Barrel(this.scene, -1000, -1000);
+            try {
+              entityInstance = new Barrel(this.scene, -1000, -1000);
+
+              // Set proper angle for barrel preview
+              entityInstance.angle = -90;
+
+              // For palette preview, don't try to play animations
+              // Just use a static frame instead
+              entityInstance.setFrame("barrel/barrel.png");
+            } catch (error) {
+              console.error("Failed to create barrel:", error);
+              entityInstance = null;
+            }
             break;
           case "finish-line":
-            entityInstance = new Finish(this.scene, -1000, -1000);
+            try {
+              entityInstance = new Finish(this.scene, -1000, -1000);
+
+              // For palette preview, don't try to play animations
+              // Just use a static frame instead
+              entityInstance.setFrame("finish/finish-line.png");
+            } catch (error) {
+              console.error("Failed to create finish:", error);
+              entityInstance = null;
+            }
             break;
         }
 
@@ -216,6 +256,18 @@ export class Palette {
             entityInstance.texture.key,
             entityInstance.frame.name
           );
+
+          // Copy rotation/angle for entities that need it (like barrels)
+          if (entity.type === "barrel") {
+            entitySprite.angle = entityInstance.angle;
+          }
+
+          // Preserve special origins (like barrels)
+          if (entity.type === "barrel") {
+            entitySprite.setOrigin(0.22, 0.5);
+          } else if (entity.type === "finish-line") {
+            entitySprite.setOrigin(0.3, 0.5);
+          }
 
           // Scale the sprite to fit the button
           const scale =
@@ -253,6 +305,8 @@ export class Palette {
             ? "crates/crate-big.png"
             : entity.type.includes("barrel")
             ? "barrel/barrel.png"
+            : entity.type.includes("player")
+            ? "player/idle/duck-idle-0001.png"
             : "finish/finish-line.png"
         );
         icon.setScale((buttonHeight - 10) / Math.max(icon.width, icon.height));

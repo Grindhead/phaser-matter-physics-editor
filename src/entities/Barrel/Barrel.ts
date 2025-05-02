@@ -5,7 +5,7 @@ import {
   BARREL_ROTATION_SPEED,
   BARREL_LAUNCH_SPEED,
 } from "../../lib/constants";
-import { BARREL_ANIMATION_KEYS } from "./barrelAnimations";
+import { BARREL_ANIMATION_KEYS, BARREL_ANIMATIONS } from "./barrelAnimations";
 export interface BarrelInterface {
   scene: Phaser.Scene;
   x: number;
@@ -19,11 +19,18 @@ export class Barrel
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
-    super(scene.matter.world, x, y, TEXTURE_ATLAS, undefined, {
-      shape: shapes[PHYSICS_ENTITIES.BARREL],
-      isStatic: true,
-      isSensor: true,
-    });
+    super(
+      scene.matter.world,
+      x,
+      y,
+      TEXTURE_ATLAS,
+      BARREL_ANIMATIONS[BARREL_ANIMATION_KEYS.BARREL_IDLE].prefix,
+      {
+        shape: shapes[PHYSICS_ENTITIES.BARREL],
+        isStatic: true,
+        isSensor: true,
+      }
+    );
 
     this.angle = -90;
     this.setOrigin(0.22, 0.5); // Set visual origin correctly

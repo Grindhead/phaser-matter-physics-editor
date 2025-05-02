@@ -10,7 +10,7 @@ type AnimationKey = keyof typeof BARREL_ANIMATION_KEYS;
 
 export const BARREL_ANIMATIONS: Record<AnimationKey, AnimationDefinition> = {
   BARREL_IDLE: {
-    prefix: "barrel/launch/barrel-launch-0010",
+    prefix: "barrel/launch/barrel-launch-0010.png",
     frames: 1,
     loop: 0,
     frameRate: 0,

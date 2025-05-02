@@ -16,6 +16,17 @@ import { EnemySmall } from "../entities/Enemies/EnemySmall";
 import { CrateInterface } from "../entities/Crate/Crate";
 import { BarrelInterface } from "../entities/Barrel/Barrel";
 import { FinishLineInterface } from "../entities/Finish/Finish";
+import { Barrel } from "../entities/Barrel/Barrel";
+import { Finish } from "../entities/Finish/Finish";
+import { Crate } from "../entities/Crate/Crate";
+import {
+  BARREL_ANIMATION_KEYS,
+  BARREL_ANIMATIONS,
+} from "../entities/Barrel/barrelAnimations";
+import {
+  FINISH_ANIMATION_KEYS,
+  FINISH_ANIMATIONS,
+} from "../entities/Finish/finishAnimations";
 
 export class EditorScene extends Scene {
   private isDragging: boolean = false;
@@ -44,6 +55,9 @@ export class EditorScene extends Scene {
     this.load.setPath("assets");
     this.load.multiatlas(TEXTURE_ATLAS, "assets.json");
     this.load.json(PHYSICS, "physics.json");
+
+    // Create animations that are needed for entities
+    this.createEntityAnimations();
   }
 
   create() {
@@ -470,18 +484,18 @@ export class EditorScene extends Scene {
     // Add to level data
     this.levelData.crates.push(crateData);
 
-    // Create visual representation with texture atlas
-    const crateImage = this.add
-      .image(x, y, TEXTURE_ATLAS, `crates/crate-${type}.png`)
-      .setInteractive()
-      .setDepth(15);
+    // Create actual crate instance using the Crate class
+    const crate = new Crate(this, x, y, type);
+
+    // Ensure it's interactive for selection
+    crate.setInteractive();
 
     // Return entity
     return {
       type: `crate-${type}`,
       x,
       y,
-      gameObject: crateImage,
+      gameObject: crate,
       data: crateData,
     };
   }
@@ -496,18 +510,18 @@ export class EditorScene extends Scene {
     // Add to level data
     this.levelData.barrels.push(barrelData);
 
-    // Create visual representation with texture atlas
-    const barrelImage = this.add
-      .image(x, y, TEXTURE_ATLAS, "barrel/barrel.png")
-      .setInteractive()
-      .setDepth(15);
+    // Create actual barrel instance instead of an image
+    const barrel = new Barrel(this, x, y);
+
+    // Ensure it's interactive for selection
+    barrel.setInteractive();
 
     // Return entity
     return {
       type: "barrel",
       x,
       y,
-      gameObject: barrelImage,
+      gameObject: barrel,
       data: barrelData,
     };
   }
@@ -535,18 +549,18 @@ export class EditorScene extends Scene {
     // Set as the new finish line
     this.levelData.finishLine = finishLineData;
 
-    // Create visual representation with texture atlas
-    const finishLineImage = this.add
-      .image(x, y, TEXTURE_ATLAS, "finish/finish-line.png")
-      .setInteractive()
-      .setDepth(5);
+    // Create actual finish line instance instead of an image
+    const finish = new Finish(this, x, y);
+
+    // Ensure it's interactive for selection
+    finish.setInteractive();
 
     // Return entity
     return {
       type: "finish-line",
       x,
       y,
-      gameObject: finishLineImage,
+      gameObject: finish,
       data: finishLineData,
     };
   }
@@ -968,37 +982,32 @@ export class EditorScene extends Scene {
 
     // Create barrel entities
     this.levelData.barrels.forEach((barrelData) => {
-      const barrelImage = this.add
-        .image(barrelData.x, barrelData.y, TEXTURE_ATLAS, "barrel/barrel.png")
-        .setInteractive()
-        .setDepth(15);
+      const barrel = new Barrel(this, barrelData.x, barrelData.y);
+
+      // Ensure it's interactive for selection
+      barrel.setInteractive();
 
       this.entities.push({
         type: "barrel",
         x: barrelData.x,
         y: barrelData.y,
-        gameObject: barrelImage,
+        gameObject: barrel,
         data: barrelData,
       });
     });
 
     // Create crate entities
     this.levelData.crates.forEach((crateData) => {
-      const crateImage = this.add
-        .image(
-          crateData.x,
-          crateData.y,
-          TEXTURE_ATLAS,
-          `crates/crate-${crateData.type}.png`
-        )
-        .setInteractive()
-        .setDepth(15);
+      const crate = new Crate(this, crateData.x, crateData.y, crateData.type);
+
+      // Ensure it's interactive for selection
+      crate.setInteractive();
 
       this.entities.push({
         type: `crate-${crateData.type}`,
         x: crateData.x,
         y: crateData.y,
-        gameObject: crateImage,
+        gameObject: crate,
         data: crateData,
       });
     });
@@ -1006,21 +1015,16 @@ export class EditorScene extends Scene {
     // Create finish line entity if it exists
     if (this.levelData.finishLine) {
       const finishLineData = this.levelData.finishLine;
-      const finishLineImage = this.add
-        .image(
-          finishLineData.x,
-          finishLineData.y,
-          TEXTURE_ATLAS,
-          "finish/finish-line.png"
-        )
-        .setInteractive()
-        .setDepth(5);
+      const finish = new Finish(this, finishLineData.x, finishLineData.y);
+
+      // Ensure it's interactive for selection
+      finish.setInteractive();
 
       this.entities.push({
         type: "finish-line",
         x: finishLineData.x,
         y: finishLineData.y,
-        gameObject: finishLineImage,
+        gameObject: finish,
         data: finishLineData,
       });
     }
@@ -1028,5 +1032,57 @@ export class EditorScene extends Scene {
 
   update() {
     // Update logic for editor
+  }
+
+  /**
+   * Creates animations needed for entities in the editor
+   */
+  private createEntityAnimations() {
+    // Create barrel animations
+    Object.entries(BARREL_ANIMATIONS).forEach(([key, anim]) => {
+      if (!this.anims.exists(key)) {
+        this.anims.create({
+          key: key,
+          frames: this.getAnimationFrames(anim.prefix, anim.frames),
+          frameRate: anim.frameRate,
+          repeat: anim.loop === -1 ? -1 : 0,
+        });
+      }
+    });
+
+    // Create finish line animations
+    Object.entries(FINISH_ANIMATIONS).forEach(([key, anim]) => {
+      if (!this.anims.exists(key)) {
+        this.anims.create({
+          key: key,
+          frames: this.getAnimationFrames(anim.prefix, anim.frames),
+          frameRate: anim.frameRate,
+          repeat: anim.loop === -1 ? -1 : 0,
+        });
+      }
+    });
+  }
+
+  /**
+   * Helper to generate animation frames
+   */
+  private getAnimationFrames(prefix: string, frameCount: number) {
+    const frames = [];
+
+    if (frameCount === 1) {
+      // Single frame animation
+      frames.push({ key: TEXTURE_ATLAS, frame: prefix });
+    } else {
+      // Multi-frame animation
+      for (let i = 1; i <= frameCount; i++) {
+        const frameNumber = i.toString().padStart(4, "0");
+        frames.push({
+          key: TEXTURE_ATLAS,
+          frame: `${prefix}${frameNumber}.png`,
+        });
+      }
+    }
+
+    return frames;
   }
 }

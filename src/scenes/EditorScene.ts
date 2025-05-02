@@ -37,8 +37,8 @@ export class EditorScene extends Scene {
     this.levelHandler = new EditorLevelHandler(this.entityManager);
 
     // Create UI manager with callbacks
-    const handleEntityTypeSelection = (type: string) => {
-      this.entityManager.setSelectedEntityType(type);
+    const handleEntityTypeSelection = (type: string, config?: any) => {
+      this.entityManager.setSelectedEntityType(type, config);
     };
 
     const handlePropertyChange = (

@@ -21,6 +21,7 @@ export class EditorEntityManager {
   private selectedEntity: EditorEntity | null = null;
   private isEntityDragging: boolean = false;
   private newEntityDragging: boolean = false;
+  private _platformConfig: any = {};
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -210,14 +211,14 @@ export class EditorEntityManager {
    * Creates a platform entity
    */
   private createPlatform(x: number, y: number): EditorEntity {
-    // Create platform data with default horizontal orientation
+    // Create platform data with configuration from dropdown if available
     const platformData: PlatformInterface = {
       scene: this.scene,
       x,
       y,
-      segmentCount: 5,
+      segmentCount: this._platformConfig?.segmentCount || 3,
       id: `platform-${this.levelData.platforms.length}`,
-      isVertical: false, // Default to horizontal
+      isVertical: this._platformConfig?.isVertical || false,
     };
 
     // Add to level data
@@ -1036,8 +1037,20 @@ export class EditorEntityManager {
   /**
    * Sets the selected entity type
    */
-  public setSelectedEntityType(type: string | null): void {
+  public setSelectedEntityType(type: string | null, config?: any): void {
     this.selectedEntityType = type;
+
+    // Store the provided configuration if any
+    if (type && config) {
+      // Find the entity in the level data and update its configuration
+      switch (type) {
+        case "platform":
+          // Store platform configuration for use during creation
+          this._platformConfig = config;
+          break;
+        // Add cases for other entity types as needed
+      }
+    }
 
     // If a type is selected, immediately create and start dragging the entity
     if (type) {

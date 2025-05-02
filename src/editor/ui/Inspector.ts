@@ -146,7 +146,7 @@ export class Inspector {
     switch (this.selectedEntity.type) {
       case "platform":
         this.addPlatformControls(padding, yOffset);
-        yOffset += 120; // Increased from 80 to accommodate the ID field
+        yOffset += 140; // Increased from 120 to accommodate the new layout
         break;
       case "enemy-large":
       case "enemy-small":
@@ -161,8 +161,10 @@ export class Inspector {
         break;
     }
 
-    // Update background height
-    this.background.setSize(this.background.width, yOffset + padding);
+    // Update background height and ensure it's at least 200px tall
+    const minHeight = 200;
+    const newHeight = Math.max(minHeight, yOffset + padding);
+    this.background.setSize(this.background.width, newHeight);
   }
 
   private addPositionControls(x: number, y: number): void {
@@ -218,18 +220,33 @@ export class Inspector {
 
     const platformData = this.selectedEntity.data as PlatformInterface;
 
-    // Segment Count Label
-    const segmentLabel = this.scene.add.text(x, y, "Segments:", {
-      fontSize: "14px",
-      color: "#ffffff",
-    });
+    // Add a more visible background for the segment count section
+    const segmentSectionBg = this.scene.add
+      .rectangle(x, y - 8, 240, 36, 0x1a1a1a, 0.8)
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, 0x555555);
+    this.propertyControls.push(segmentSectionBg);
+    this.container.add(segmentSectionBg);
+
+    // Clearer label for segment count
+    const segmentLabel = this.scene.add.text(
+      x + 5,
+      y,
+      "Segments (click to select):",
+      {
+        fontSize: "14px",
+        color: "#ffffff",
+        fontStyle: "bold",
+      }
+    );
     this.propertyControls.push(segmentLabel);
     this.container.add(segmentLabel);
 
-    // Segment Count Input
-    const segmentInput = this.createNumberInput(
-      x + 90,
+    // Create dropdown with more space, positioned to the right of the label
+    const segmentDropdown = this.createDropdown(
+      x + 180,
       y,
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       platformData.segmentCount,
       (value) => {
         if (this.selectedEntity && this.selectedEntity.type === "platform") {
@@ -241,21 +258,35 @@ export class Inspector {
         }
       }
     );
-    this.propertyControls.push(segmentInput);
-    this.container.add(segmentInput);
+    this.propertyControls.push(segmentDropdown);
+    this.container.add(segmentDropdown);
 
-    // Orientation Label
-    const orientationLabel = this.scene.add.text(x, y + 30, "Orientation:", {
-      fontSize: "14px",
-      color: "#ffffff",
-    });
+    // Better visual separation for orientation section
+    const orientationSectionBg = this.scene.add
+      .rectangle(x, y + 32, 240, 36, 0x1a1a1a, 0.8)
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, 0x555555);
+    this.propertyControls.push(orientationSectionBg);
+    this.container.add(orientationSectionBg);
+
+    // Orientation Label with clearer instructions
+    const orientationLabel = this.scene.add.text(
+      x + 5,
+      y + 40,
+      "Orientation:",
+      {
+        fontSize: "14px",
+        color: "#ffffff",
+        fontStyle: "bold",
+      }
+    );
     this.propertyControls.push(orientationLabel);
     this.container.add(orientationLabel);
 
-    // Orientation Buttons (Horizontal/Vertical)
+    // Orientation Buttons - better positioned
     const horizontalBtn = this.createButton(
-      x + 90,
-      y + 30,
+      x + 120,
+      y + 40,
       "Horizontal",
       !platformData.isVertical,
       () => {
@@ -272,8 +303,8 @@ export class Inspector {
     this.container.add(horizontalBtn);
 
     const verticalBtn = this.createButton(
-      x + 180,
-      y + 30,
+      x + 210,
+      y + 40,
       "Vertical",
       platformData.isVertical,
       () => {
@@ -289,8 +320,16 @@ export class Inspector {
     this.propertyControls.push(verticalBtn);
     this.container.add(verticalBtn);
 
+    // ID Section background
+    const idSectionBg = this.scene.add
+      .rectangle(x, y + 72, 240, 36, 0x1a1a1a, 0.8)
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, 0x555555);
+    this.propertyControls.push(idSectionBg);
+    this.container.add(idSectionBg);
+
     // ID Label
-    const idLabel = this.scene.add.text(x, y + 60, "ID:", {
+    const idLabel = this.scene.add.text(x + 5, y + 80, "ID:", {
       fontSize: "14px",
       color: "#ffffff",
     });
@@ -300,7 +339,7 @@ export class Inspector {
     // ID Input
     const idInput = this.createTextInput(
       x + 90,
-      y + 60,
+      y + 80,
       platformData.id || "",
       (value) => {
         if (this.selectedEntity && this.selectedEntity.type === "platform") {
@@ -485,7 +524,7 @@ export class Inspector {
   ): Phaser.GameObjects.Container {
     const container = this.scene.add.container(x, y);
 
-    // Button background
+    // Button background with enhanced visibility
     const bg = this.scene.add.rectangle(
       0,
       0,
@@ -500,18 +539,220 @@ export class Inspector {
     const text = this.scene.add.text(40, 12, label, {
       fontSize: "12px",
       color: "#ffffff",
+      fontStyle: isSelected ? "bold" : "normal",
     });
     text.setOrigin(0.5, 0.5);
     container.add(text);
 
-    // Make button interactive
-    bg.setInteractive({ useHandCursor: true });
-    bg.on("pointerdown", () => {
-      onClick();
-      bg.setFillStyle(0x4477ff); // Highlight when selected
-    });
+    // Make button interactive with visual feedback
+    bg.setInteractive({ useHandCursor: true })
+      .on("pointerover", () => {
+        if (!isSelected) {
+          bg.setFillStyle(0x555555);
+        }
+      })
+      .on("pointerout", () => {
+        if (!isSelected) {
+          bg.setFillStyle(0x444444);
+        }
+      })
+      .on("pointerdown", () => {
+        onClick();
+        bg.setFillStyle(0x4477ff); // Highlight when selected
+      });
 
     return container;
+  }
+
+  /**
+   * Creates a dropdown selection control
+   */
+  private createDropdown(
+    x: number,
+    y: number,
+    options: number[],
+    currentValue: number,
+    onChange: (value: number) => void
+  ): Phaser.GameObjects.Container {
+    // Create a simple container for the closed dropdown
+    const dropdownContainer = this.scene.add.container(x, y);
+    const dropdownWidth = 80;
+    const dropdownHeight = 24;
+
+    // Button background with dropdown styling
+    const bg = this.scene.add.rectangle(
+      0,
+      0,
+      dropdownWidth,
+      dropdownHeight,
+      0x3a3a3a
+    );
+    bg.setOrigin(0, 0);
+    bg.setStrokeStyle(2, 0x777777);
+
+    // Add "click to open" text in small font
+    const hintText = this.scene.add.text(
+      5,
+      dropdownHeight + 2,
+      "Click to show options",
+      {
+        fontSize: "9px",
+        color: "#aaaaaa",
+      }
+    );
+
+    // Display current value with more emphasis
+    const valueText = this.scene.add.text(5, 4, currentValue.toString(), {
+      fontSize: "14px",
+      color: "#ffffff",
+      fontStyle: "bold",
+    });
+
+    // Dropdown arrow - more visible
+    const arrowDown = this.scene.add.triangle(
+      dropdownWidth - 15,
+      dropdownHeight / 2,
+      0,
+      -5,
+      7,
+      5,
+      -7,
+      5,
+      0xaaaaaa
+    );
+
+    // Add to container
+    dropdownContainer.add([bg, valueText, arrowDown, hintText]);
+
+    // Tracking variable for open/closed state
+    let isOpen = false;
+
+    // Store option containers - will be created on first open
+    let optionButtons: Phaser.GameObjects.Container[] = [];
+
+    // Function to open dropdown
+    const openDropdown = () => {
+      if (isOpen) return;
+      isOpen = true;
+
+      // Hide the hint when open
+      hintText.setVisible(false);
+
+      // Change background color to show active state
+      bg.setFillStyle(0x4a4a4a);
+      bg.setStrokeStyle(2, 0x5599ff);
+
+      // Calculate absolute position accounting for scroll
+      const globalX = this.container.x + x;
+      const globalY = this.container.y + y + dropdownHeight;
+
+      // Create option buttons
+      options.forEach((option, index) => {
+        const optionButton = this.scene.add.container(
+          globalX,
+          globalY + index * 24
+        );
+        optionButton.setDepth(1000); // Very high depth
+
+        // Option background
+        const optionBg = this.scene.add.rectangle(
+          0,
+          0,
+          dropdownWidth,
+          24,
+          option === currentValue ? 0x5599ff : 0x444444
+        );
+        optionBg.setOrigin(0, 0);
+        optionBg.setStrokeStyle(1, 0x555555);
+
+        // Option text
+        const optionText = this.scene.add.text(5, 4, option.toString(), {
+          fontSize: "14px",
+          color: "#ffffff",
+          fontStyle: option === currentValue ? "bold" : "normal",
+        });
+
+        // Add to option container
+        optionButton.add([optionBg, optionText]);
+
+        // Make interactive
+        optionBg
+          .setInteractive({ useHandCursor: true })
+          .on("pointerover", () => {
+            optionBg.setFillStyle(0x666666);
+          })
+          .on("pointerout", () => {
+            optionBg.setFillStyle(
+              option === currentValue ? 0x5599ff : 0x444444
+            );
+          })
+          .on("pointerdown", () => {
+            // Update value and close dropdown
+            valueText.setText(option.toString());
+            closeDropdown();
+            onChange(option);
+          });
+
+        // Add to tracking array
+        optionButtons.push(optionButton);
+
+        // Add to scene
+        this.scene.add.existing(optionButton);
+      });
+
+      // Listen for clicks outside
+      this.scene.input.once("pointerdown", (pointer: Phaser.Input.Pointer) => {
+        // Small delay to allow the current click to process first
+        setTimeout(() => {
+          closeDropdown();
+        }, 10);
+      });
+    };
+
+    // Function to close dropdown
+    const closeDropdown = () => {
+      if (!isOpen) return;
+      isOpen = false;
+
+      // Show hint when closed
+      hintText.setVisible(true);
+
+      // Reset background color
+      bg.setFillStyle(0x3a3a3a);
+      bg.setStrokeStyle(2, 0x777777);
+
+      // Destroy all option buttons
+      optionButtons.forEach((button) => button.destroy());
+      optionButtons = [];
+    };
+
+    // Make dropdown button interactive
+    bg.setInteractive({ useHandCursor: true })
+      .on("pointerover", () => {
+        if (!isOpen) {
+          bg.setFillStyle(0x444444);
+        }
+      })
+      .on("pointerout", () => {
+        if (!isOpen) {
+          bg.setFillStyle(0x3a3a3a);
+        }
+      })
+      .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+        pointer.event.stopPropagation();
+        if (isOpen) {
+          closeDropdown();
+        } else {
+          openDropdown();
+        }
+      });
+
+    // When this dropdown is destroyed, make sure to clean up option buttons
+    dropdownContainer.once("destroy", () => {
+      closeDropdown();
+    });
+
+    return dropdownContainer;
   }
 
   updatePositionForResize(x: number, y: number): void {

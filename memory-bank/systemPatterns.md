@@ -5,13 +5,15 @@
 - **Framework:** Phaser 3
 - **Language:** TypeScript
 - **Build Tool:** Vite
+- **Package Manager:** pnpm
 - **Structure:**
   - Root: Config files, `index.html`, `assets/`, `public/`, `src/`, `dist/`.
   - `src/`: Main entry (`main.ts`), scenes (`scenes/`), entities (`entities/`), libraries/helpers (`lib/`).
+  - **Potentially:** Add `editor/` directory for editor-specific scenes, UI components, and logic.
 
 ## Key Technical Decisions
 
-- **Level Generation:** Uses a procedural approach to place platforms, items, and enemies.
+- **Level Generation (Main Game):** Uses a procedural approach to place platforms, items, and enemies.
   - **Vertical Walls:** Constructed by rotating standard platform sprites by 90 degrees.
   - **Barrel Substitution:** If the horizontal gap between potential platform placements exceeds the player's maximum jump distance, a barrel is placed instead of the platform to create a mandatory jump sequence.
   - **Strategic Crate Placement:** Crates are placed near vertical walls only when the calculated jump height difference requires them for the player to clear the wall.
@@ -33,9 +35,27 @@
   - Game restarts instantly upon game over or level completion, without any delay.
   - Keyboard shortcuts (Space/Enter) remain active for optional manual restart during gameplay.
 - **Crate Management:** Uses a two-part strategy for tracking and respawning crates:
+
   - Original crate positions are stored during level generation in an array of `{x, y, type}` objects.
   - Destruction occurs in collision detection with death zones (`checkFallSensorCollision`).
   - Respawning is handled by the `LevelGenerator.respawnCrates` method which creates new crates at the original positions.
+
+- **Level Editor Implementation (New):**
+  - **Separate Scene/State:** The editor will likely run within a dedicated Phaser Scene, distinct from the main `Game` scene.
+  - **Data Format:** A JSON format will be defined to store level layouts. The agreed structure includes arrays for `platforms` (with `x`, `y`, `segmentCount`, `orientation`), `enemies` (with `x`, `y`, `type`), `barrels` (with `x`, `y`), and a single `finishLine` object (with `x`, `y`).
+    ```json
+    // Example Structure
+    {
+      "platforms": [
+        { "x": 100, "y": 500, "segmentCount": 5, "orientation": "horizontal" }
+      ],
+      "enemies": [{ "x": 450, "y": 400, "type": "default" }],
+      "barrels": [{ "x": 200, "y": 450 }],
+      "finishLine": { "x": 800, "y": 400 }
+    }
+    ```
+  - **UI Elements:** Editor UI (object selection, property editing, orientation toggle) will be built using Phaser GameObjects or potentially a dedicated UI library.
+  - **Loading Custom Levels:** The main game will need logic to load and parse the custom level **JSON** format instead of using the procedural generator when a custom level is selected.
 
 ## Design Patterns
 
@@ -45,6 +65,8 @@
 - **Conditional Generation Logic:** Helper functions accept context flags (e.g., `isInitialPlatform` in `populatePlatformWithCoins`) to apply specific rules during procedural generation.
 - **Timed State Transitions:** Game state changes (game over → restart, level complete → next level) use timed delays rather than requiring explicit player input, creating smoother game flow.
 - **Original State Preservation:** For dynamic objects (crates), original state is preserved at creation time to enable accurate recreation after restarts.
+- **Editor Tool Pattern (Potential):** Implement distinct tools (e.g., PlatformTool, EnemyTool, SelectTool) activated via the UI, each handling specific input events and placement logic.
+- **Command Pattern (Potential):** Could be used for undo/redo functionality within the editor.
 
 ## Component Relationships
 
@@ -52,3 +74,4 @@
 - **Entity Interaction:** Direct interaction between entities occurs via collision detection, with state changes propagated through method calls.
 - **Input Processing:** Player entity accepts input from both keyboard and mobile touch controls, abstracting the input source from the movement logic.
 - **Scene-Entity State Synchronization:** Game scene tracks entity states that need to persist across restarts (e.g., original crate positions), passing necessary data during scene transitions.
+- **Editor-Game Separation:** The editor components (Scenes, UI) will be largely separate from the main game logic, interacting primarily through the shared level data format.

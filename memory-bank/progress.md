@@ -40,13 +40,20 @@
 
 ## What's Left to Build
 
-- None. The defined scope for the platformer game is complete.
-- Further enhancements or new features would require a new scope definition.
+- **Level Editor:**
+  - Implement editor scene/state.
+  - Create UI for object selection (platforms, enemies, barrels, **finish line**) and property editing (e.g., platform `segmentCount`, **orientation**).
+  - Implement object placement logic.
+  - Develop level saving/loading mechanism (**JSON format**).
+  - Add `package.json` script using `pnpm` for launching the editor.
+- **Game Integration:**
+  - Modify the main game to optionally load levels from the editor's saved format instead of using procedural generation.
 
 ## Current Status
 
-- The Phaser 3 platformer game implementation is complete.
-- All core features and gameplay enhancements identified during development are implemented and functional.
+- The Phaser 3 platformer game implementation is complete **for its original scope (procedural generation)**.
+- **Work is beginning on a new Level Editor feature.**
+- All core features and gameplay enhancements identified during development for the procedural game are implemented and functional.
 - The project has reached the conclusion of its defined scope.
 
 ## Known Issues

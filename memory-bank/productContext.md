@@ -4,6 +4,8 @@
 
 This project aimed to create a feature-rich, responsive platformer game using Phaser 3 and Matter.js, incorporating procedural generation and specific gameplay mechanics based on iterative feedback.
 
+**A new requirement is to enable manual level design through a dedicated editor, allowing for more controlled and specific level layouts beyond procedural generation.**
+
 ## How It Works (Result)
 
 The final product is a platformer game where the player navigates procedurally generated levels. Key features include:
@@ -16,12 +18,29 @@ The final product is a platformer game where the player navigates procedurally g
 - Specific gameplay mechanics: strategic crate placement for wall jumps, barrel interactions, coin collection, enemy avoidance.
 - Polished user experience: immediate game start, smooth restart flow, dedicated landing animations.
 
-## User Experience Goals (Achieved)
+**Additionally, a Level Editor will be available (run separately):**
+
+- **Purpose:** Manually create and save level layouts.
+- **Features:**
+  - UI Palette: Select platforms, enemies, barrels, or the finish line.
+  - Platform Placement: Click/drag to place platforms, adjust segment count (`segmentCount`) and orientation (horizontal/vertical) via UI input.
+  - Enemy/Barrel/Finish Line Placement: Click to place instances.
+  - Level Saving/Loading: Persist and load level designs as JSON files.
+- **Constraint:** Coin placement remains procedural within the main game; coins are not placed via the editor.
+
+## User Experience Goals (Achieved for Game)
 
 - Immediate Gameplay: The game starts automatically after loading.
 - Responsive Controls: Works on desktop (keyboard) and mobile (touch).
 - Engaging Gameplay Loop: Procedural generation provides replayability, and the restart flow is seamless.
 - Clear Visuals: Depth sorting ensures player visibility; UI adapts to screen size.
+
+## User Experience Goals (For Editor - New)
+
+- **Intuitive Placement:** Simple click/drag interface for placing objects.
+- **Clear Controls:** Obvious UI elements for selecting objects and adjusting properties (like platform `segmentCount` and orientation).
+- **Visual Feedback:** Clear indication of selected object and placement location.
+- **Easy Save/Load:** Simple mechanism to save work and load existing JSON designs.
 
 ## Gameplay Enhancements (Derived from Feedback)
 

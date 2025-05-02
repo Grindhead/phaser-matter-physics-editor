@@ -2,10 +2,18 @@
 
 ## Current Focus
 
-- The core gameplay features are complete. Awaiting further instructions or definition of the next phase.
+- **Implement the Level Editor:** Design and build the level editor functionality as a separate part of the application, accessible via a dedicated command (`pnpm run editor`).
+  - Define the editor's scene/state.
+  - Create UI elements for selecting and configuring placeable objects (platforms, enemies, barrels, **finish line**).
+  - Implement placement logic (click/drag).
+  - Add functionality to adjust platform `segmentCount` **and orientation**.
+  - Develop a system for saving and loading level data **in JSON format**.
+  - Ensure the editor runs independently from the main game logic initially.
+  - Add the `editor` script to `package.json`.
 
 ## Recent Changes
 
+- **Memory Bank Update:** Updated all core memory bank files to reflect the new requirement of building a level editor.
 - **Implemented Single-Input Restart:**
 
   - Combined game over dismissal and restart into a single automatic action with a delay.
@@ -65,10 +73,33 @@
 
 ## Next Steps
 
-- Project goals achieved for the core game implementation. Awaiting further instructions.
+- **Define Level JSON Data Format:** **Done. Format confirmed.**
+- **Setup Editor Scene:** Create a new Phaser scene dedicated to the editor.
+- **Build UI Components:** Implement UI elements for object selection (platforms, enemies, barrels, **finish line**) and property editing (e.g., platform `segmentCount`, **orientation**).
+- **Implement Placement Logic:** Add input handlers for placing selected objects onto the editor canvas.
+- **Implement Save/Load (JSON):** Add functionality to save the placed objects to a JSON file and load existing level JSON files.
+- **Add `package.json` Script:** Create the `editor` script using `pnpm` (e.g., `pnpm run editor`) to launch the editor environment.
 
 ## Active Decisions
 
+- **Level Editor Scope:** The editor will handle placement of platforms (with adjustable `segmentCount` and orientation), enemies, barrels, and the finish line. Coins will _not_ be placed in the editor and remain procedural in the game.
+- **Level Data Format:** Level data will be saved and loaded using JSON. The initial agreed-upon structure is:
+  ```json
+  {
+    "platforms": [
+      { "x": number, "y": number, "segmentCount": number, "orientation": "horizontal" | "vertical" }
+    ],
+    "enemies": [
+      { "x": number, "y": number, "type": string } // Type might evolve
+    ],
+    "barrels": [
+      { "x": number, "y": number }
+    ],
+    "finishLine": { "x": number, "y": number }
+  }
+  ```
+- **Separate Execution:** The editor will be launched via a separate command (`pnpm run editor`), likely initializing a different Phaser scene or configuration than the main game.
+- **UI Approach:** Utilize Phaser's built-in UI elements or potentially integrate a simple external UI library if needed for better controls (TBD).
 - **Automatic Restart Flow:**
   - Restart occurs immediately after game over or level completion without any delay.
   - Maintain the keyboard shortcuts (Space/Enter) for optional manual restart during gameplay.
@@ -113,6 +144,7 @@
 
 - Use PowerShell for file system operations on Windows.
 - Follow custom instructions regarding memory bank updates, planning, and communication style.
+- **Package Manager:** Use `pnpm` for managing dependencies and running scripts.
 - **Responsive UI:** Position UI relative to screen dimensions using `scene.scale.width/height` and `scene.scale.on('resize', ...)`.
 - **Mobile Touch Controls:** On-screen touch buttons (implemented as interactive `Phaser.GameObjects.Image`) are displayed for movement and jump. Pointer events on these buttons update state flags in the `Player` entity.
 - **State Persistence Across Restarts:** Pass state explicitly via `scene.restart({ key: value })` and retrieve in `init(data)`.
@@ -149,4 +181,4 @@
 
 ## Design Patterns
 
-(To be defined)
+(To be defined - Consider Editor Tool Pattern, Command Pattern for editor features)

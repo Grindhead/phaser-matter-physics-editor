@@ -6,6 +6,7 @@ import { COIN_ANIMATIONS } from "../entities/Coin/coinAnimations";
 import { FINISH_ANIMATIONS } from "../entities/Finish/finishAnimations";
 import { FX_ANIMATIONS } from "../entities/fx-land/fxAnimations";
 import { BARREL_ANIMATIONS } from "../entities/Barrel/barrelAnimations";
+import { setupAnimations } from "../lib/level-generation/createAnimations";
 
 export class Preloader extends Scene {
   private loadingText: Phaser.GameObjects.Text | null = null;
@@ -64,18 +65,9 @@ export class Preloader extends Scene {
   }
 
   create() {
-    this.setupAnimations();
+    setupAnimations(this);
     this.loadingText?.destroy(true);
     this.loadingText = null;
     this.scene.start(SCENES.MAIN_MENU);
-  }
-
-  setupAnimations() {
-    // Create animations using the correct atlas key 'assets-1'
-    createAnimations(this.game.anims, TEXTURE_ATLAS, PLAYER_ANIMATIONS);
-    createAnimations(this.game.anims, TEXTURE_ATLAS, COIN_ANIMATIONS);
-    createAnimations(this.game.anims, TEXTURE_ATLAS, FINISH_ANIMATIONS);
-    createAnimations(this.game.anims, TEXTURE_ATLAS, FX_ANIMATIONS);
-    createAnimations(this.game.anims, TEXTURE_ATLAS, BARREL_ANIMATIONS);
   }
 }

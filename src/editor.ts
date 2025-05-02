@@ -24,11 +24,7 @@ const config: Types.Core.GameConfig = {
         x: 0,
         y: 0, // No gravity in the editor
       },
-      debug: {
-        showAxes: false,
-        showAngleIndicator: true,
-        showBounds: false,
-      },
+      debug: false, // Disable all debug rendering for Matter.js
     },
   },
   scene: [EditorScene],

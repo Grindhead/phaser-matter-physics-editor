@@ -1,5 +1,4 @@
 import { Scene } from "phaser";
-import { TEXTURE_ATLAS, PHYSICS_ENTITIES } from "../../lib/constants";
 import { Platform } from "../../entities/Platforms/Platform";
 import { EnemySmall } from "../../entities/Enemies/EnemySmall";
 import { Crate } from "../../entities/Crate/Crate";
@@ -10,11 +9,6 @@ import { Player } from "../../entities/Player/Player";
 
 // Import a concrete Enemy class for large enemy
 import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
-
-// Import animation keys
-import { BARREL_ANIMATION_KEYS } from "../../entities/Barrel/barrelAnimations";
-import { FINISH_ANIMATION_KEYS } from "../../entities/Finish/finishAnimations";
-import { PLAYER_ANIMATION_KEYS } from "../../entities/Player/playerAnimations";
 
 export interface PaletteConfig {
   x: number;
@@ -40,6 +34,10 @@ export interface EntityButton {
     | typeof Player;
   entityConfig: any;
   displayName: string;
+  scale?: number;
+  heightFactor?: number;
+  offsetX?: number;
+  offsetY?: number;
 }
 
 export class Palette {
@@ -59,13 +57,15 @@ export class Palette {
     this.scene = scene;
     this.onSelectCallback = onSelect;
 
-    // Setup entity definitions
+    // Setup entity definitions with production-ready values
     this.entities = [
       {
         type: "player",
         entityClass: Player,
         entityConfig: {},
         displayName: "Player",
+        scale: 0.6,
+        heightFactor: 1.1,
       },
       {
         type: "platform",
@@ -76,18 +76,24 @@ export class Palette {
           isVertical: false,
         },
         displayName: "Platform",
+        scale: 0.5,
+        heightFactor: 0.8,
       },
       {
         type: "enemy-large",
         entityClass: EnemyLarge,
         entityConfig: {},
         displayName: "Large Enemy",
+        scale: 0.5,
+        heightFactor: 1.2,
       },
       {
         type: "enemy-small",
         entityClass: EnemySmall,
         entityConfig: {},
         displayName: "Small Enemy",
+        scale: 0.5,
+        heightFactor: 1.0,
       },
       {
         type: "crate-small",
@@ -96,6 +102,8 @@ export class Palette {
           type: "small",
         },
         displayName: "Small Crate",
+        scale: 0.5,
+        heightFactor: 0.9,
       },
       {
         type: "crate-big",
@@ -104,18 +112,24 @@ export class Palette {
           type: "big",
         },
         displayName: "Big Crate",
+        scale: 0.5,
+        heightFactor: 1.1,
       },
       {
         type: "barrel",
         entityClass: Barrel,
         entityConfig: {},
         displayName: "Barrel",
+        scale: 0.65,
+        heightFactor: 1.0,
       },
       {
         type: "finish-line",
         entityClass: Finish,
         entityConfig: {},
         displayName: "Finish Line",
+        scale: 0.45,
+        heightFactor: 1.0,
       },
     ];
 
@@ -147,21 +161,32 @@ export class Palette {
 
   private calculateHeight(config: PaletteConfig): number {
     const padding = config.padding || 10;
-    const buttonHeight = 50;
-    return (buttonHeight + padding) * this.entities.length + padding;
+    let totalHeight = padding;
+
+    // Calculate the sum of all button heights with padding
+    this.entities.forEach((entity) => {
+      const baseHeight = 50;
+      const heightFactor = entity.heightFactor || 1.0;
+      const buttonHeight = baseHeight * heightFactor;
+      totalHeight += buttonHeight + padding;
+    });
+
+    return totalHeight;
   }
 
   private createButtons(config: PaletteConfig): void {
     const padding = config.padding || 10;
     const buttonWidth = config.width - padding * 2;
-    const buttonHeight = 50;
+    let currentY = padding;
 
-    this.entities.forEach((entity, index) => {
+    this.entities.forEach((entity) => {
+      // Calculate dynamic button height based on entity type
+      const baseHeight = 50;
+      const heightFactor = entity.heightFactor || 1.0;
+      const buttonHeight = baseHeight * heightFactor;
+
       // Create button container
-      const buttonContainer = this.scene.add.container(
-        padding,
-        padding + index * (buttonHeight + padding)
-      );
+      const buttonContainer = this.scene.add.container(padding, currentY);
 
       // Create button background
       const buttonBg = this.scene.add.rectangle(
@@ -174,56 +199,82 @@ export class Palette {
       buttonBg.setOrigin(0, 0);
       buttonContainer.add(buttonBg);
 
-      // Create entity instance for display in the palette
-      let entityInstance;
+      // Position calculation for entity preview
+      const iconX = buttonWidth / 5; // Position at 1/5 of button width instead of 1/4
+      const iconY = buttonHeight / 2; // Center vertically
 
-      // Create the entity instance at the button position
-      const entityX = padding + buttonHeight / 2;
-      const entityY = buttonHeight / 2;
+      // Create entity instance for display in the palette
+      let entityInstance:
+        | Platform
+        | EnemySmall
+        | EnemyLarge
+        | Crate
+        | Barrel
+        | Finish
+        | Player;
 
       switch (entity.type) {
         case "player":
-          entityInstance = new Player(this.scene, entityX, entityY);
+          entityInstance = new Player(this.scene, 0, 0);
           break;
         case "platform":
           entityInstance = new Platform(
             this.scene,
-            entityX,
-            entityY,
+            0,
+            0,
             entity.entityConfig.segmentCount,
             entity.entityConfig.id,
             entity.entityConfig.isVertical
           );
           break;
         case "enemy-large":
-          entityInstance = new EnemyLarge(this.scene, entityX, entityY);
+          entityInstance = new EnemyLarge(this.scene, 0, 0);
           break;
         case "enemy-small":
-          entityInstance = new EnemySmall(this.scene, entityX, entityY);
+          entityInstance = new EnemySmall(this.scene, 0, 0);
           break;
         case "crate-small":
+          entityInstance = new Crate(
+            this.scene,
+            0,
+            0,
+            entity.entityConfig.type
+          );
+          break;
         case "crate-big":
           entityInstance = new Crate(
             this.scene,
-            entityX,
-            entityY,
+            0,
+            0,
             entity.entityConfig.type
           );
           break;
         case "barrel":
-          entityInstance = new Barrel(this.scene, entityX, entityY);
-          // Use idle animation for barrel
-
+          entityInstance = new Barrel(this.scene, 0, 0);
           break;
         case "finish-line":
-          entityInstance = new Finish(this.scene, entityX, entityY);
+          entityInstance = new Finish(this.scene, 0, 0);
+          break;
+        default:
+          // Provide a default to satisfy TypeScript
+          entityInstance = new Player(this.scene, 0, 0);
           break;
       }
 
-      this.scene.add.existing(entityInstance!);
+      // Set scale from entity definition
+      const scale = entity.scale || 0.7;
+      entityInstance.setScale(scale);
+
+      // Position entity correctly within the button
+      entityInstance.setPosition(iconX, iconY);
+
+      // Add the entity to the button container
+      entityInstance.setDepth(1);
+      buttonContainer.add(entityInstance);
+
       // Create button text
       const text = this.scene.add.text(
-        padding + buttonHeight,
+        buttonWidth * 0.35,
         buttonHeight / 2,
         entity.displayName,
         {
@@ -255,6 +306,9 @@ export class Palette {
       // Add to container and store reference
       this.container.add(buttonContainer);
       this.buttons[entity.type] = buttonContainer;
+
+      // Update currentY for next button
+      currentY += buttonHeight + padding;
     });
   }
 

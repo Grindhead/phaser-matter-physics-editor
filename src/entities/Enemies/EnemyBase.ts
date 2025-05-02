@@ -1,21 +1,28 @@
 // EnemyBase.ts
 import { isGroundBody } from "../../lib/helpers/isGroundBody";
-import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
+import { PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
 
-// Define a type representing the values of PHYSICS_ENTITIES
-type PhysicsEntityKey =
-  (typeof PHYSICS_ENTITIES)[keyof typeof PHYSICS_ENTITIES];
-
-interface EnemyConfig {
-  shapeKey: PhysicsEntityKey;
-  animKey: string;
-  scale?: number;
+export interface EnemyInterface {
+  x: number;
+  y: number;
+  type: "enemy-large" | "enemy-small";
 }
 
-export abstract class EnemyBase extends Phaser.Physics.Matter.Sprite {
+export interface EnemyConfig {
+  shapeKey: string;
+  animKey: string;
+  scale?: number;
+  type: "enemy-large" | "enemy-small";
+}
+
+export abstract class EnemyBase
+  extends Phaser.Physics.Matter.Sprite
+  implements EnemyInterface
+{
   private speed: number;
   private direction: 1 | -1 = 1;
   private platformBounds?: { left: number; right: number };
+  public type: "enemy-large" | "enemy-small";
 
   // Shared cache by ground‐body ID
   private static platformCache = new Map<
@@ -27,7 +34,7 @@ export abstract class EnemyBase extends Phaser.Physics.Matter.Sprite {
     scene: Phaser.Scene,
     x: number,
     y: number,
-    { shapeKey, animKey, scale = 1 }: EnemyConfig
+    { shapeKey, animKey, scale = 1, type }: EnemyConfig
   ) {
     const shapes = scene.cache.json.get(PHYSICS);
     super(scene.matter.world, x, y, TEXTURE_ATLAS, animKey, {
@@ -36,6 +43,7 @@ export abstract class EnemyBase extends Phaser.Physics.Matter.Sprite {
 
     this.speed = Phaser.Math.Between(1, 1.3);
     if (scale !== 1) this.setScale(scale);
+    this.type = type;
 
     scene.add.existing(this);
     scene.matter.world.on("collisionstart", this.handleCollisionStart, this);
@@ -58,6 +66,57 @@ export abstract class EnemyBase extends Phaser.Physics.Matter.Sprite {
     } else if (left <= boundLeft && this.direction === -1) {
       this.direction = 1;
     }
+  }
+
+  /**
+   * Gets the bounds of the enemy as a rectangle
+   * @param output Optional rectangle to store the result in
+   * @returns A Phaser.Geom.Rectangle representing the bounds of this enemy
+   */
+  getBounds<O extends Phaser.Geom.Rectangle>(output?: O): O {
+    // Get the current world position of the enemy
+    const x = this.x;
+    const y = this.y;
+
+    // Get the display width and height, accounting for scale
+    const width = this.displayWidth;
+    const height = this.displayHeight;
+
+    // Calculate the top-left corner
+    const left = x - width / 2;
+    const top = y - height / 2;
+
+    // Use the provided output rectangle or create a new one
+    const bounds =
+      output || (new Phaser.Geom.Rectangle(left, top, width, height) as O);
+
+    // If bounds was provided, set its properties
+    if (output) {
+      bounds.setTo(left, top, width, height);
+    }
+
+    return bounds;
+  }
+
+  /**
+   * Sets the tint color of this enemy
+   * @param tint The tint color to apply
+   * @returns this (for chaining)
+   */
+  setTint(tint: number): this {
+    // Apply tint to the sprite
+    super.setTint(tint);
+    return this;
+  }
+
+  /**
+   * Clears the tint effect from this enemy
+   * @returns this (for chaining)
+   */
+  clearTint(): this {
+    // Clear the tint (reset to white)
+    super.clearTint();
+    return this;
   }
 
   private handleCollisionStart(

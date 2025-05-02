@@ -8,8 +8,6 @@ import {
 import { Platform } from "../../entities/Platforms/Platform";
 import { Coin } from "../../entities/Coin/Coin";
 import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
-import { CrateBig } from "../../entities/CrateBig/CrateBig";
-import { CrateSmall } from "../../entities/CrateSmall/CrateSmall";
 import { Barrel } from "../../entities/Barrel/Barrel";
 import { Player } from "../../entities/Player/Player";
 import {
@@ -31,6 +29,7 @@ import { setTotalCoinsInLevel } from "../helpers/coinManager";
 import { Finish } from "../../entities/Finish/Finish";
 import { EnemySmall } from "../../entities/Enemies/EnemySmall";
 import { getLevel } from "../helpers/levelManager";
+import { Crate } from "../../entities/Crate/Crate";
 
 // Simple Pseudo-Random Number Generator (PRNG) using Mulberry32 algorithm
 // Provides deterministic random numbers based on an initial seed.
@@ -93,7 +92,7 @@ export class LevelGenerator {
   private platforms: Platform[] = [];
   private coins: Coin[] = [];
   private enemies: (EnemyLarge | EnemySmall)[] = [];
-  private crates: (CrateBig | CrateSmall)[] = [];
+  private crates: Crate[] = [];
   private barrels: Barrel[] = [];
   private player: Player;
 
@@ -606,7 +605,7 @@ export class LevelGenerator {
   /**
    * Returns the array of generated Crate instances.
    */
-  getCrates(): (CrateBig | CrateSmall)[] {
+  getCrates(): Crate[] {
     return this.crates;
   }
 
@@ -772,7 +771,7 @@ export class LevelGenerator {
       // Required jump = StartY - EndY
       const requiredVerticalJump = platformTopY - wallTopY;
 
-      let crateToPlace: CrateSmall | CrateBig | null = null;
+      let crateToPlace: Crate | null = null;
       let placeX = 0;
       let placeY = 0;
       let crateHeight = 0;
@@ -786,18 +785,20 @@ export class LevelGenerator {
       const useBigCrate =
         requiresBigCrate || (!requiresBigCrate && this.prng.next() > 0.6);
 
+      const crateType = useBigCrate ? "big" : "small";
+
       if (useBigCrate) {
         // Use big crate
         crateHeight = CRATE_BIG_HEIGHT;
         placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
         placeY = platformBounds.top - crateHeight / 2;
-        crateToPlace = new CrateBig(this.scene, placeX, placeY);
+        crateToPlace = new Crate(this.scene, placeX, placeY, crateType);
       } else {
         // Use small crate
         crateHeight = CRATE_SMALL_HEIGHT;
         placeX = Math.min(platformBounds.right - 40, wallPos.wallX - 30);
         placeY = platformBounds.top - crateHeight / 2;
-        crateToPlace = new CrateSmall(this.scene, placeX, placeY);
+        crateToPlace = new Crate(this.scene, placeX, placeY, crateType);
       }
 
       // If a crate needs to be placed
@@ -874,7 +875,7 @@ export class LevelGenerator {
    */
   respawnCrates(
     cratePositions: { x: number; y: number; type: string }[]
-  ): (CrateBig | CrateSmall)[] {
+  ): Crate[] {
     // First, remove any existing crates
     this.crates.forEach((crate) => {
       if (crate && crate.body) {
@@ -885,12 +886,12 @@ export class LevelGenerator {
 
     // Then create new crates at the specified positions
     cratePositions.forEach((pos) => {
-      let crate: CrateBig | CrateSmall;
+      let crate: Crate;
 
       if (pos.type === "big") {
-        crate = new CrateBig(this.scene, pos.x, pos.y);
+        crate = new Crate(this.scene, pos.x, pos.y, "big");
       } else {
-        crate = new CrateSmall(this.scene, pos.x, pos.y);
+        crate = new Crate(this.scene, pos.x, pos.y, "small");
       }
 
       this.crates.push(crate);
@@ -944,7 +945,7 @@ export class LevelGenerator {
 
       // Randomly decide between small and big crate (50/50 chance)
       const useSmallCrate = this.prng.next() > 0.5;
-      let crateToPlace: CrateSmall | CrateBig;
+      let crateToPlace: Crate;
       let crateHeight: number;
 
       // Determine crate position on platform (avoid edges)
@@ -960,11 +961,11 @@ export class LevelGenerator {
       if (useSmallCrate) {
         crateHeight = CRATE_SMALL_HEIGHT;
         const placeY = platformBounds.top - crateHeight / 2;
-        crateToPlace = new CrateSmall(this.scene, placeX, placeY);
+        crateToPlace = new Crate(this.scene, placeX, placeY, "small");
       } else {
         crateHeight = CRATE_BIG_HEIGHT;
         const placeY = platformBounds.top - crateHeight / 2;
-        crateToPlace = new CrateBig(this.scene, placeX, placeY);
+        crateToPlace = new Crate(this.scene, placeX, placeY, "big");
       }
 
       // Add crate to the level

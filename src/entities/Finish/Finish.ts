@@ -1,7 +1,15 @@
 import { PHYSICS_ENTITIES, PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
-import { FINISH_ANIMATION_KEYS, FINISH_ANIMATIONS } from "./finishAnimations";
+import { FINISH_ANIMATION_KEYS } from "./finishAnimations";
 
-export class Finish extends Phaser.Physics.Matter.Sprite {
+export interface FinishLineInterface {
+  scene: Phaser.Scene;
+  x: number;
+  y: number;
+}
+export class Finish
+  extends Phaser.Physics.Matter.Sprite
+  implements FinishLineInterface
+{
   private isActivated: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {

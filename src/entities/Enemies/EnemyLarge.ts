@@ -9,6 +9,7 @@ export class EnemyLarge extends EnemyBase {
       shapeKey: PHYSICS_ENTITIES.ENEMY,
       animKey: ENEMY_ANIMATIONS[ENEMY_ANIMATION_KEYS.ENEMY_IDLE].prefix,
       scale: 1,
+      type: "enemy-large",
     });
   }
 }

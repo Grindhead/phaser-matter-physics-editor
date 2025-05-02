@@ -6,11 +6,15 @@ import {
   BARREL_LAUNCH_SPEED,
 } from "../../lib/constants";
 import { BARREL_ANIMATION_KEYS } from "./barrelAnimations";
-
-// Import Matter JS library type explicitly if needed, or access via scene.matter.matter
-// import * as MatterJS from "matter-js";
-
-export class Barrel extends Phaser.Physics.Matter.Sprite {
+export interface BarrelInterface {
+  scene: Phaser.Scene;
+  x: number;
+  y: number;
+}
+export class Barrel
+  extends Phaser.Physics.Matter.Sprite
+  implements BarrelInterface
+{
   public isEntered: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {

@@ -35,7 +35,6 @@ import { Geom } from "phaser";
 import { Barrel } from "../entities/Barrel/Barrel";
 import { LevelGenerator } from "../lib/level-generation/LevelGenerator";
 import { ParallaxManager } from "../lib/parralax/ParallaxManager";
-import { CrateBig } from "../entities/CrateBig/CrateBig";
 import { UIScene } from "./UIScene";
 import { createDeathZones } from "../lib/level-generation/createDeathZones";
 
@@ -159,7 +158,7 @@ export class Game extends Scene {
       this.originalCratePositions.push({
         x: crate.x,
         y: crate.y,
-        type: crate instanceof CrateBig ? "big" : "small",
+        type: crate.type,
       });
     });
 

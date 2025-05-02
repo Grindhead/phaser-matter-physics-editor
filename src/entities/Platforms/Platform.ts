@@ -6,9 +6,22 @@ import {
 } from "../../lib/constants";
 import { buildPlatform } from "../../lib/level-generation/platformBuilder";
 
-export class Platform extends Phaser.Physics.Matter.Sprite {
+export interface PlatformInterface {
+  scene: Phaser.Scene;
+  x: number;
+  y: number;
+  segmentCount: number;
+  id: string;
+  isVertical: boolean;
+}
+
+export class Platform
+  extends Phaser.Physics.Matter.Sprite
+  implements PlatformInterface
+{
   public segmentCount: number;
   public isVertical: boolean;
+  public id: string;
   public hasCrate: boolean = false;
   public hasEnemy: boolean = false;
 
@@ -16,21 +29,21 @@ export class Platform extends Phaser.Physics.Matter.Sprite {
     scene: Phaser.Scene,
     x: number,
     y: number,
-    width: number, // 'width' here represents segment count
+    segmentCount: number, // 'width' here represents segment count
     id: string,
     isVertical: boolean = false
   ) {
     // 1. Build the visual texture first (returns/caches texture with 'id')
-    buildPlatform(scene, width, id, isVertical);
+    buildPlatform(scene, segmentCount, id, isVertical);
 
-    // 2. Call super() first with basic config (or none if default is okay).
-    // We use the texture 'id' created/cached by buildPlatform.
-    // Let Matter create a temporary body.
     super(scene.matter.world, x, y, id, undefined, { isStatic: true });
 
+    // Store the id
+    this.id = id;
+
     // 3. Calculate correct physics body dimensions based on segment count and orientation
-    const bodyWidth = isVertical ? TILE_HEIGHT : TILE_WIDTH * width;
-    const bodyHeight = isVertical ? TILE_WIDTH * width : TILE_HEIGHT;
+    const bodyWidth = isVertical ? TILE_HEIGHT : TILE_WIDTH * segmentCount;
+    const bodyHeight = isVertical ? TILE_WIDTH * segmentCount : TILE_HEIGHT;
 
     // 4. Retrieve collision filter data from physics.json
     const platformData =
@@ -63,10 +76,65 @@ export class Platform extends Phaser.Physics.Matter.Sprite {
     this.setPosition(x, y);
 
     // Store segment count and vertical status
-    this.segmentCount = width;
+    this.segmentCount = segmentCount;
     this.isVertical = isVertical;
 
     // Add to scene
     scene.add.existing(this);
+  }
+
+  /**
+   * Gets the bounds of the platform as a rectangle
+   * @param output Optional rectangle to store the result in
+   * @returns A Phaser.Geom.Rectangle representing the bounds of this platform
+   */
+  getBounds<O extends Phaser.Geom.Rectangle>(output?: O): O {
+    // Get the current world position of the platform
+    const x = this.x;
+    const y = this.y;
+
+    // Calculate width and height based on segment count and orientation
+    const width = this.isVertical
+      ? TILE_HEIGHT
+      : TILE_WIDTH * this.segmentCount;
+    const height = this.isVertical
+      ? TILE_WIDTH * this.segmentCount
+      : TILE_HEIGHT;
+
+    // Calculate the top-left corner of the platform (considering the platform is centered)
+    const left = x - width / 2;
+    const top = y - height / 2;
+
+    // Use the provided output rectangle or create a new one
+    const bounds =
+      output || (new Phaser.Geom.Rectangle(left, top, width, height) as O);
+
+    // If bounds was provided, set its properties
+    if (output) {
+      bounds.setTo(left, top, width, height);
+    }
+
+    return bounds;
+  }
+
+  /**
+   * Sets the tint color of this platform
+   * @param tint The tint color to apply
+   * @returns this (for chaining)
+   */
+  setTint(tint: number): this {
+    // Apply tint to the sprite
+    super.setTint(tint);
+    return this;
+  }
+
+  /**
+   * Clears the tint effect from this platform
+   * @returns this (for chaining)
+   */
+  clearTint(): this {
+    // Clear the tint (reset to white)
+    super.clearTint();
+    return this;
   }
 }

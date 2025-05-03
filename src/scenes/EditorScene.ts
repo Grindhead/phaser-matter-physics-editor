@@ -49,13 +49,18 @@ export class EditorScene extends Scene {
       this.entityManager.updateEntityProperty(entity, property, value);
     };
 
+    const handleRemoveEntity = (entity: EditorEntity) => {
+      this.entityManager.removeEntity(entity);
+    };
+
     this.uiManager = new EditorUIManager(
       this,
       handleEntityTypeSelection,
       handlePropertyChange,
       () => this.levelHandler.saveLevel(),
       () => this.uiManager.getFileInput()?.click(),
-      () => this.levelHandler.clearLevel()
+      () => this.levelHandler.clearLevel(),
+      handleRemoveEntity
     );
 
     // Setup file loading

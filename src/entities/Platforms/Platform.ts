@@ -13,6 +13,7 @@ export interface PlatformInterface {
   segmentCount: number;
   id: string;
   isVertical: boolean;
+  segmentWidth?: number;
 }
 
 export class Platform
@@ -24,26 +25,29 @@ export class Platform
   public id: string;
   public hasCrate: boolean = false;
   public hasEnemy: boolean = false;
+  public segmentWidth: number;
 
   constructor(
     scene: Phaser.Scene,
     x: number,
     y: number,
-    segmentCount: number, // 'width' here represents segment count
+    segmentCount: number,
     id: string,
-    isVertical: boolean = false
+    isVertical: boolean = false,
+    segmentWidth: number = 32 // Default to 32 if not provided
   ) {
     // 1. Build the visual texture first (returns/caches texture with 'id')
-    buildPlatform(scene, segmentCount, id, isVertical);
+    buildPlatform(scene, segmentCount, id, isVertical, segmentWidth);
 
     super(scene.matter.world, x, y, id, undefined, { isStatic: true });
 
-    // Store the id
+    // Store the id and segment width
     this.id = id;
+    this.segmentWidth = segmentWidth;
 
-    // 3. Calculate correct physics body dimensions based on segment count and orientation
-    const bodyWidth = isVertical ? TILE_HEIGHT : TILE_WIDTH * segmentCount;
-    const bodyHeight = isVertical ? TILE_WIDTH * segmentCount : TILE_HEIGHT;
+    // 3. Calculate correct physics body dimensions based on segment count, orientation, and width
+    const bodyWidth = isVertical ? segmentWidth : segmentWidth * segmentCount;
+    const bodyHeight = isVertical ? segmentWidth * segmentCount : segmentWidth;
 
     // 4. Retrieve collision filter data from physics.json
     const platformData =
@@ -93,13 +97,13 @@ export class Platform
     const x = this.x;
     const y = this.y;
 
-    // Calculate width and height based on segment count and orientation
+    // Calculate width and height based on segment count, orientation, and width
     const width = this.isVertical
-      ? TILE_HEIGHT
-      : TILE_WIDTH * this.segmentCount;
+      ? this.segmentWidth
+      : this.segmentWidth * this.segmentCount;
     const height = this.isVertical
-      ? TILE_WIDTH * this.segmentCount
-      : TILE_HEIGHT;
+      ? this.segmentWidth * this.segmentCount
+      : this.segmentWidth;
 
     // Calculate the top-left corner of the platform (considering the platform is centered)
     const left = x - width / 2;

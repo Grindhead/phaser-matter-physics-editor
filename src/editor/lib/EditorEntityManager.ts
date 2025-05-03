@@ -64,6 +64,10 @@ export class EditorEntityManager {
         } else {
           // Regular click in placement mode - place the entity
           this.placeEntity(this.selectedEntityType, worldX, worldY);
+
+          // Exit placement mode immediately after placing an entity
+          // This allows for direct creation by clicking palette buttons
+          this.selectedEntityType = null;
         }
       } else {
         // Not in placement mode - select or deselect entities
@@ -211,13 +215,15 @@ export class EditorEntityManager {
    * Creates a platform entity
    */
   private createPlatform(x: number, y: number): EditorEntity {
-    // Create platform data with configuration from dropdown if available
+    // Create platform data with configuration provided by the platform tool
     const platformData: PlatformInterface = {
       scene: this.scene,
       x,
       y,
       segmentCount: this._platformConfig?.segmentCount || 3,
-      id: `platform-${this.levelData.platforms.length}`,
+      id:
+        this._platformConfig?.id ||
+        `platform-${this.levelData.platforms.length}`,
       isVertical: this._platformConfig?.isVertical || false,
     };
 
@@ -229,7 +235,7 @@ export class EditorEntityManager {
       this.scene,
       x,
       y,
-      platformData.segmentCount,
+      platformData.segmentCount, // Use configured segment count
       platformData.id,
       platformData.isVertical
     );
@@ -245,8 +251,8 @@ export class EditorEntityManager {
     // Return entity
     return {
       type: "platform",
-      x,
-      y,
+      x: x,
+      y: y,
       gameObject: platform,
       data: platformData,
     };
@@ -612,104 +618,20 @@ export class EditorEntityManager {
     if (!entity) return;
 
     switch (property) {
-      case "x":
-        const snappedX =
-          Math.floor(value / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
-        entity.x = snappedX;
-
-        // Cast to appropriate type based on entity type
-        if (entity.type === "platform") {
-          (entity.gameObject as Platform).setPosition(snappedX, entity.y);
-        } else if (
-          entity.type === "enemy-large" ||
-          entity.type === "enemy-small"
-        ) {
-          (entity.gameObject as EnemyLarge | EnemySmall).setPosition(
-            snappedX,
-            entity.y
-          );
-        } else {
-          (entity.gameObject as Phaser.GameObjects.Image).setPosition(
-            snappedX,
-            entity.y
-          );
-        }
-
-        this.updateEntityInLevelData(entity);
-        break;
-      case "y":
-        const snappedY =
-          Math.floor(value / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2;
-        entity.y = snappedY;
-
-        // Cast to appropriate type based on entity type
-        if (entity.type === "platform") {
-          (entity.gameObject as Platform).setPosition(entity.x, snappedY);
-        } else if (
-          entity.type === "enemy-large" ||
-          entity.type === "enemy-small"
-        ) {
-          (entity.gameObject as EnemyLarge | EnemySmall).setPosition(
-            entity.x,
-            snappedY
-          );
-        } else {
-          (entity.gameObject as Phaser.GameObjects.Image).setPosition(
-            entity.x,
-            snappedY
-          );
-        }
-
-        this.updateEntityInLevelData(entity);
+      case "position":
+        // Handle position updates
+        const { x, y } = value;
+        this.updateEntityPosition(entity, x, y);
         break;
       case "id":
         if (entity.type === "platform") {
-          // Get the platform data and update its ID
+          // Get the platform data and original platform object
           const platformData = entity.data as PlatformInterface;
           const platform = entity.gameObject as Platform;
 
           // Update the ID in both the data and the platform object
           platformData.id = value;
           platform.id = value;
-
-          this.updateEntityInLevelData(entity);
-        }
-        break;
-      case "segmentCount":
-        if (entity.type === "platform") {
-          // Get the platform data and original platform object
-          const platformData = entity.data as PlatformInterface;
-          const oldPlatform = entity.gameObject as Platform;
-
-          // Update the segment count
-          platformData.segmentCount = value;
-
-          // Store position
-          const { x, y } = oldPlatform;
-
-          // Destroy old platform
-          oldPlatform.destroy();
-
-          // Create new platform with updated segment count
-          const newPlatform = new Platform(
-            this.scene,
-            x,
-            y,
-            value,
-            `platform-${Date.now()}`, // Ensure unique ID
-            platformData.isVertical // Pass the existing isVertical value
-          );
-
-          // Disable physics collisions in editor mode
-          if (newPlatform.body) {
-            (newPlatform.body as MatterJS.BodyType).collisionFilter.group = -1;
-          }
-
-          // Update entity reference
-          entity.gameObject = newPlatform;
-
-          // Select the new platform
-          this.selectEntity(entity);
 
           this.updateEntityInLevelData(entity);
         }
@@ -734,7 +656,7 @@ export class EditorEntityManager {
             this.scene,
             x,
             y,
-            platformData.segmentCount,
+            3, // Fixed segment count
             `platform-${Date.now()}`, // Ensure unique ID
             platformData.isVertical // Pass the updated boolean value
           );
@@ -881,7 +803,7 @@ export class EditorEntityManager {
         this.scene,
         platformData.x,
         platformData.y,
-        platformData.segmentCount,
+        3, // Fixed segment count
         `platform-${Math.random().toString(36).substr(2, 9)}`, // Unique ID
         platformData.isVertical // Use the loaded isVertical value
       );
@@ -1035,27 +957,42 @@ export class EditorEntityManager {
   }
 
   /**
-   * Sets the selected entity type
+   * Sets the currently selected entity type from the palette
    */
   public setSelectedEntityType(type: string | null, config?: any): void {
-    this.selectedEntityType = type;
+    console.log(
+      "EditorEntityManager.setSelectedEntityType called:",
+      type,
+      config
+    );
 
-    // Store the provided configuration if any
-    if (type && config) {
-      // Find the entity in the level data and update its configuration
-      switch (type) {
-        case "platform":
-          // Store platform configuration for use during creation
-          this._platformConfig = config;
-          break;
-        // Add cases for other entity types as needed
+    // Store platform configuration if provided
+    if (type === "platform" && config) {
+      console.log("Setting platform config:", config);
+      this._platformConfig = { ...config };
+
+      // If x and y coordinates are provided in the config, create the platform immediately
+      if (config.x !== undefined && config.y !== undefined) {
+        console.log("Creating platform at", config.x, config.y);
+
+        // Create the platform
+        const entity = this.placeEntity(type, config.x, config.y);
+
+        // Update selection
+        this.selectEntity(entity);
+
+        // Clear the selected entity type since we've created the entity
+        this.selectedEntityType = null;
+
+        return;
       }
     }
 
-    // If a type is selected, immediately create and start dragging the entity
-    if (type) {
-      this.createAndDragEntity(type);
-    }
+    // Normal handling for other types
+    this.selectedEntityType = type;
+
+    // Clear any currently selected entity
+    this.selectEntity(null);
   }
 
   /**
@@ -1099,6 +1036,107 @@ export class EditorEntityManager {
       };
 
       this.scene.input.once("pointerup", completeHandler);
+    }
+  }
+
+  /**
+   * Update an entity's position with proper tile snapping
+   */
+  private updateEntityPosition(
+    entity: EditorEntity,
+    x: number,
+    y: number
+  ): void {
+    // Apply grid snapping
+    const snappedX = Math.floor(x / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
+    const snappedY =
+      Math.floor(y / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2;
+
+    // Update the entity's stored position
+    entity.x = snappedX;
+    entity.y = snappedY;
+
+    // Update the game object position based on its type
+    if (entity.type === "platform") {
+      (entity.gameObject as Platform).setPosition(snappedX, snappedY);
+    } else if (entity.type === "enemy-large" || entity.type === "enemy-small") {
+      (entity.gameObject as EnemyLarge | EnemySmall).setPosition(
+        snappedX,
+        snappedY
+      );
+    } else {
+      (entity.gameObject as Phaser.GameObjects.Image).setPosition(
+        snappedX,
+        snappedY
+      );
+    }
+
+    // Update the entity in the level data
+    this.updateEntityInLevelData(entity);
+  }
+
+  /**
+   * Removes an entity from the entities list and level data
+   */
+  public removeEntity(entity: EditorEntity): void {
+    if (!entity) return;
+
+    // First remove from the entity list
+    const entityIndex = this.entities.findIndex((e) => e === entity);
+    if (entityIndex >= 0) {
+      // Remove from the array
+      this.entities.splice(entityIndex, 1);
+    }
+
+    // Then remove from level data based on entity type
+    switch (entity.type) {
+      case "platform":
+        const platformIndex = this.levelData.platforms.findIndex(
+          (p) => p === entity.data
+        );
+        if (platformIndex >= 0) {
+          this.levelData.platforms.splice(platformIndex, 1);
+        }
+        break;
+      case "enemy-large":
+      case "enemy-small":
+        const enemyIndex = this.levelData.enemies.findIndex(
+          (e) => e === entity.data
+        );
+        if (enemyIndex >= 0) {
+          this.levelData.enemies.splice(enemyIndex, 1);
+        }
+        break;
+      case "barrel":
+        const barrelIndex = this.levelData.barrels.findIndex(
+          (b) => b === entity.data
+        );
+        if (barrelIndex >= 0) {
+          this.levelData.barrels.splice(barrelIndex, 1);
+        }
+        break;
+      case "crate-small":
+      case "crate-big":
+        const crateIndex = this.levelData.crates.findIndex(
+          (c) => c === entity.data
+        );
+        if (crateIndex >= 0) {
+          this.levelData.crates.splice(crateIndex, 1);
+        }
+        break;
+      case "finish-line":
+        if (this.levelData.finishLine === entity.data) {
+          this.levelData.finishLine = null;
+        }
+        break;
+    }
+
+    // Destroy the game object
+    entity.gameObject.destroy();
+
+    // If this was the selected entity, deselect it
+    if (this.selectedEntity === entity) {
+      this.selectedEntity = null;
     }
   }
 }

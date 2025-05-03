@@ -43,6 +43,7 @@ export class Inspector {
     property: string,
     value: any
   ) => void;
+  private onDeleteCallback: ((entity: EditorEntity) => void) | null = null;
 
   constructor(
     scene: Scene,
@@ -51,10 +52,12 @@ export class Inspector {
       entity: EditorEntity,
       property: string,
       value: any
-    ) => void
+    ) => void,
+    onDelete?: (entity: EditorEntity) => void
   ) {
     this.scene = scene;
     this.onPropertyChangeCallback = onPropertyChange;
+    this.onDeleteCallback = onDelete || null;
 
     // Create container
     this.container = scene.add.container(config.x, config.y);
@@ -89,6 +92,13 @@ export class Inspector {
 
     // Add to scene display list
     scene.add.existing(this.container);
+  }
+
+  /**
+   * Sets the delete callback function
+   */
+  public setDeleteCallback(callback: (entity: EditorEntity) => void): void {
+    this.onDeleteCallback = callback;
   }
 
   selectEntity(entity: EditorEntity | null): void {
@@ -161,10 +171,52 @@ export class Inspector {
         break;
     }
 
+    // Add delete button at the bottom for all entity types
+    this.addDeleteButton(padding, yOffset);
+    yOffset += 50; // Space for the delete button
+
     // Update background height and ensure it's at least 200px tall
     const minHeight = 200;
     const newHeight = Math.max(minHeight, yOffset + padding);
     this.background.setSize(this.background.width, newHeight);
+  }
+
+  /**
+   * Add a delete button at the bottom of the inspector
+   */
+  private addDeleteButton(x: number, y: number): void {
+    if (!this.selectedEntity || !this.onDeleteCallback) return;
+
+    // Create a delete button with red background
+    const deleteButton = this.scene.add.container(x, y);
+
+    // Button background
+    const buttonBg = this.scene.add
+      .rectangle(0, 0, this.background.width - 20, 40, 0xdd0000)
+      .setOrigin(0, 0)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => {
+        if (this.selectedEntity && this.onDeleteCallback) {
+          this.onDeleteCallback(this.selectedEntity);
+          // Clear selection after deletion
+          this.selectEntity(null);
+        }
+      })
+      .on("pointerover", () => buttonBg.setFillStyle(0xff0000))
+      .on("pointerout", () => buttonBg.setFillStyle(0xdd0000));
+
+    // Button text
+    const buttonText = this.scene.add
+      .text(buttonBg.width / 2, 20, "Delete", {
+        fontSize: "16px",
+        color: "#ffffff",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5, 0.5);
+
+    deleteButton.add([buttonBg, buttonText]);
+    this.propertyControls.push(deleteButton);
+    this.container.add(deleteButton);
   }
 
   private addPositionControls(x: number, y: number): void {
@@ -220,73 +272,27 @@ export class Inspector {
 
     const platformData = this.selectedEntity.data as PlatformInterface;
 
-    // Add a more visible background for the segment count section
-    const segmentSectionBg = this.scene.add
-      .rectangle(x, y - 8, 240, 36, 0x1a1a1a, 0.8)
-      .setOrigin(0, 0)
-      .setStrokeStyle(1, 0x555555);
-    this.propertyControls.push(segmentSectionBg);
-    this.container.add(segmentSectionBg);
-
-    // Clearer label for segment count
-    const segmentLabel = this.scene.add.text(
-      x + 5,
-      y,
-      "Segments (click to select):",
-      {
-        fontSize: "14px",
-        color: "#ffffff",
-        fontStyle: "bold",
-      }
-    );
-    this.propertyControls.push(segmentLabel);
-    this.container.add(segmentLabel);
-
-    // Create dropdown with more space, positioned to the right of the label
-    const segmentDropdown = this.createDropdown(
-      x + 180,
-      y,
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-      platformData.segmentCount,
-      (value) => {
-        if (this.selectedEntity && this.selectedEntity.type === "platform") {
-          this.onPropertyChangeCallback(
-            this.selectedEntity,
-            "segmentCount",
-            value
-          );
-        }
-      }
-    );
-    this.propertyControls.push(segmentDropdown);
-    this.container.add(segmentDropdown);
-
-    // Better visual separation for orientation section
+    // Section background for orientation controls
     const orientationSectionBg = this.scene.add
-      .rectangle(x, y + 32, 240, 36, 0x1a1a1a, 0.8)
+      .rectangle(x, y, 240, 36, 0x1a1a1a, 0.8)
       .setOrigin(0, 0)
       .setStrokeStyle(1, 0x555555);
     this.propertyControls.push(orientationSectionBg);
     this.container.add(orientationSectionBg);
 
     // Orientation Label with clearer instructions
-    const orientationLabel = this.scene.add.text(
-      x + 5,
-      y + 40,
-      "Orientation:",
-      {
-        fontSize: "14px",
-        color: "#ffffff",
-        fontStyle: "bold",
-      }
-    );
+    const orientationLabel = this.scene.add.text(x + 5, y + 8, "Orientation:", {
+      fontSize: "14px",
+      color: "#ffffff",
+      fontStyle: "bold",
+    });
     this.propertyControls.push(orientationLabel);
     this.container.add(orientationLabel);
 
     // Orientation Buttons - better positioned
     const horizontalBtn = this.createButton(
       x + 120,
-      y + 40,
+      y + 8,
       "Horizontal",
       !platformData.isVertical,
       () => {
@@ -304,7 +310,7 @@ export class Inspector {
 
     const verticalBtn = this.createButton(
       x + 210,
-      y + 40,
+      y + 8,
       "Vertical",
       platformData.isVertical,
       () => {
@@ -322,14 +328,14 @@ export class Inspector {
 
     // ID Section background
     const idSectionBg = this.scene.add
-      .rectangle(x, y + 72, 240, 36, 0x1a1a1a, 0.8)
+      .rectangle(x, y + 40, 240, 36, 0x1a1a1a, 0.8)
       .setOrigin(0, 0)
       .setStrokeStyle(1, 0x555555);
     this.propertyControls.push(idSectionBg);
     this.container.add(idSectionBg);
 
     // ID Label
-    const idLabel = this.scene.add.text(x + 5, y + 80, "ID:", {
+    const idLabel = this.scene.add.text(x + 5, y + 48, "ID:", {
       fontSize: "14px",
       color: "#ffffff",
     });
@@ -339,7 +345,7 @@ export class Inspector {
     // ID Input
     const idInput = this.createTextInput(
       x + 90,
-      y + 80,
+      y + 48,
       platformData.id || "",
       (value) => {
         if (this.selectedEntity && this.selectedEntity.type === "platform") {

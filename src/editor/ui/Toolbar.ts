@@ -15,6 +15,11 @@ export interface ToolbarButton {
   id: string;
   label: string;
   onClick: () => void;
+  style?: {
+    bgColor?: number;
+    textColor?: string;
+    hoverColor?: number;
+  };
 }
 
 export class Toolbar {
@@ -62,13 +67,19 @@ export class Toolbar {
       // Create button container
       const buttonContainer = this.scene.add.container(xOffset, padding);
 
+      // Get button style
+      const style = button.style || {};
+      const bgColor = style.bgColor || 0x444444;
+      const hoverColor = style.hoverColor || 0x666666;
+      const textColor = style.textColor || "#ffffff";
+
       // Create button background
       const buttonBg = this.scene.add.rectangle(
         0,
         0,
         buttonWidth,
         buttonHeight,
-        0x444444
+        bgColor
       );
       buttonBg.setOrigin(0, 0);
       buttonContainer.add(buttonBg);
@@ -80,7 +91,7 @@ export class Toolbar {
         button.label,
         {
           fontSize: "14px",
-          color: "#ffffff",
+          color: textColor,
         }
       );
       text.setOrigin(0.5, 0.5);
@@ -95,11 +106,11 @@ export class Toolbar {
       });
 
       buttonBg.on("pointerover", () => {
-        buttonBg.setFillStyle(0x666666);
+        buttonBg.setFillStyle(hoverColor);
       });
 
       buttonBg.on("pointerout", () => {
-        buttonBg.setFillStyle(0x444444);
+        buttonBg.setFillStyle(bgColor);
       });
 
       // Add to container and store reference

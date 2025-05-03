@@ -62,17 +62,35 @@
 
 ## Current Status
 
-- **Level Editor core functionality implemented.**
-- Editor uses actual game entity classes (`Platform`, `EnemyLarge`, `EnemySmall`) for placement and rendering.
-- Save/Load functionality for level JSON is operational, including specific enemy types.
-- Focus shifting towards integrating the editor output into the main game and refining the editor.
-- Previous work on procedural level generation remains **deprecated**.
-- **Fixed linter errors** related to entity interfaces and entity creation in the editor.
-- Discovered that interfaces have different property requirements:
-  - `EnemyInterface` doesn't require a `scene` property unlike other entity interfaces.
-- **Improved serialization** for level data by creating separate interfaces that don't include circular references.
-- **Fixed Enemy classes** by adding the required 'type' property to match the EnemyInterface.
-- **Code cleanup** resolved unused variable warnings in EditorScene.ts.
+- **Complete:**
+
+  - Basic game mechanics (player movement, jumping, collisions)
+  - Editor structure including EditorScene with Grid/UI components (Palette, Inspector, Toolbar)
+  - Basic entity placement (snapped to grid) with visual representation and selection
+  - Property editing for platforms (segment count, orientation) that updates visuals
+  - JSON-based level data structure with save/load capability
+  - `PlatformTool` and `PlatformPanel` for platform configuration
+  - Special handling for platforms that require pre-placement configuration (segments, orientation)
+
+- **In Progress:**
+
+  - Enabling the game to load levels created with the editor
+  - Adapting core game mechanics to work with manually created levels
+  - Implementing coin placement on platforms loaded from JSON
+  - Refining editor controls (entity dragging)
+
+- **Not Started:**
+  - Undo/redo capability in the editor
+  - Level picker in the game
+  - Gameplay progression system
+  - Mobile control optimizations
+
+## Additional Notes
+
+- **Platform implementation:** Platforms can now be configured with segment count and orientation before placement.
+- **Entity management:** Each entity type is now correctly handled with its own placement and editing logic.
+- **Workflow:** Entity selection, placement, and property editing create a complete level design workflow.
+- **Progress focus:** The next focus is loading saved levels into the game and adapting game mechanics.
 
 ## Known Issues
 

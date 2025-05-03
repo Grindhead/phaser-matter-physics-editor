@@ -37,6 +37,7 @@
     }
     ```
   - **UI Elements:** Editor UI (object palette, property inspector, save/load buttons) built using Phaser GameObjects, organized into reusable UI component classes within `src/editor/ui/`. Palette includes separate buttons for large and small enemies.
+  - **Platform Configuration:** Platforms are handled differently from other entities. When selected, a platform configuration UI appears allowing segment count and orientation to be set before placement.
   - **Placement/Manipulation Logic:**
     - Input handling within `EditorScene` manages selecting objects from the palette and placing them on the canvas (snapped to grid).
     - Selection logic handles different entity types (e.g., `Platform`, `EnemyLarge`, `EnemySmall`).
@@ -55,8 +56,9 @@
 
 - **Entity State Management:** Entities track state.
 - **Event-Driven Animation:** Animations triggered by events.
+- **Entity-Specific Configuration:** Platforms and other complex entities implement configuration interfaces for pre-placement setup.
 - **Collision Detection Strategy:** Matter.js collision events and helpers.
-- **Editor UI Components:** Separate classes for `Palette`, `Inspector`, `Toolbar`.
+- **Editor UI Components:** Separate classes for `Palette`, `Inspector`, `Toolbar`, `PlatformConfig`.
 - **Command Pattern (Potential):** For undo/redo.
 - **Scene Graph:** Editor manages placed game objects (including `Platform`, `EnemyLarge`, `EnemySmall` instances).
 - **Factory Pattern (Implicit):** `EditorScene` acts as a factory for creating entities based on palette selection.

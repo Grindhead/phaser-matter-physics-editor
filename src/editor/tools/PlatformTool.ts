@@ -1,0 +1,401 @@
+import { Scene } from "phaser";
+import { PlatformPanel } from "../ui/PlatformPanel";
+import { Platform } from "../../entities/Platforms/Platform";
+
+export class PlatformTool {
+  private scene: Scene;
+  private panel: PlatformPanel;
+  private platformConfig: any = {
+    isVertical: false,
+    segmentCount: 3,
+    segmentWidth: 32,
+  };
+  private onPlacePlatform: (platform: Platform) => void;
+  private onRemovePlatform: (platform: Platform) => void;
+  private placementPreview: Phaser.GameObjects.Rectangle | null = null;
+  private overlay: Phaser.GameObjects.Rectangle | null = null;
+  private escKey: Phaser.Input.Keyboard.Key;
+
+  constructor(
+    scene: Scene,
+    onPlacePlatform: (platform: Platform) => void,
+    onRemovePlatform: (platform: Platform) => void = () => {}
+  ) {
+    this.scene = scene;
+    this.onPlacePlatform = onPlacePlatform;
+    this.onRemovePlatform = onRemovePlatform;
+
+    // Create the platform configuration panel
+    this.panel = new PlatformPanel(this.scene, {
+      x: Math.max(10, (scene.cameras.main.width - 300) / 2),
+      y: Math.max(10, (scene.cameras.main.height - 250) / 2),
+      width: 300,
+      height: 250, // Reduced height since we removed width controls
+      initialConfig: this.platformConfig, // Pass initial configuration
+      onConfigChange: (config) => {
+        console.log("PlatformTool: received config change:", config);
+
+        // Store old config for comparison
+        const oldConfig = { ...this.platformConfig };
+
+        // Update with new values but keep segmentWidth fixed
+        this.platformConfig = {
+          ...this.platformConfig,
+          isVertical: config.isVertical,
+          segmentCount: config.segmentCount,
+          // segmentWidth is intentionally not updated
+        };
+
+        console.log("PlatformTool: updated config:", this.platformConfig);
+
+        // Log changes to important values
+        if (oldConfig.segmentCount !== this.platformConfig.segmentCount) {
+          console.log(
+            `PlatformTool: segment count changed: ${oldConfig.segmentCount} → ${this.platformConfig.segmentCount}`
+          );
+        }
+
+        // Update the preview if it exists
+        if (this.placementPreview) {
+          this.updatePlacementPreview();
+        }
+      },
+      onPlaceButtonClick: () => {
+        console.log("PlatformTool: place button clicked");
+
+        // First hide the panel
+        this.panel.hide();
+
+        // Also make sure to remove the panel from modal state
+        if (this.panel.container) {
+          this.panel.container.setVisible(false);
+        }
+
+        // If there's no preview yet, create it now
+        if (!this.placementPreview) {
+          this.createPlacementPreview();
+          console.log(
+            "PlatformTool: preview created, follow cursor to position platform"
+          );
+        }
+
+        // Make sure the overlay stays but is behind the preview
+        if (this.overlay) {
+          this.scene.children.bringToTop(this.overlay);
+          if (this.placementPreview) {
+            this.scene.children.bringToTop(this.placementPreview);
+          }
+        }
+      },
+    });
+
+    // Setup pointer move event
+    this.scene.input.on("pointermove", this.onPointerMove, this);
+
+    // Setup pointer down event
+    this.scene.input.on("pointerdown", this.onPointerDown, this);
+
+    // Setup ESC key to cancel
+    if (this.scene.input.keyboard) {
+      this.escKey = this.scene.input.keyboard.addKey("ESC");
+      this.escKey.on("down", this.deactivate, this);
+    }
+  }
+
+  private onPointerMove(pointer: Phaser.Input.Pointer): void {
+    // Only check if we have a preview - we don't need the panel to be visible anymore
+    if (!this.placementPreview) return;
+
+    const worldPoint = this.scene.cameras.main.getWorldPoint(
+      pointer.x,
+      pointer.y
+    );
+    this.updatePreviewPosition(worldPoint.x, worldPoint.y);
+  }
+
+  private onPointerDown(pointer: Phaser.Input.Pointer): void {
+    // Check panel and preview safely
+    if (!this.placementPreview || pointer.button !== 0) return;
+
+    // Get the world position
+    const worldPoint = this.scene.cameras.main.getWorldPoint(
+      pointer.x,
+      pointer.y
+    );
+
+    // Update the preview position
+    this.updatePreviewPosition(worldPoint.x, worldPoint.y);
+
+    // Place the platform at this position
+    this.placePlatform();
+  }
+
+  activate(): void {
+    console.log("PlatformTool.activate() called");
+
+    if (!this.panel) {
+      console.error("Cannot activate platform tool: panel is null");
+      return;
+    }
+
+    // First ensure we're starting with a clean state
+    this.deactivate();
+
+    // Reset config to default values and update panel
+    this.resetConfig();
+
+    // Create the overlay
+    this.overlay = this.scene.add.rectangle(
+      0,
+      0,
+      this.scene.cameras.main.width,
+      this.scene.cameras.main.height,
+      0x000000,
+      0.2
+    );
+    this.overlay.setOrigin(0, 0);
+    this.overlay.setScrollFactor(0);
+    this.overlay.setDepth(900);
+    this.overlay.setName("platformModeOverlay");
+
+    // Force reset position to center of screen
+    const centerX = Math.max(10, (this.scene.cameras.main.width - 300) / 2);
+    const centerY = Math.max(10, (this.scene.cameras.main.height - 300) / 2);
+    this.panel.updatePosition(centerX, centerY);
+
+    // Show the panel
+    this.panel.show();
+    console.log("Platform panel show() called. Visible:", this.panel.visible);
+    console.log("Panel container exists:", !!this.panel.container);
+    console.log(
+      "HINT: Configure platform, press 'Place Platform', then click in scene to place"
+    );
+
+    if (this.panel.container) {
+      // Force visibility
+      this.panel.container.setVisible(true);
+
+      // Make sure it's on top of everything
+      this.panel.container.setDepth(2500);
+
+      console.log("Panel container visibility:", this.panel.container.visible);
+      console.log(
+        "Panel position:",
+        this.panel.container.x,
+        this.panel.container.y
+      );
+      console.log("Panel depth:", this.panel.container.depth);
+    }
+
+    // We don't create the placement preview immediately anymore
+    // It will be created after the user clicks Place Platform
+
+    // Make sure everything is ordered correctly in the display list
+    if (this.overlay && this.overlay.scene) {
+      // Ensure overlay is behind the panel
+      this.scene.children.bringToTop(this.overlay);
+
+      // Ensure the panel is at the top of everything
+      if (this.panel.container) {
+        this.scene.children.bringToTop(this.panel.container);
+        console.log("Panel container brought to top immediately");
+      }
+    }
+
+    // Double check visibility after a short delay to make sure it's really displayed
+    this.scene.time.delayedCall(100, () => {
+      if (this.panel && this.panel.container) {
+        this.panel.container.setVisible(true);
+        this.scene.children.bringToTop(this.panel.container);
+        console.log("Panel visibility enforced after delay");
+      }
+    });
+  }
+
+  deactivate(): void {
+    console.log("PlatformTool.deactivate() called");
+
+    // Hide the panel
+    this.panel.hide();
+
+    // Remove the placement preview
+    this.destroyPlacementPreview();
+
+    // Remove the overlay
+    if (this.overlay) {
+      this.overlay.destroy();
+      this.overlay = null;
+    }
+  }
+
+  private createPlacementPreview(): void {
+    // First remove any existing preview
+    this.destroyPlacementPreview();
+
+    // Calculate dimensions based on config
+    const segmentWidth = this.platformConfig.segmentWidth || 32;
+    const width = this.platformConfig.isVertical
+      ? segmentWidth
+      : segmentWidth * this.platformConfig.segmentCount;
+    const height = this.platformConfig.isVertical
+      ? segmentWidth * this.platformConfig.segmentCount
+      : segmentWidth;
+
+    // Create preview rectangle with a clearly visible color
+    this.placementPreview = this.scene.add.rectangle(
+      0,
+      0,
+      width,
+      height,
+      0x00ff88,
+      0.6
+    );
+    this.placementPreview.setStrokeStyle(3, 0x00ff00);
+    this.placementPreview.setDepth(950); // Above overlay but below UI
+    this.placementPreview.setName("platformPreview");
+
+    // Get the current mouse position and place the preview there immediately
+    const pointer = this.scene.input.activePointer;
+    const worldPoint = this.scene.cameras.main.getWorldPoint(
+      pointer.x,
+      pointer.y
+    );
+    this.updatePreviewPosition(worldPoint.x, worldPoint.y);
+
+    console.log("Platform preview created at", worldPoint.x, worldPoint.y);
+  }
+
+  private updatePlacementPreview(): void {
+    if (!this.placementPreview) return;
+
+    // Update dimensions based on current config
+    const segmentWidth = this.platformConfig.segmentWidth || 32;
+    const width = this.platformConfig.isVertical
+      ? segmentWidth
+      : segmentWidth * this.platformConfig.segmentCount;
+    const height = this.platformConfig.isVertical
+      ? segmentWidth * this.platformConfig.segmentCount
+      : segmentWidth;
+    this.placementPreview.width = width;
+    this.placementPreview.height = height;
+  }
+
+  private updatePreviewPosition(x: number, y: number): void {
+    if (!this.placementPreview) return;
+    this.placementPreview.setPosition(x, y);
+  }
+
+  private destroyPlacementPreview(): void {
+    if (this.placementPreview) {
+      this.placementPreview.destroy();
+      this.placementPreview = null;
+    }
+  }
+
+  private placePlatform(): void {
+    if (!this.placementPreview) return;
+
+    // Get the current position
+    const x = this.placementPreview.x;
+    const y = this.placementPreview.y;
+
+    // Create a unique ID for the platform
+    const platformId = `platform-${Date.now()}`;
+
+    console.log("Creating platform with config:", {
+      segmentCount: this.platformConfig.segmentCount,
+      isVertical: this.platformConfig.isVertical,
+      segmentWidth: this.platformConfig.segmentWidth,
+      id: platformId,
+      position: { x, y },
+    });
+
+    // Create the actual platform
+    const platform = new Platform(
+      this.scene,
+      x,
+      y,
+      this.platformConfig.segmentCount,
+      platformId,
+      this.platformConfig.isVertical,
+      this.platformConfig.segmentWidth
+    );
+
+    // Make the platform interactive so it can be selected
+    platform.setInteractive();
+
+    // If physics is enabled, disable collisions in editor mode
+    if (platform.body) {
+      (platform.body as MatterJS.BodyType).collisionFilter.group = -1;
+    }
+
+    console.log("Platform created:", platform);
+
+    // Call the callback with the created platform
+    this.onPlacePlatform(platform);
+
+    // Deactivate after placement
+    this.deactivate();
+  }
+
+  /**
+   * Removes a platform from the scene
+   */
+  public removePlatform(platform: Platform): void {
+    if (!platform) return;
+
+    // Call the removal callback if it exists
+    if (this.onRemovePlatform) {
+      this.onRemovePlatform(platform);
+    }
+  }
+
+  getPanel(): PlatformPanel {
+    return this.panel;
+  }
+
+  updatePanelPosition(): void {
+    // Update panel position when window is resized
+    this.panel.updatePosition(
+      Math.max(10, (this.scene.cameras.main.width - 300) / 2),
+      Math.max(10, (this.scene.cameras.main.height - 250) / 2)
+    );
+
+    // Also update overlay if it exists
+    if (this.overlay) {
+      this.overlay.setSize(
+        this.scene.cameras.main.width,
+        this.scene.cameras.main.height
+      );
+    }
+  }
+
+  cleanup(): void {
+    // Clean up event listeners when tool is disposed
+    this.scene.input.off("pointermove", this.onPointerMove, this);
+    this.scene.input.off("pointerdown", this.onPointerDown, this);
+
+    if (this.escKey) {
+      this.escKey.off("down", this.deactivate, this);
+    }
+
+    this.deactivate();
+  }
+
+  // Add this new method to reset configuration
+  private resetConfig(): void {
+    // Reset platform configuration to default values
+    this.platformConfig = {
+      isVertical: false,
+      segmentCount: 3,
+      segmentWidth: 32, // Fixed width that won't change
+    };
+
+    // Update panel with reset config
+    if (this.panel) {
+      this.panel.updateConfig(this.platformConfig);
+    }
+
+    console.log("Platform config reset to defaults:", this.platformConfig);
+  }
+}

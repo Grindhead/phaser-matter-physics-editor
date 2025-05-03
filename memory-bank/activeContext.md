@@ -13,6 +13,7 @@
   - Created `EditorScene` with UI (`Palette`, `Inspector`, `Toolbar`).
   - Implemented entity placement (snapped to grid), selection, and property editing.
   - **Platforms use actual `Platform` class:** Editor now instantiates `Platform` entities directly. `isVertical` property handled correctly.
+  - **Special Platform Configuration:** Platforms are now handled differently from other entities, allowing segment count and orientation to be configured before placement.
   - **Enemies use actual `EnemyLarge`/`EnemySmall` classes:** Editor differentiates and instantiates specific enemy types.
   - Implemented Save/Load functionality for level JSON data (handles specific enemy types).
   - Added graphics-based grid.
@@ -47,6 +48,7 @@
 - **Focus on Game Integration:** Prioritize getting levels loaded and playable in the main game.
 - **Reuse Entity Classes:** Leverage existing entity classes (`Platform`, `EnemyLarge`, `EnemySmall`, etc.) in both editor and game.
 - **Modular Editor Components:** Continue logical structure (Scene, UI, Data Handling).
+- **Special Platform Handling:** Platforms require configuration (segments, orientation) before placement, unlike other entities.
 - **Clear Data Flow:** Maintain clean serialization/deserialization between editor state and JSON format.
 - **Clean Game Scene:** Remove old procedural code paths cleanly when integrating editor data.
 - **Follow custom instructions:** Continue adhering to memory bank, planning, and communication guidelines.

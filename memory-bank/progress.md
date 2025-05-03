@@ -36,6 +36,14 @@
     - Fixed unused variable warnings in EditorScene.ts
     - Properly handled event parameters in wheel and pointer events
     - Removed unused entityDragStartX and entityDragStartY variables
+  - **Editor Layering:**
+    - `EditorScene` uses `platformLayer` and `entityLayer` (Phaser Layers).
+    - Entities correctly added to respective layers during placement and loading.
+    - Selection logic iterates through layers.
+    - Save logic (`LevelDataManager.saveLevel`) updated to accept and process lists from layers.
+  - **Editor UI Refactor:**
+    - `Palette`, `Inspector`, `Toolbar` instantiated with config objects.
+    - Event callbacks (selection, property change, save, load) handled via constructor arguments.
 
 ## What's Left to Build
 
@@ -59,6 +67,8 @@
   - Fix `src/editor/ui/Inspector.ts` unused createTextInput method
   - Fix `src/lib/level-generation/LevelGenerator.ts` missing/unused CrateSmall import
   - Fix `src/scenes/Game.ts` non-existent CrateBig import
+- **Fix Linter Errors:** Address remaining "Module not found" and property access errors in `EditorScene.ts` and `LevelDataManager.ts` (likely requires verifying/fixing file paths, exports, or TS config).
+- **Improve Inspector/Scene Type Handling:** Resolve inconsistencies between `EditorEntity` (Inspector) and `GameObject` (Scene) - potentially by standardizing types or improving the mapping function (`findEditorEntityForGameObject`).
 
 ## Current Status
 
@@ -78,6 +88,7 @@
   - Adapting core game mechanics to work with manually created levels
   - Implementing coin placement on platforms loaded from JSON
   - Refining editor controls (entity dragging)
+  - Stabilizing editor code (addressing linter errors, type handling).
 
 - **Not Started:**
   - Undo/redo capability in the editor
@@ -98,6 +109,9 @@
 - Platform property changes cause a full recreation, potentially losing instance-specific state if any existed (currently none).
 - Changing Enemy type via Inspector is not yet implemented (requires recreation logic).
 - There are still a few TypeScript compiler errors in files outside of EditorScene.ts that need to be addressed.
+- Persistent "Module not found" errors for various entity and lib imports in `EditorScene.ts` and `LevelDataManager.ts`.
+- Linter errors regarding property access (`x`, `y`) on `GameObject` in `EditorScene.ts` despite `as any` casts.
+- Potential type inconsistencies between `EditorScene` (`GameObject`) and `Inspector` (`EditorEntity`).
 
 ## Evolution of Decisions
 
@@ -111,3 +125,5 @@
 - **Entity Data Consistency:** Ensured all entity data objects include all required properties from their respective interfaces, noting the differences between interfaces.
 - **Serialization Strategy:** Created dedicated interfaces for serialized data to avoid circular references and properly handle instance reconstruction.
 - **Code Quality:** Improved TypeScript compliance by fixing linter errors and unused variables.
+- **Editor Rendering:** Adopted Phaser Layers for managing platforms separately from other entities.
+- **UI Component Interaction:** Shifted from event listeners (`.on()`) to passing callbacks during UI component construction.

@@ -36,6 +36,7 @@
       "finishLine": { "x": 800, "y": 400 }
     }
     ```
+  - **Rendering Layers:** The `EditorScene` uses two `Phaser.GameObjects.Layer` instances (`platformLayer`, `entityLayer`) to manage rendering order and organization. Platforms are added to `platformLayer`, and all other entities (enemies, items) are added to `entityLayer`. Selection and save/load logic have been updated to work with these layers.
   - **UI Elements:** Editor UI (object palette, property inspector, save/load buttons) built using Phaser GameObjects, organized into reusable UI component classes within `src/editor/ui/`. Palette includes separate buttons for large and small enemies.
   - **Platform Configuration:** Platforms are handled differently from other entities. When selected, a platform configuration UI appears allowing segment count and orientation to be set before placement.
   - **Placement/Manipulation Logic:**
@@ -63,12 +64,13 @@
 - **Scene Graph:** Editor manages placed game objects (including `Platform`, `EnemyLarge`, `EnemySmall` instances).
 - **Factory Pattern (Implicit):** `EditorScene` acts as a factory for creating entities based on palette selection.
 - **Observer Pattern (Potential for Editor):** UI elements update based on changes.
+- **Layer Pattern (Phaser):** Used in `EditorScene` to separate platform rendering/management from other entities.
 
 ## Component Relationships
 
-- **Editor Scene (`EditorScene.ts`):** Manages editor canvas, UI, placed entity instances (`Platform`, `EnemyLarge`, `EnemySmall`, etc.), input handling, save/load logic.
-- **Editor UI Components (`src/editor/ui/`):** Provide controls, trigger actions/updates.
-- **Level Data Manager (`src/editor/lib/LevelData.ts`):** Handles JSON serialization/deserialization.
+- **Editor Scene (`EditorScene.ts`):** Manages editor canvas, UI, layers (`platformLayer`, `entityLayer`) containing placed entity instances, input handling, save/load triggers.
+- **Editor UI Components (`src/editor/ui/`):** Provide controls, trigger actions/updates via callbacks passed during construction (e.g., `Palette`, `Inspector`, `Toolbar`).
+- **Level Data Manager (`src/editor/lib/LevelDataManager.ts`):** Handles JSON serialization/deserialization. Receives entity lists from `EditorScene` layers for saving.
 - **Game Scene (`Game.ts`):** (To be updated) Loads JSON, instantiates entities, manages game loop, physics, input. Calls coin placement logic.
 - **LevelGenerator (`LevelGenerator.ts` - To be Repurposed):** Contains coin placement logic.
 - **Shared Entities (`src/entities/`):** Classes (`Platform.ts`, `EnemyLarge.ts`, `EnemySmall.ts`, etc.) used by editor and game.

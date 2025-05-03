@@ -19,6 +19,8 @@
   - Added graphics-based grid.
   - Configured separate editor launch (`pnpm run editor`).
 - **Memory Bank Updated:** Reflects implementation progress, including specific enemy types and use of actual entity classes.
+- **Editor Layering:** Implemented `Phaser.GameObjects.Layer` in `EditorScene` (`platformLayer`, `entityLayer`) to separate platforms from other entities. Updated entity placement, selection, and save/load logic accordingly.
+- **UI Callback Refactor:** Updated `Palette`, `Inspector`, and `Toolbar` instantiation in `EditorScene` to use configuration objects and pass event callbacks during construction rather than using `.on()`. Removed `setupUIEvents` method as callbacks are handled directly.
 
 ## Next Steps
 
@@ -42,6 +44,8 @@
 - **Level Data Format:** Remains the agreed JSON structure (includes enemy `type`).
 - **Coin Placement:** Handled post-load in the game scene.
 - **Entity Source:** Editor uses entity classes from `src/entities/`.
+- **Editor Object Management:** Platforms managed in `platformLayer`, others in `entityLayer`.
+- **UI Interaction:** Editor UI components (`Palette`, `Inspector`, `Toolbar`) receive callbacks via constructor configuration.
 
 ## Important Patterns & Preferences
 
@@ -52,11 +56,14 @@
 - **Clear Data Flow:** Maintain clean serialization/deserialization between editor state and JSON format.
 - **Clean Game Scene:** Remove old procedural code paths cleanly when integrating editor data.
 - **Follow custom instructions:** Continue adhering to memory bank, planning, and communication guidelines.
+- **Use Phaser Layers:** Leverage `Phaser.GameObjects.Layer` for render/logical separation in the editor.
+- **Constructor Callbacks for UI:** Pass UI event handlers during instantiation.
 
 ## Learnings & Project Insights
 
 - Using actual entity classes in the editor improves consistency but requires careful handling of recreation when properties change.
 - A graphics-based grid provides flexibility.
+- Type mismatches between components (e.g., `EditorEntity` in Inspector vs. `GameObject` in Scene) require careful mapping or consistent type usage.
 
 ## Design Patterns
 
@@ -65,3 +72,4 @@
 - **Command Pattern (Potential):** Still relevant for undo/redo in the editor.
 - **Scene Graph:** Editor manages placed game objects (including `Platform`, `EnemyLarge`, `EnemySmall` instances).
 - **Observer Pattern (Potential for Editor):** Still relevant for UI updates in the editor.
+- **Layer Pattern (Phaser):** Added for editor object management.

@@ -21,6 +21,7 @@
 - **Memory Bank Updated:** Reflects implementation progress, including specific enemy types and use of actual entity classes.
 - **Editor Layering:** Implemented `Phaser.GameObjects.Layer` in `EditorScene` (`platformLayer`, `entityLayer`) to separate platforms from other entities. Updated entity placement, selection, and save/load logic accordingly.
 - **UI Callback Refactor:** Updated `Palette`, `Inspector`, and `Toolbar` instantiation in `EditorScene` to use configuration objects and pass event callbacks during construction rather than using `.on()`. Removed `setupUIEvents` method as callbacks are handled directly.
+- **Editor Deletion:** Added functionality to delete the selected entity by pressing the `DELETE` or `BACKSPACE` key. Implemented `deleteSelectedObject` method in `EditorScene`.
 
 ## Next Steps
 
@@ -46,6 +47,7 @@
 - **Entity Source:** Editor uses entity classes from `src/entities/`.
 - **Editor Object Management:** Platforms managed in `platformLayer`, others in `entityLayer`.
 - **UI Interaction:** Editor UI components (`Palette`, `Inspector`, `Toolbar`) receive callbacks via constructor configuration.
+- **Entity Deletion:** Handled via `DELETE` / `BACKSPACE` keys in `EditorScene`.
 
 ## Important Patterns & Preferences
 

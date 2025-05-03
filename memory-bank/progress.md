@@ -44,6 +44,9 @@
   - **Editor UI Refactor:**
     - `Palette`, `Inspector`, `Toolbar` instantiated with config objects.
     - Event callbacks (selection, property change, save, load) handled via constructor arguments.
+  - **Editor Entity Deletion:**
+    - Pressing `DELETE` or `BACKSPACE` key deletes the currently selected object.
+    - Handled in `EditorScene` by removing the object from its layer and deselecting.
 
 ## What's Left to Build
 
@@ -127,3 +130,4 @@
 - **Code Quality:** Improved TypeScript compliance by fixing linter errors and unused variables.
 - **Editor Rendering:** Adopted Phaser Layers for managing platforms separately from other entities.
 - **UI Component Interaction:** Shifted from event listeners (`.on()`) to passing callbacks during UI component construction.
+- **Entity Deletion Trigger:** Implemented via keyboard input (`DELETE`/`BACKSPACE`) in the editor scene.

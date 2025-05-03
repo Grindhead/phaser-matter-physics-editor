@@ -247,6 +247,19 @@ export class EditorScene extends Phaser.Scene {
   setupInput() {
     this.input.on("pointerdown", this.handlePointerDown, this);
     // Add listeners for pointer move and up if implementing dragging
+
+    // Add keyboard listeners for delete
+    this.input.keyboard?.on(
+      "keydown-DELETE",
+      this.handleDeleteKeyPressed,
+      this
+    );
+    this.input.keyboard?.on(
+      "keydown-BACKSPACE",
+      this.handleDeleteKeyPressed,
+      this
+    );
+    console.log("Keyboard delete listeners added.");
   }
 
   handlePointerDown(pointer: Phaser.Input.Pointer) {
@@ -512,6 +525,7 @@ export class EditorScene extends Phaser.Scene {
   }
 
   setSelectedObject(obj: Phaser.GameObjects.GameObject | null) {
+    console.log("setSelectedObject called with:", obj);
     // Clear tint on previously selected object
     if (this.selectedObject && this.selectedObject.scene) {
       // Check if scene exists (object not destroyed)
@@ -550,6 +564,7 @@ export class EditorScene extends Phaser.Scene {
 
     // Update Inspector - requires mapping GameObject to EditorEntity
     const editorEntity = obj ? this.findEditorEntityForGameObject(obj) : null;
+    console.log("Updating inspector with:", editorEntity);
     if (editorEntity) {
       this.inspector.selectEntity(editorEntity);
     } else {
@@ -637,5 +652,73 @@ export class EditorScene extends Phaser.Scene {
       gameObject: gameObject,
       data: data as any,
     };
+  }
+
+  handleDeleteKeyPressed(event: KeyboardEvent) {
+    console.log(`Key pressed: ${event.code}`);
+    // Prevent default backspace behavior (e.g., browser navigation)
+    if (event.code === "Backspace") {
+      event.preventDefault();
+    }
+    this.deleteSelectedObject();
+  }
+
+  deleteSelectedObject() {
+    console.log(
+      "deleteSelectedObject called. Selected object:",
+      this.selectedObject
+    );
+    if (!this.selectedObject) {
+      console.log("No object selected to delete.");
+      return;
+    }
+
+    console.log("Attempting to delete selected object:", this.selectedObject);
+
+    const objectToDelete = this.selectedObject;
+    let removed = false;
+    let targetLayer: Phaser.GameObjects.Layer | null = null;
+
+    // Determine the layer and remove the object
+    if (objectToDelete instanceof Platform) {
+      targetLayer = this.platformLayer;
+      console.log("Object identified as Platform, targeting platformLayer.");
+    } else {
+      // Check entity layer first
+      if (this.entityLayer.list.includes(objectToDelete)) {
+        targetLayer = this.entityLayer;
+        console.log("Object found in entityLayer.");
+      }
+      // Fallback check for platform layer if not identified as Platform instance
+      else if (this.platformLayer.list.includes(objectToDelete)) {
+        targetLayer = this.platformLayer;
+        console.log(
+          "Object not instanceof Platform, but found in platformLayer (fallback)."
+        );
+      }
+    }
+
+    if (targetLayer) {
+      console.log("Removing object from target layer:", targetLayer);
+      targetLayer.remove(objectToDelete, true); // true = destroy child
+      removed = true;
+    } else {
+      console.warn(
+        "Selected object not found in any known layer list.",
+        objectToDelete
+      );
+    }
+
+    if (removed) {
+      console.log("Object deleted successfully.");
+      this.setSelectedObject(null); // Deselect and update Inspector
+    } else {
+      console.warn(
+        "Object removal failed (not found in layer or already removed?).",
+        objectToDelete
+      );
+      // Consider deselecting even if removal failed to avoid inconsistent state
+      this.setSelectedObject(null);
+    }
   }
 }

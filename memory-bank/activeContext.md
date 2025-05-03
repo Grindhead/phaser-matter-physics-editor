@@ -22,6 +22,7 @@
 - **Editor Layering:** Implemented `Phaser.GameObjects.Layer` in `EditorScene` (`platformLayer`, `entityLayer`) to separate platforms from other entities. Updated entity placement, selection, and save/load logic accordingly.
 - **UI Callback Refactor:** Updated `Palette`, `Inspector`, and `Toolbar` instantiation in `EditorScene` to use configuration objects and pass event callbacks during construction rather than using `.on()`. Removed `setupUIEvents` method as callbacks are handled directly.
 - **Editor Deletion:** Added functionality to delete the selected entity by pressing the `DELETE` or `BACKSPACE` key. Implemented `deleteSelectedObject` method in `EditorScene`.
+- **Editor Deletion (Confirmed):** Functionality to delete the selected entity by pressing `DELETE` or `BACKSPACE` is confirmed working. The `setupInput` method correctly attaches keyboard listeners which call `handleDeleteKeyPressed`, triggering the `deleteSelectedObject` method to remove the entity from its layer and deselect it.
 
 ## Next Steps
 

@@ -46,7 +46,7 @@
     - Event callbacks (selection, property change, save, load) handled via constructor arguments.
   - **Editor Entity Deletion:**
     - Pressing `DELETE` or `BACKSPACE` key deletes the currently selected object.
-    - Handled in `EditorScene` by removing the object from its layer and deselecting.
+    - **Confirmed:** Handled in `EditorScene`'s `setupInput`, calling `handleDeleteKeyPressed` which triggers `deleteSelectedObject`. This method removes the object from its layer (`platformLayer` or `entityLayer`) and deselects it.
 
 ## What's Left to Build
 

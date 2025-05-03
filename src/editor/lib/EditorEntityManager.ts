@@ -29,6 +29,8 @@ export class EditorEntityManager {
 
     // Setup input handlers for entity selection and dragging
     this.setupInputHandlers();
+    // Setup keyboard handlers
+    this.setupKeyboardHandlers();
   }
 
   /**
@@ -164,6 +166,30 @@ export class EditorEntityManager {
         }
       }
     });
+  }
+
+  /**
+   * Sets up keyboard handlers for actions like deletion.
+   */
+  private setupKeyboardHandlers(): void {
+    this.scene.input.keyboard?.on("keydown", (event: KeyboardEvent) => {
+      if (event.key === "Delete" || event.key === "Backspace") {
+        console.log("EDITOR_ENTITY_MANAGER: Delete/Backspace key pressed.");
+        event.preventDefault();
+        if (this.selectedEntity) {
+          console.log(
+            "EDITOR_ENTITY_MANAGER: Selected entity found, attempting removal:",
+            this.selectedEntity
+          );
+          this.removeEntity(this.selectedEntity);
+        } else {
+          console.log(
+            "EDITOR_ENTITY_MANAGER: No entity selected, ignoring delete key."
+          );
+        }
+      }
+    });
+    console.log("EDITOR_ENTITY_MANAGER: Keyboard handlers set up.");
   }
 
   /**

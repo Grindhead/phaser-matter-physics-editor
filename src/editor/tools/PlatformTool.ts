@@ -167,12 +167,15 @@ export class PlatformTool {
     // Reset config to default values
     this.resetConfig();
 
-    // Create the overlay for background dimming
+    // Create the overlay for background dimming - use the current camera dimensions
+    const cameraWidth = this.scene.cameras.main.width;
+    const cameraHeight = this.scene.cameras.main.height;
+
     this.overlay = this.scene.add.rectangle(
       0,
       0,
-      this.scene.cameras.main.width,
-      this.scene.cameras.main.height,
+      cameraWidth,
+      cameraHeight,
       0x000000,
       0.2
     );
@@ -186,8 +189,8 @@ export class PlatformTool {
     this.overlay.setInteractive({ useHandCursor: false });
 
     // Set panel position to center of screen
-    const centerX = Math.max(10, (this.scene.cameras.main.width - 300) / 2);
-    const centerY = Math.max(10, (this.scene.cameras.main.height - 300) / 2);
+    const centerX = Math.max(10, (cameraWidth - 300) / 2);
+    const centerY = Math.max(10, (cameraHeight - 300) / 2);
     this.panel.updatePosition(centerX, centerY);
 
     // Show the panel immediately

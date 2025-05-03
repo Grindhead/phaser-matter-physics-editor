@@ -14,7 +14,7 @@ export interface PlatformConfigOptions {
     alpha?: number;
   };
   padding?: number;
-  onConfigChange: (config: PlatformConfigData) => void;
+  onPlace: (config: PlatformConfigData) => void;
 }
 
 export class PlatformConfig {
@@ -22,250 +22,302 @@ export class PlatformConfig {
   private container: Phaser.GameObjects.Container;
   private background: Phaser.GameObjects.Rectangle;
   private config: PlatformConfigData = { segmentCount: 3, isVertical: false };
-  private onConfigChange: (config: PlatformConfigData) => void;
+  private onPlace: (config: PlatformConfigData) => void;
   private controls: Phaser.GameObjects.GameObject[] = [];
   private title: Phaser.GameObjects.Text;
+  private segmentValueText: Phaser.GameObjects.Text;
 
   constructor(scene: Scene, options: PlatformConfigOptions) {
     this.scene = scene;
-    this.onConfigChange = options.onConfigChange;
+    this.onPlace = options.onPlace;
 
-    // Create container
-    this.container = scene.add.container(options.x, options.y);
+    this.container = scene.add.container(options.x, options.y).setDepth(1001);
 
-    // Create background
-    const bg = options.background || { color: 0x333333, alpha: 0.9 };
-    const padding = options.padding || 10;
+    const bg = options.background || { color: 0x1a2e4a, alpha: 1 };
+    const padding = options.padding || 15;
     this.background = scene.add.rectangle(
       0,
       0,
       options.width,
-      180, // Initial height
+      240,
       bg.color,
-      bg.alpha || 0.9
+      bg.alpha || 1
     );
     this.background.setOrigin(0, 0);
+    this.background.setStrokeStyle(2, 0x0d1726);
     this.container.add(this.background);
 
-    // Create title
-    this.title = scene.add.text(padding, padding, "Platform Configuration", {
-      fontSize: "16px",
-      color: "#ffffff",
-      fontStyle: "bold",
-    });
+    const titleBarHeight = 30;
+    const titleBar = scene.add
+      .rectangle(0, 0, options.width, titleBarHeight, 0x2a549a)
+      .setOrigin(0, 0);
+    this.container.add(titleBar);
+
+    this.title = scene.add.text(
+      options.width / 2,
+      titleBarHeight / 2,
+      "Platform Configuration",
+      {
+        fontSize: "16px",
+        color: "#ffffff",
+        fontStyle: "bold",
+      }
+    );
+    this.title.setOrigin(0.5, 0.5);
     this.container.add(this.title);
 
-    // Create controls
-    this.createControls(padding, options.width);
+    const closeButton = scene.add
+      .text(options.width - padding - 5, padding / 2 + 2, "X", {
+        fontSize: "18px",
+        color: "#ff6666",
+      })
+      .setOrigin(1, 0.5);
+    closeButton.setInteractive({ useHandCursor: true });
+    closeButton.on("pointerdown", () => this.hide());
+    this.container.add(closeButton);
 
-    // Set to be fixed to camera
+    this.createControls(padding, options.width, titleBarHeight + padding);
+
     this.container.setScrollFactor(0);
+    this.container.setVisible(false);
 
-    // Add to scene display list
     scene.add.existing(this.container);
   }
 
-  private createControls(padding: number, width: number): void {
-    let yOffset = 40;
+  private createControls(padding: number, width: number, yStart: number): void {
+    let currentY = yStart;
+    const controlSpacing = 25;
+    const labelInputSpacing = 10;
 
-    // Segment count label
-    const segmentLabel = this.scene.add.text(padding, yOffset, "Segments:", {
+    const orientationLabel = this.scene.add.text(
+      padding,
+      currentY,
+      "Orientation:",
+      {
+        fontSize: "14px",
+        color: "#ffffff",
+      }
+    );
+    this.controls.push(orientationLabel);
+    this.container.add(orientationLabel);
+
+    currentY += orientationLabel.height + labelInputSpacing;
+
+    const dropdownWidth = width - padding * 2;
+    const dropdownHeight = 30;
+    const dropdownBg = this.scene.add
+      .rectangle(padding, currentY, dropdownWidth, dropdownHeight, 0x2a549a)
+      .setOrigin(0, 0);
+    this.controls.push(dropdownBg);
+    this.container.add(dropdownBg);
+
+    const orientationText = this.scene.add
+      .text(
+        padding + 10,
+        currentY + dropdownHeight / 2,
+        this.config.isVertical ? "Vertical" : "Horizontal",
+        {
+          fontSize: "14px",
+          color: "#ffffff",
+        }
+      )
+      .setOrigin(0, 0.5);
+    this.controls.push(orientationText);
+    this.container.add(orientationText);
+
+    const dropdownArrow = this.scene.add
+      .text(padding + dropdownWidth - 15, currentY + dropdownHeight / 2, "▼", {
+        fontSize: "12px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5, 0.5);
+    this.controls.push(dropdownArrow);
+    this.container.add(dropdownArrow);
+
+    dropdownBg.setInteractive({ useHandCursor: true });
+    dropdownBg.on("pointerdown", () => {
+      this.config.isVertical = !this.config.isVertical;
+      orientationText.setText(
+        this.config.isVertical ? "Vertical" : "Horizontal"
+      );
+    });
+
+    currentY += dropdownHeight + controlSpacing;
+
+    const segmentLabel = this.scene.add.text(padding, currentY, "Segments:", {
       fontSize: "14px",
       color: "#ffffff",
     });
     this.controls.push(segmentLabel);
     this.container.add(segmentLabel);
 
-    // Create segment count control with - and + buttons
-    const segmentCountContainer = this.createNumberStepper(
-      padding + 100,
-      yOffset,
+    currentY += segmentLabel.height + labelInputSpacing;
+
+    const segmentStepper = this.createNumberStepper(
+      padding,
+      currentY,
+      width - padding * 2,
       this.config.segmentCount,
       1,
       10,
       (value) => {
         this.config.segmentCount = value;
-        this.onConfigChange(this.config);
       }
     );
-    this.controls.push(segmentCountContainer);
-    this.container.add(segmentCountContainer);
+    this.controls.push(segmentStepper);
+    this.container.add(segmentStepper);
 
-    yOffset += 50;
+    currentY += 40 + controlSpacing;
 
-    // Orientation section background
-    const orientationBg = this.scene.add
-      .rectangle(padding, yOffset, width - padding * 2, 70, 0x222222, 0.7)
-      .setOrigin(0, 0)
-      .setStrokeStyle(1, 0x555555);
-    this.controls.push(orientationBg);
-    this.container.add(orientationBg);
-
-    // Orientation label
-    const orientationLabel = this.scene.add.text(
-      padding + 10,
-      yOffset + 10,
-      "Orientation:",
-      {
-        fontSize: "14px",
-        color: "#ffffff",
-        fontStyle: "bold",
-      }
-    );
-    this.controls.push(orientationLabel);
-    this.container.add(orientationLabel);
-
-    // Orientation buttons
-    const horizontalBtn = this.createButton(
-      padding + 50,
-      yOffset + 40,
-      "Horizontal",
-      !this.config.isVertical,
+    const placeButton = this.createActionButton(
+      padding,
+      currentY,
+      width - padding * 2,
+      "Place Platform",
       () => {
-        this.config.isVertical = false;
-        horizontalBtn.setSelected(true);
-        verticalBtn.setSelected(false);
-        this.onConfigChange(this.config);
+        this.onPlace(this.config);
+        this.hide();
       }
     );
-    this.controls.push(horizontalBtn.container);
-    this.container.add(horizontalBtn.container);
+    this.controls.push(placeButton);
+    this.container.add(placeButton);
 
-    const verticalBtn = this.createButton(
-      padding + 170,
-      yOffset + 40,
-      "Vertical",
-      this.config.isVertical,
-      () => {
-        this.config.isVertical = true;
-        horizontalBtn.setSelected(false);
-        verticalBtn.setSelected(true);
-        this.onConfigChange(this.config);
-      }
-    );
-    this.controls.push(verticalBtn.container);
-    this.container.add(verticalBtn.container);
+    const finalHeight = currentY + 40 + padding;
+    this.background.setSize(width, finalHeight);
   }
 
   private createNumberStepper(
     x: number,
     y: number,
+    width: number,
     initialValue: number,
     min: number,
     max: number,
     onChange: (value: number) => void
   ): Phaser.GameObjects.Container {
     const container = this.scene.add.container(x, y);
-    const width = 120;
     const height = 30;
+    const buttonWidth = 30;
+    const valueBgWidth = width - buttonWidth * 2;
 
-    // Background
-    const background = this.scene.add.rectangle(0, 0, width, height, 0x444444);
-    background.setOrigin(0, 0);
-    container.add(background);
+    const minusBg = this.scene.add
+      .rectangle(0, 0, buttonWidth, height, 0x2a549a)
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, 0x1a2e4a);
+    container.add(minusBg);
 
-    // Minus button
-    const minusBtn = this.scene.add.rectangle(5, 5, 20, 20, 0x666666);
-    minusBtn.setInteractive({ useHandCursor: true });
-    minusBtn.on("pointerdown", () => {
-      const newValue = Math.max(min, initialValue - 1);
-      if (newValue !== initialValue) {
-        valueText.setText(newValue.toString());
-        onChange(newValue);
-      }
-    });
-    container.add(minusBtn);
-
-    // Minus symbol
-    const minusSymbol = this.scene.add.text(11, 3, "-", {
-      fontSize: "16px",
-      color: "#ffffff",
-    });
+    const minusSymbol = this.scene.add
+      .text(buttonWidth / 2, height / 2, "-", {
+        fontSize: "20px",
+        color: "#ffffff",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5, 0.5);
     container.add(minusSymbol);
 
-    // Value text
-    const valueText = this.scene.add.text(
-      width / 2,
-      height / 2,
-      initialValue.toString(),
-      {
-        fontSize: "16px",
-        color: "#ffffff",
-      }
-    );
-    valueText.setOrigin(0.5, 0.5);
-    container.add(valueText);
+    const valueBg = this.scene.add
+      .rectangle(buttonWidth, 0, valueBgWidth, height, 0x1a2e4a)
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, 0x1a2e4a);
+    container.add(valueBg);
 
-    // Plus button
-    const plusBtn = this.scene.add.rectangle(width - 25, 5, 20, 20, 0x666666);
-    plusBtn.setInteractive({ useHandCursor: true });
-    plusBtn.on("pointerdown", () => {
-      const newValue = Math.min(max, initialValue + 1);
-      if (newValue !== initialValue) {
-        valueText.setText(newValue.toString());
+    this.segmentValueText = this.scene.add
+      .text(
+        buttonWidth + valueBgWidth / 2,
+        height / 2,
+        initialValue.toString(),
+        {
+          fontSize: "16px",
+          color: "#ffffff",
+          fontStyle: "bold",
+        }
+      )
+      .setOrigin(0.5, 0.5);
+    container.add(this.segmentValueText);
+
+    const plusBg = this.scene.add
+      .rectangle(buttonWidth + valueBgWidth, 0, buttonWidth, height, 0x2a549a)
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, 0x1a2e4a);
+    container.add(plusBg);
+
+    const plusSymbol = this.scene.add
+      .text(width - buttonWidth / 2, height / 2, "+", {
+        fontSize: "20px",
+        color: "#ffffff",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5, 0.5);
+    container.add(plusSymbol);
+
+    minusBg.setInteractive({ useHandCursor: true });
+    minusBg.on("pointerdown", () => {
+      const currentValue = parseInt(this.segmentValueText.text, 10);
+      const newValue = Math.max(min, currentValue - 1);
+      if (newValue !== currentValue) {
+        this.segmentValueText.setText(newValue.toString());
         onChange(newValue);
       }
     });
-    container.add(plusBtn);
 
-    // Plus symbol
-    const plusSymbol = this.scene.add.text(width - 19, 3, "+", {
-      fontSize: "16px",
-      color: "#ffffff",
+    plusBg.setInteractive({ useHandCursor: true });
+    plusBg.on("pointerdown", () => {
+      const currentValue = parseInt(this.segmentValueText.text, 10);
+      const newValue = Math.min(max, currentValue + 1);
+      if (newValue !== currentValue) {
+        this.segmentValueText.setText(newValue.toString());
+        onChange(newValue);
+      }
     });
-    container.add(plusSymbol);
 
     return container;
   }
 
-  private createButton(
+  private createActionButton(
     x: number,
     y: number,
+    width: number,
     label: string,
-    isSelected: boolean,
     onClick: () => void
-  ) {
+  ): Phaser.GameObjects.Container {
     const container = this.scene.add.container(x, y);
-    const width = 100;
-    const height = 30;
+    const height = 40;
 
-    // Background
-    const background = this.scene.add.rectangle(
-      0,
-      0,
-      width,
-      height,
-      isSelected ? 0x4477ff : 0x555555
-    );
-    background.setOrigin(0, 0);
+    const background = this.scene.add
+      .rectangle(0, 0, width, height, 0x1f9e54)
+      .setOrigin(0, 0);
+    background.setStrokeStyle(2, 0x115a30);
     container.add(background);
 
-    // Label
     const text = this.scene.add.text(width / 2, height / 2, label, {
-      fontSize: "14px",
+      fontSize: "16px",
       color: "#ffffff",
+      fontStyle: "bold",
     });
     text.setOrigin(0.5, 0.5);
     container.add(text);
 
-    // Make interactive
     background.setInteractive({ useHandCursor: true });
     background.on("pointerdown", onClick);
+    background.on("pointerover", () => background.setFillStyle(0x28c76f));
+    background.on("pointerout", () => background.setFillStyle(0x1f9e54));
 
-    // Add methods for selection state
-    const setSelected = (selected: boolean) => {
-      background.fillColor = selected ? 0x4477ff : 0x555555;
-    };
-
-    return { container, setSelected };
+    return container;
   }
 
-  show(): void {
+  show(initialConfig?: PlatformConfigData): void {
+    if (initialConfig) {
+      this.setConfig(initialConfig);
+    } else {
+      this.setConfig({ segmentCount: 3, isVertical: false });
+    }
     this.container.setVisible(true);
+    this.container.setActive(true);
   }
 
   hide(): void {
     this.container.setVisible(false);
+    this.container.setActive(false);
   }
 
   updatePositionForResize(x: number, y: number): void {
@@ -277,12 +329,34 @@ export class PlatformConfig {
   }
 
   setConfig(config: Partial<PlatformConfigData>): void {
-    this.config = { ...this.config, ...config };
-    this.updateControls();
-  }
-
-  private updateControls(): void {
-    // This would update the UI controls to match the current config
-    // Not implementing the details here as it would require tracking all UI elements
+    let changed = false;
+    if (
+      config.segmentCount !== undefined &&
+      config.segmentCount !== this.config.segmentCount
+    ) {
+      this.config.segmentCount = Math.max(1, Math.min(10, config.segmentCount));
+      if (this.segmentValueText) {
+        this.segmentValueText.setText(this.config.segmentCount.toString());
+      }
+      changed = true;
+    }
+    if (
+      config.isVertical !== undefined &&
+      config.isVertical !== this.config.isVertical
+    ) {
+      this.config.isVertical = config.isVertical;
+      const orientationText = this.container.list.find(
+        (go) =>
+          (go.type === "Text" &&
+            (go as Phaser.GameObjects.Text).text.includes("Horizontal")) ||
+          (go as Phaser.GameObjects.Text).text.includes("Vertical")
+      ) as Phaser.GameObjects.Text;
+      if (orientationText) {
+        orientationText.setText(
+          this.config.isVertical ? "Vertical" : "Horizontal"
+        );
+      }
+      changed = true;
+    }
   }
 }

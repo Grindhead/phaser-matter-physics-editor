@@ -28,6 +28,7 @@ export class PlatformPanel {
   onConfigChange: (config: any) => void;
   onPlaceButtonClick: () => void;
   visible: boolean = false;
+  private blockingRect: Phaser.GameObjects.Rectangle | null = null;
 
   constructor(scene: Scene, options: PlatformPanelConfig) {
     this.scene = scene;
@@ -61,34 +62,62 @@ export class PlatformPanel {
     // Create container
     this.container = scene.add.container(options.x, options.y);
 
-    // Create background with better shadowing - make it shorter since we're removing width controls
+    // Make the container interactive to capture events at the container level
+    // This helps prevent clicks from being captured by underlying elements
+    this.container.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, options.width, 250),
+      Phaser.Geom.Rectangle.Contains
+    );
+
+    // Create background with soft rounded corners effect
     const panelHeight = 250; // Reduced from 300
+
+    // Create shadow first (beneath the panel)
+    const shadow = scene.add.rectangle(
+      6,
+      6,
+      options.width,
+      panelHeight,
+      0x000000,
+      0.4
+    );
+    shadow.setOrigin(0, 0);
+    this.container.add(shadow);
+
+    // Main panel background with gradient-like effect
     const panelBg = scene.add.rectangle(
       0,
       0,
       options.width,
       panelHeight,
-      0x333333,
+      0x1a2a5a,
       0.95
     );
     panelBg.setOrigin(0, 0);
-    panelBg.setStrokeStyle(3, 0x6688ff); // Brighter more visible border
+    panelBg.setStrokeStyle(2, 0x4477cc);
     this.container.add(panelBg);
 
-    // Add drop shadow effect
-    const shadow = scene.add.rectangle(
-      4,
-      4,
-      options.width,
-      panelHeight,
-      0x000000,
-      0.3
+    // Create a subtle highlight effect at the top
+    const highlight = scene.add.rectangle(
+      2,
+      2,
+      options.width - 4,
+      20,
+      0x5588ee,
+      0.2
     );
-    shadow.setOrigin(0, 0);
-    this.container.add(shadow);
-    this.container.bringToTop(panelBg);
+    highlight.setOrigin(0, 0);
+    this.container.add(highlight);
 
-    // Create components with better styling
+    // Create a blocking rectangle to prevent clicks bleeding through to objects behind
+    // This prevents the panel from closing unexpectedly when clicking on its background
+    panelBg.setInteractive({ useHandCursor: false });
+    panelBg.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      // Stop event propagation to prevent clicks from reaching objects behind
+      pointer.event.stopPropagation();
+    });
+
+    // Create components with improved styling
     this.createHeader(options.width);
     this.createTitle(options.width);
     this.createOrientationControls(options.width);
@@ -97,7 +126,7 @@ export class PlatformPanel {
 
     // Set panel to be fixed to camera and ensure it's above everything
     this.container.setScrollFactor(0);
-    this.container.setDepth(9999); // Extremely high depth to ensure visibility above all other elements
+    this.container.setDepth(9999);
 
     // Explicitly set visibility
     this.container.setVisible(false);
@@ -115,30 +144,30 @@ export class PlatformPanel {
   }
 
   private createHeader(width: number): void {
-    // Create header bar - with a more prominent color
+    // Create header bar with gradient-like effect
     const header = this.scene.add.rectangle(0, 0, width, 30, 0x4466cc);
     header.setOrigin(0, 0);
-    header.setStrokeStyle(1, 0x88aaff);
+    header.setInteractive({ useHandCursor: false });
+    header.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      // Stop event propagation
+      pointer.event.stopPropagation();
+    });
     this.container.add(header);
 
     // Add close button to header
-    const closeButton = this.scene.add.rectangle(
-      width - 20,
-      15,
-      16,
-      16,
-      0xaa0000
-    );
+    const closeButton = this.scene.add.circle(width - 15, 15, 10, 0xff3333);
     closeButton.setOrigin(0.5);
     closeButton
       .setInteractive({ useHandCursor: true })
       .on("pointerover", () => {
-        closeButton.setFillStyle(0xff0000);
+        closeButton.setFillStyle(0xff5555);
       })
       .on("pointerout", () => {
-        closeButton.setFillStyle(0xaa0000);
+        closeButton.setFillStyle(0xff3333);
       })
-      .on("pointerdown", () => {
+      .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+        // Stop event propagation
+        pointer.event.stopPropagation();
         this.hide();
         // Remove any overlay as well
         const overlay = this.scene.children.getByName("platformModeOverlay");
@@ -148,10 +177,11 @@ export class PlatformPanel {
       });
 
     // Add X to close button
-    const closeX = this.scene.add.text(width - 20, 15, "✕", {
+    const closeX = this.scene.add.text(width - 15, 15, "×", {
       fontFamily: "Arial",
-      fontSize: "12px",
+      fontSize: "18px",
       color: "#FFFFFF",
+      fontStyle: "bold",
     });
     closeX.setOrigin(0.5);
 
@@ -171,10 +201,10 @@ export class PlatformPanel {
   }
 
   private createOrientationControls(width: number): void {
-    // Label - centered above the dropdown
+    // Label with cleaner positioning
     const orientationLabel = this.scene.add.text(
       width / 2,
-      55, // Adjusted position
+      50,
       "Orientation:",
       {
         fontFamily: "Arial",
@@ -186,29 +216,29 @@ export class PlatformPanel {
     orientationLabel.setOrigin(0.5, 0);
     this.container.add(orientationLabel);
 
-    const dropdownY = 85; // Adjusted position
+    const dropdownY = 80;
 
-    // Dropdown
+    // Create a more stylish button-like control
     const dropdownBg = this.scene.add.rectangle(
       width / 2,
       dropdownY,
-      160, // Wider dropdown
-      36, // Taller dropdown
-      0x3d3d3d
+      180,
+      40,
+      0x2a3a6a
     );
     dropdownBg.setOrigin(0.5, 0.5);
-    dropdownBg.setStrokeStyle(2, 0x666666);
+    dropdownBg.setStrokeStyle(1, 0x5577cc);
     dropdownBg.setInteractive({ useHandCursor: true });
     this.container.add(dropdownBg);
 
-    // Text
+    // Text with improved styling
     this.orientationText = this.scene.add.text(
       width / 2,
       dropdownY,
       this.config.isVertical ? "Vertical" : "Horizontal",
       {
         fontFamily: "Arial",
-        fontSize: "16px",
+        fontSize: "18px",
         color: "#FFFFFF",
         fontStyle: "bold",
       }
@@ -216,374 +246,435 @@ export class PlatformPanel {
     this.orientationText.setOrigin(0.5, 0.5);
     this.container.add(this.orientationText);
 
-    // Make dropdown interactive
+    // Add subtle indicators to show it's clickable
+    const indicator = this.scene.add.text(width / 2 + 70, dropdownY, "↓", {
+      fontFamily: "Arial",
+      fontSize: "14px",
+      color: "#88aaff",
+    });
+    indicator.setOrigin(0.5, 0.5);
+    this.container.add(indicator);
+
+    // Add interactivity to the indicator and text to ensure clicks register
+    this.orientationText.setInteractive({ useHandCursor: true });
+    indicator.setInteractive({ useHandCursor: true });
+
+    // Make dropdown components interactive with improved visual feedback
+    const toggleOrientation = () => {
+      // Toggle the orientation
+      this.config.isVertical = !this.config.isVertical;
+      this.orientationText.setText(
+        this.config.isVertical ? "Vertical" : "Horizontal"
+      );
+      this.onConfigChange(this.config);
+
+      // Visual feedback for click
+      dropdownBg.setFillStyle(0x4a5a8a);
+
+      // Schedule reset of visual state
+      this.scene.time.delayedCall(100, () => {
+        dropdownBg.setFillStyle(0x3a4a7a);
+      });
+    };
+
     dropdownBg
       .on("pointerover", () => {
-        dropdownBg.setFillStyle(0x555555);
-        dropdownBg.setStrokeStyle(2, 0x888888);
+        dropdownBg.setFillStyle(0x3a4a7a);
+        dropdownBg.setStrokeStyle(2, 0x7799ee);
       })
       .on("pointerout", () => {
-        dropdownBg.setFillStyle(0x3d3d3d);
-        dropdownBg.setStrokeStyle(2, 0x666666);
+        dropdownBg.setFillStyle(0x2a3a6a);
+        dropdownBg.setStrokeStyle(1, 0x5577cc);
       })
-      .on("pointerdown", () => {
-        this.config.isVertical = !this.config.isVertical;
-        this.orientationText.setText(
-          this.config.isVertical ? "Vertical" : "Horizontal"
-        );
-        this.onConfigChange(this.config);
-      });
+      .on("pointerdown", toggleOrientation);
+
+    // Add click handlers to other components too for better click coverage
+    this.orientationText.on("pointerdown", toggleOrientation);
+    indicator.on("pointerdown", toggleOrientation);
   }
 
   private createSegmentCountControls(width: number): void {
-    // Label for segment count
-    const segmentLabel = this.scene.add.text(
-      width / 2,
-      125, // Adjusted position
-      "Segments:",
-      {
-        fontFamily: "Arial",
-        fontSize: "16px",
-        color: "#FFFFFF",
-        fontStyle: "bold",
-      }
-    );
+    // Label for segment count with improved positioning
+    const segmentLabel = this.scene.add.text(width / 2, 130, "Segments:", {
+      fontFamily: "Arial",
+      fontSize: "16px",
+      color: "#FFFFFF",
+      fontStyle: "bold",
+    });
     segmentLabel.setOrigin(0.5, 0);
     this.container.add(segmentLabel);
 
-    // Create minus button
-    const minusButton = this.scene.add.rectangle(
-      width / 2 - 60,
-      155, // Adjusted position
-      40, // Slightly larger button
-      40,
-      0x3d3d3d
+    const controlsY = 160;
+    const buttonSize = 36;
+    const spacing = 55;
+
+    // Create a stylish number display
+    const countBg = this.scene.add.rectangle(
+      width / 2,
+      controlsY,
+      buttonSize,
+      buttonSize,
+      0x2a3a6a
     );
-    minusButton.setOrigin(0.5);
-    minusButton.setStrokeStyle(3, 0x666666); // Thicker border
-    minusButton.setInteractive({ useHandCursor: true });
-    // Set a larger hit area
-    if (minusButton.input) {
-      minusButton.input.hitArea.setTo(-5, -5, 50, 50);
-    }
-    this.container.add(minusButton);
-
-    const minusText = this.scene.add.text(width / 2 - 60, 155, "-", {
-      fontFamily: "Arial",
-      fontSize: "28px", // Larger font
-      color: "#FFFFFF",
-      fontStyle: "bold",
-    });
-    minusText.setOrigin(0.5);
-    this.container.add(minusText);
-
-    // Create segment count display
-    const countBg = this.scene.add.rectangle(width / 2, 155, 60, 40, 0x444444);
-    countBg.setOrigin(0.5);
-    countBg.setStrokeStyle(2, 0x666666);
+    countBg.setOrigin(0.5, 0.5);
+    countBg.setStrokeStyle(1, 0x5577cc);
     this.container.add(countBg);
 
+    // Create text for segment count
     this.segmentCountText = this.scene.add.text(
       width / 2,
-      155,
+      controlsY,
       this.config.segmentCount.toString(),
       {
         fontFamily: "Arial",
-        fontSize: "22px", // Larger font
+        fontSize: "18px",
         color: "#FFFFFF",
         fontStyle: "bold",
       }
     );
-    this.segmentCountText.setOrigin(0.5);
+    this.segmentCountText.setOrigin(0.5, 0.5);
     this.container.add(this.segmentCountText);
 
-    // Create plus button
-    const plusButton = this.scene.add.rectangle(
-      width / 2 + 60,
-      155,
-      40, // Slightly larger button
-      40,
-      0x3d3d3d
+    // Create minus button with improved styling
+    const minusButton = this.scene.add.rectangle(
+      width / 2 - spacing,
+      controlsY,
+      buttonSize,
+      buttonSize,
+      0x3a4a7a
     );
-    plusButton.setOrigin(0.5);
-    plusButton.setStrokeStyle(3, 0x666666); // Thicker border
-    plusButton.setInteractive({ useHandCursor: true });
-    // Set a larger hit area
-    if (plusButton.input) {
-      plusButton.input.hitArea.setTo(-5, -5, 50, 50);
-    }
-    this.container.add(plusButton);
+    minusButton.setOrigin(0.5, 0.5);
+    minusButton.setStrokeStyle(1, 0x5577cc);
+    minusButton.setInteractive({ useHandCursor: true });
+    this.container.add(minusButton);
 
-    const plusText = this.scene.add.text(width / 2 + 60, 155, "+", {
+    // Add minus text
+    const minusText = this.scene.add.text(width / 2 - spacing, controlsY, "-", {
       fontFamily: "Arial",
-      fontSize: "28px", // Larger font
+      fontSize: "24px",
       color: "#FFFFFF",
       fontStyle: "bold",
     });
-    plusText.setOrigin(0.5);
-    this.container.add(plusText);
+    minusText.setOrigin(0.5, 0.5);
+    this.container.add(minusText);
+    minusText.setInteractive({ useHandCursor: true });
 
-    // Add interactivity to minus button
+    // Create plus button with improved styling
+    const plusButton = this.scene.add.rectangle(
+      width / 2 + spacing,
+      controlsY,
+      buttonSize,
+      buttonSize,
+      0x3a4a7a
+    );
+    plusButton.setOrigin(0.5, 0.5);
+    plusButton.setStrokeStyle(1, 0x5577cc);
+    plusButton.setInteractive({ useHandCursor: true });
+    this.container.add(plusButton);
+
+    // Add plus text
+    const plusText = this.scene.add.text(width / 2 + spacing, controlsY, "+", {
+      fontFamily: "Arial",
+      fontSize: "24px",
+      color: "#FFFFFF",
+      fontStyle: "bold",
+    });
+    plusText.setOrigin(0.5, 0.5);
+    this.container.add(plusText);
+    plusText.setInteractive({ useHandCursor: true });
+
+    // Function to decrement segment count
+    const decrementCount = () => {
+      // Prevent going below 1 segment
+      if (this.config.segmentCount > 1) {
+        this.config.segmentCount--;
+        this.segmentCountText.setText(this.config.segmentCount.toString());
+        this.onConfigChange(this.config);
+      }
+
+      // Visual feedback
+      minusButton.setFillStyle(0x2a3a6a);
+      this.scene.time.delayedCall(100, () => {
+        minusButton.setFillStyle(0x3a4a7a);
+      });
+    };
+
+    // Function to increment segment count
+    const incrementCount = () => {
+      // Prevent going above 10 segments
+      if (this.config.segmentCount < 10) {
+        this.config.segmentCount++;
+        this.segmentCountText.setText(this.config.segmentCount.toString());
+        this.onConfigChange(this.config);
+      }
+
+      // Visual feedback
+      plusButton.setFillStyle(0x2a3a6a);
+      this.scene.time.delayedCall(100, () => {
+        plusButton.setFillStyle(0x3a4a7a);
+      });
+    };
+
+    // Make buttons interactive with improved visual feedback
     minusButton
       .on("pointerover", () => {
-        minusButton.setFillStyle(0x555555);
-        minusButton.setStrokeStyle(3, 0x888888); // Thicker border on hover
-        console.log("Pointer over segment count minus button");
+        minusButton.setFillStyle(0x4a5a8a);
       })
       .on("pointerout", () => {
-        minusButton.setFillStyle(0x3d3d3d);
-        minusButton.setStrokeStyle(3, 0x666666); // Thicker border
+        minusButton.setFillStyle(0x3a4a7a);
       })
-      .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-        console.log(
-          "Segment count minus button clicked at",
-          pointer.x,
-          pointer.y
-        );
-        if (this.config.segmentCount > 1) {
-          this.config.segmentCount--;
-          this.segmentCountText.setText(this.config.segmentCount.toString());
-          this.onConfigChange(this.config);
-          console.log("Segment count decreased to:", this.config.segmentCount);
+      .on("pointerdown", decrementCount);
 
-          // Visual feedback
-          minusButton.setFillStyle(0x777777);
-          this.scene.time.delayedCall(100, () => {
-            minusButton.setFillStyle(0x555555);
-          });
-        }
-      });
+    // Also make the text interactive for better click coverage
+    minusText.on("pointerdown", decrementCount);
 
-    // Add interactivity to plus button
     plusButton
       .on("pointerover", () => {
-        plusButton.setFillStyle(0x555555);
-        plusButton.setStrokeStyle(3, 0x888888); // Thicker border on hover
-        console.log("Pointer over segment count plus button");
+        plusButton.setFillStyle(0x4a5a8a);
       })
       .on("pointerout", () => {
-        plusButton.setFillStyle(0x3d3d3d);
-        plusButton.setStrokeStyle(3, 0x666666); // Thicker border
+        plusButton.setFillStyle(0x3a4a7a);
       })
-      .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-        console.log(
-          "Segment count plus button clicked at",
-          pointer.x,
-          pointer.y
-        );
-        if (this.config.segmentCount < 10) {
-          this.config.segmentCount++;
-          this.segmentCountText.setText(this.config.segmentCount.toString());
-          this.onConfigChange(this.config);
-          console.log("Segment count increased to:", this.config.segmentCount);
+      .on("pointerdown", incrementCount);
 
-          // Visual feedback
-          plusButton.setFillStyle(0x777777);
-          this.scene.time.delayedCall(100, () => {
-            plusButton.setFillStyle(0x555555);
-          });
-        }
-      });
+    // Also make the text interactive for better click coverage
+    plusText.on("pointerdown", incrementCount);
   }
 
   private createPlaceButton(width: number): void {
-    // Move button up since we removed width controls
-    const placeBtnY = 195; // Adjusted position to match where segment count ends
+    const buttonY = 210;
+    const buttonHeight = 50;
 
-    // Button background
-    const placeBtn = this.scene.add.rectangle(
+    // Create a bright, attention-grabbing button
+    const placeButtonBg = this.scene.add.rectangle(
       width / 2,
-      placeBtnY,
-      220, // Wider button
-      54, // Taller button
-      0x00aa00
+      buttonY,
+      200,
+      buttonHeight,
+      0x00aa44
     );
-    placeBtn.setOrigin(0.5);
-    placeBtn.setStrokeStyle(4, 0x00cc00); // Thicker border
-    placeBtn.setInteractive({ useHandCursor: true });
+    placeButtonBg.setOrigin(0.5, 0);
+    placeButtonBg.setStrokeStyle(2, 0x00cc55);
+    placeButtonBg.setInteractive({ useHandCursor: true });
+    this.container.add(placeButtonBg);
 
-    // Add a shadow for depth
-    const shadow = this.scene.add.rectangle(
-      width / 2 + 3,
-      placeBtnY + 3,
-      220,
-      54,
-      0x000000,
+    // Add gradient-like highlight effect
+    const buttonHighlight = this.scene.add.rectangle(
+      width / 2,
+      buttonY + 2,
+      196,
+      10,
+      0x00dd66,
       0.3
     );
-    shadow.setOrigin(0.5);
-    this.container.add(shadow);
-    this.container.add(placeBtn);
+    buttonHighlight.setOrigin(0.5, 0);
+    this.container.add(buttonHighlight);
 
-    // Button text
-    const placeBtnText = this.scene.add.text(
+    // Add text with shadow effect
+    const placeText = this.scene.add.text(
       width / 2,
-      placeBtnY,
+      buttonY + buttonHeight / 2,
       "Place Platform",
       {
         fontFamily: "Arial",
-        fontSize: "24px", // Larger font
-        fontStyle: "bold",
+        fontSize: "20px",
         color: "#FFFFFF",
+        fontStyle: "bold",
       }
     );
-    placeBtnText.setOrigin(0.5);
-    this.container.add(placeBtnText);
+    placeText.setOrigin(0.5, 0.5);
+    placeText.setShadow(1, 1, "#000000", 1);
+    placeText.setInteractive({ useHandCursor: true });
+    this.container.add(placeText);
 
-    // Add interactivity
-    placeBtn
+    // Function to handle place button click
+    const handlePlaceClick = () => {
+      // Visual feedback on click
+      placeButtonBg.setFillStyle(0x009944);
+
+      // Set a small delay to prevent immediate processing of other clicks
+      this.scene.time.delayedCall(100, () => {
+        console.log("Place Platform button clicked");
+        this.onPlaceButtonClick();
+      });
+    };
+
+    // Make both the button and text interactive for better click coverage
+    placeButtonBg
       .on("pointerover", () => {
-        placeBtn.setFillStyle(0x00cc00);
-        placeBtn.setStrokeStyle(4, 0x00ff00); // Thicker border
+        placeButtonBg.setFillStyle(0x00bb55);
+        placeButtonBg.setStrokeStyle(2, 0x00ee66);
       })
       .on("pointerout", () => {
-        placeBtn.setFillStyle(0x00aa00);
-        placeBtn.setStrokeStyle(4, 0x00cc00); // Thicker border
+        placeButtonBg.setFillStyle(0x00aa44);
+        placeButtonBg.setStrokeStyle(2, 0x00cc55);
       })
-      .on("pointerdown", () => {
-        // Visual feedback on click
-        placeBtn.setFillStyle(0x00dd00);
-        this.scene.time.delayedCall(100, () => {
-          placeBtn.setFillStyle(0x00cc00);
-          this.onPlaceButtonClick();
-        });
-      });
+      .on("pointerdown", handlePlaceClick);
+
+    // Add click handler to text too
+    placeText.on("pointerdown", handlePlaceClick);
   }
 
   show(): void {
-    console.log("PlatformPanel.show() called");
-    if (this.container) {
-      console.log("Setting container to visible...");
-      this.container.setVisible(true);
-
-      // Force bring to top
-      this.container.setDepth(2500);
-
-      // Make sure panel is positioned within viewport bounds
-      // First check if container is outside the visible area
-      const camera = this.scene.cameras.main;
-      if (
-        this.container.x < 10 ||
-        this.container.y < 10 ||
-        this.container.x + 300 > camera.width ||
-        this.container.y + 300 > camera.height
-      ) {
-        // Reposition to center
-        this.container.setPosition(
-          Math.max(10, (camera.width - 300) / 2),
-          Math.max(10, (camera.height - 300) / 2)
-        );
-        console.log("Repositioned container to center");
-      }
-
-      // Make sure panel is on top of all other UI
-      if (this.container.scene) {
-        console.log("Bringing container to top...");
-        this.container.scene.children.bringToTop(this.container);
-      }
-
-      // Ensure all children are interactive
-      this.container.list.forEach((child) => {
-        if (
-          child instanceof Phaser.GameObjects.Rectangle ||
-          child instanceof Phaser.GameObjects.Text
-        ) {
-          if (child.input && child.input.enabled) {
-            console.log("Child is interactive:", child);
-          }
-        }
-      });
-
-      // Apply a slight scaling animation for visual feedback
-      this.scene.tweens.add({
-        targets: this.container,
-        scaleX: { from: 0.95, to: 1 },
-        scaleY: { from: 0.95, to: 1 },
-        duration: 150,
-        ease: "Power2",
-      });
-
-      // Force a re-render to ensure visibility
-      this.scene.time.delayedCall(10, () => {
-        if (this.container) {
-          this.container.setVisible(true);
-          this.scene.children.bringToTop(this.container);
-        }
-      });
-    } else {
-      console.error("Cannot show panel: container is null");
+    if (!this.container) {
+      console.error("Cannot show platform panel: container is null");
+      return;
     }
+
+    // Don't do anything if already visible
+    if (this.visible) {
+      console.log("PlatformPanel is already visible, ignoring show() call");
+      return;
+    }
+
+    console.log("PlatformPanel.show() called");
+
+    // Create a blocking rectangle to prevent clicks from going through the panel
+    if (!this.blockingRect) {
+      this.blockingRect = this.scene.add.rectangle(
+        this.scene.cameras.main.width / 2,
+        this.scene.cameras.main.height / 2,
+        this.scene.cameras.main.width,
+        this.scene.cameras.main.height,
+        0x000000,
+        0.001 // Almost invisible
+      );
+      this.blockingRect.setScrollFactor(0);
+      this.blockingRect.setDepth(900); // Lower depth so it's below the panel
+      this.blockingRect.setName("platformPanelBlockingRect"); // Add a name for easy reference
+      this.blockingRect.setInteractive();
+
+      // Only block clicks outside of the panel's area
+      this.blockingRect.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+        const panelBounds = this.container.getBounds();
+        // Check if the click is outside the panel area
+        if (
+          !Phaser.Geom.Rectangle.Contains(panelBounds, pointer.x, pointer.y)
+        ) {
+          // Stop propagation only for clicks outside the panel
+          pointer.event.stopPropagation();
+          console.log("Blocked click outside panel area");
+        }
+      });
+    }
+
+    // Set container to interactive again when showing it
+    this.container.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, this.container.width, 250),
+      Phaser.Geom.Rectangle.Contains
+    );
+
+    // Set visibility before starting animation
+    this.container.setVisible(true);
     this.visible = true;
-    console.log("PlatformPanel visible flag set to:", this.visible);
+
+    // Ensure correct z-ordering
+    if (this.blockingRect) {
+      this.scene.children.bringToTop(this.blockingRect);
+    }
+
+    // Make sure our container is on top of the blocking rectangle
+    this.scene.children.bringToTop(this.container);
+    this.container.setDepth(1000); // Higher than blocking rectangle
+
+    // Add animation
+    this.container.setScale(0.95);
+    this.container.setAlpha(0.9);
+    this.scene.tweens.add({
+      targets: this.container,
+      scale: 1,
+      alpha: 1,
+      duration: 150,
+      ease: "Power2",
+    });
   }
 
   hide(): void {
     console.log("PlatformPanel.hide() called");
-    if (this.container) {
-      this.container.setVisible(false);
 
-      // Don't remove the overlay when just hiding the panel
-      // Only remove the close button overlay click handler
-      const overlay = this.scene.children.getByName("platformModeOverlay");
-      if (overlay && overlay instanceof Phaser.GameObjects.Rectangle) {
-        // Just make sure it's not interfering with input
-        overlay.setDepth(10); // Lower depth to ensure preview is above it
-      }
-    } else {
-      console.error("Cannot hide panel: container is null");
+    // Don't do anything if already hidden
+    if (!this.visible) {
+      console.log("PlatformPanel is already hidden, ignoring hide() call");
+      return;
     }
-    this.visible = false;
-    console.log("PlatformPanel visible flag set to:", this.visible);
+
+    // Remove the blocking rectangle if it exists
+    if (this.blockingRect) {
+      this.blockingRect.destroy();
+      this.blockingRect = null;
+    }
+
+    if (this.container) {
+      // Make container non-interactive when hiding
+      this.container.disableInteractive();
+
+      // Add a fade-out animation
+      this.scene.tweens.add({
+        targets: this.container,
+        alpha: 0,
+        scale: 0.95,
+        duration: 150,
+        ease: "Power2",
+        onComplete: () => {
+          if (this.container) {
+            this.container.setVisible(false);
+            this.container.setAlpha(1);
+            this.container.setScale(1);
+          }
+          this.visible = false;
+        },
+      });
+    } else {
+      this.visible = false;
+    }
   }
 
   toggle(): void {
-    this.visible = !this.visible;
-    if (this.container) {
-      this.container.setVisible(this.visible);
-
-      if (this.visible && this.container.scene) {
-        this.container.scene.children.bringToTop(this.container);
-      }
+    if (this.visible) {
+      this.hide();
+    } else {
+      this.show();
     }
   }
 
   getConfig(): any {
-    return { ...this.config };
+    return this.config;
   }
 
   updateConfig(config: any): void {
-    console.log("Updating platform config from:", this.config, "to:", config);
-    const oldConfig = { ...this.config };
-    this.config = { ...this.config, ...config };
-    this.orientationText.setText(
-      this.config.isVertical ? "Vertical" : "Horizontal"
-    );
-    if (this.segmentCountText) {
-      this.segmentCountText.setText(this.config.segmentCount.toString());
-    }
-    // We no longer update segmentWidthText since it's removed
+    console.log("PlatformPanel.updateConfig called with:", config);
 
-    console.log("Platform config updated. New config:", this.config);
+    // Update config with new values safely
+    if (config.isVertical !== undefined) {
+      this.config.isVertical = config.isVertical;
+      if (this.orientationText) {
+        this.orientationText.setText(
+          config.isVertical ? "Vertical" : "Horizontal"
+        );
+      }
+    }
 
-    // Log significant changes
-    if (oldConfig.segmentCount !== this.config.segmentCount) {
-      console.log(
-        `Segment count changed: ${oldConfig.segmentCount} → ${this.config.segmentCount}`
-      );
+    if (config.segmentCount !== undefined) {
+      this.config.segmentCount = config.segmentCount;
+      if (this.segmentCountText) {
+        this.segmentCountText.setText(config.segmentCount.toString());
+      }
     }
-    if (oldConfig.isVertical !== this.config.isVertical) {
-      console.log(
-        `Orientation changed: ${
-          oldConfig.isVertical ? "Vertical" : "Horizontal"
-        } → ${this.config.isVertical ? "Vertical" : "Horizontal"}`
-      );
+
+    if (config.segmentWidth !== undefined) {
+      this.config.segmentWidth = config.segmentWidth;
+      if (this.segmentWidthText) {
+        this.segmentWidthText.setText(config.segmentWidth.toString());
+      }
     }
-    // No need to log width changes anymore
+
+    console.log("PlatformPanel config updated to:", this.config);
   }
 
   updatePosition(x: number, y: number): void {
     if (this.container) {
       this.container.setPosition(x, y);
+      console.log("Platform panel position updated to", x, y);
     }
   }
 }

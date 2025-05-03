@@ -1,4 +1,4 @@
-import { Platform } from "../../../entities/Platforms/Platform";
+import { Platform } from "../../../entities/Platforms/Platform"; // Still needed for type checking
 import { EnemySmall } from "../../../entities/Enemies/EnemySmall";
 import { Crate } from "../../../entities/Crate/Crate";
 import { Barrel } from "../../../entities/Barrel/Barrel";
@@ -8,6 +8,8 @@ import { EnemyLarge } from "../../../entities/Enemies/EnemyLarge";
 import { EntityButton } from "./types";
 
 export const getEntityDefinitions = (): EntityButton[] => {
+  // Platform entity is intentionally excluded from palette since it's now
+  // handled via the dedicated toolbar button and PlatformTool
   return [
     {
       type: "player",
@@ -17,20 +19,6 @@ export const getEntityDefinitions = (): EntityButton[] => {
       scale: 0.6,
       heightFactor: 1.1,
       offsetX: 0,
-    },
-    {
-      type: "platform",
-      entityClass: Platform,
-      entityConfig: {
-        isVertical: false,
-        segmentCount: 3,
-        segmentWidth: 32,
-      },
-      displayName: "Platform",
-      scale: 0.6,
-      heightFactor: 1.0,
-      offsetX: 0,
-      needsConfiguration: true,
     },
     {
       type: "enemy-large",

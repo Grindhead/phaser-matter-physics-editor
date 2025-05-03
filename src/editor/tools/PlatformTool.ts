@@ -15,6 +15,7 @@ export class PlatformTool {
   private placementPreview: Phaser.GameObjects.Rectangle | null = null;
   private overlay: Phaser.GameObjects.Rectangle | null = null;
   private escKey: Phaser.Input.Keyboard.Key;
+  private isActivating: boolean = false;
 
   constructor(
     scene: Scene,
@@ -30,8 +31,8 @@ export class PlatformTool {
       x: Math.max(10, (scene.cameras.main.width - 300) / 2),
       y: Math.max(10, (scene.cameras.main.height - 250) / 2),
       width: 300,
-      height: 250, // Reduced height since we removed width controls
-      initialConfig: this.platformConfig, // Pass initial configuration
+      height: 250,
+      initialConfig: this.platformConfig,
       onConfigChange: (config) => {
         console.log("PlatformTool: received config change:", config);
 
@@ -63,29 +64,38 @@ export class PlatformTool {
       onPlaceButtonClick: () => {
         console.log("PlatformTool: place button clicked");
 
-        // First hide the panel
-        this.panel.hide();
-
-        // Also make sure to remove the panel from modal state
-        if (this.panel.container) {
-          this.panel.container.setVisible(false);
+        // Hide the panel immediately - this should happen before preview creation
+        if (this.panel) {
+          this.panel.hide();
         }
 
-        // If there's no preview yet, create it now
-        if (!this.placementPreview) {
-          this.createPlacementPreview();
-          console.log(
-            "PlatformTool: preview created, follow cursor to position platform"
-          );
+        // Remove blocking rectangle on the panel to allow clicks through
+        const blockingRect = this.scene.children.getByName(
+          "platformPanelBlockingRect"
+        );
+        if (blockingRect) {
+          blockingRect.destroy();
         }
 
-        // Make sure the overlay stays but is behind the preview
-        if (this.overlay) {
-          this.scene.children.bringToTop(this.overlay);
-          if (this.placementPreview) {
-            this.scene.children.bringToTop(this.placementPreview);
+        // Short delay to allow panel to hide fully
+        this.scene.time.delayedCall(50, () => {
+          // If there's no preview yet, create it now
+          if (!this.placementPreview) {
+            this.createPlacementPreview();
+            console.log(
+              "PlatformTool: preview created, follow cursor to position platform"
+            );
           }
-        }
+
+          // The overlay should remain visible to dim the background
+          // while placing the platform
+          if (this.overlay) {
+            this.scene.children.bringToTop(this.overlay);
+            if (this.placementPreview) {
+              this.scene.children.bringToTop(this.placementPreview);
+            }
+          }
+        });
       },
     });
 
@@ -114,8 +124,12 @@ export class PlatformTool {
   }
 
   private onPointerDown(pointer: Phaser.Input.Pointer): void {
-    // Check panel and preview safely
-    if (!this.placementPreview || pointer.button !== 0) return;
+    // Skip if not a left mouse button click
+    if (pointer.button !== 0) return;
+
+    // Only handle this click if we have a placement preview
+    // This ensures we don't interfere with panel interactions
+    if (!this.placementPreview) return;
 
     // Get the world position
     const worldPoint = this.scene.cameras.main.getWorldPoint(
@@ -133,18 +147,27 @@ export class PlatformTool {
   activate(): void {
     console.log("PlatformTool.activate() called");
 
-    if (!this.panel) {
-      console.error("Cannot activate platform tool: panel is null");
+    // Prevent multiple activations
+    if (this.isActivating) {
+      console.log("PlatformTool activation already in progress");
       return;
     }
 
-    // First ensure we're starting with a clean state
+    this.isActivating = true;
+
+    if (!this.panel) {
+      console.error("Cannot activate platform tool: panel is null");
+      this.isActivating = false;
+      return;
+    }
+
+    // Ensure clean state by running full deactivate (will hide any existing panels)
     this.deactivate();
 
-    // Reset config to default values and update panel
+    // Reset config to default values
     this.resetConfig();
 
-    // Create the overlay
+    // Create the overlay for background dimming
     this.overlay = this.scene.add.rectangle(
       0,
       0,
@@ -155,68 +178,53 @@ export class PlatformTool {
     );
     this.overlay.setOrigin(0, 0);
     this.overlay.setScrollFactor(0);
-    this.overlay.setDepth(900);
+    this.overlay.setDepth(800); // Lower depth than panel
     this.overlay.setName("platformModeOverlay");
 
-    // Force reset position to center of screen
+    // Make overlay interactive to prevent clicks from reaching the scene
+    // But only for clicks outside the panel area
+    this.overlay.setInteractive({ useHandCursor: false });
+
+    // Set panel position to center of screen
     const centerX = Math.max(10, (this.scene.cameras.main.width - 300) / 2);
     const centerY = Math.max(10, (this.scene.cameras.main.height - 300) / 2);
     this.panel.updatePosition(centerX, centerY);
 
-    // Show the panel
+    // Show the panel immediately
+    console.log("Showing platform panel");
     this.panel.show();
-    console.log("Platform panel show() called. Visible:", this.panel.visible);
-    console.log("Panel container exists:", !!this.panel.container);
-    console.log(
-      "HINT: Configure platform, press 'Place Platform', then click in scene to place"
-    );
+
+    // Ensure good Z-ordering - overlay must be below panel
+    if (this.overlay && this.overlay.scene) {
+      this.scene.children.bringToTop(this.overlay);
+    }
 
     if (this.panel.container) {
-      // Force visibility
       this.panel.container.setVisible(true);
-
-      // Make sure it's on top of everything
-      this.panel.container.setDepth(2500);
-
-      console.log("Panel container visibility:", this.panel.container.visible);
-      console.log(
-        "Panel position:",
-        this.panel.container.x,
-        this.panel.container.y
-      );
-      console.log("Panel depth:", this.panel.container.depth);
+      this.panel.container.setDepth(2500); // Ensure panel is above overlay
+      this.scene.children.bringToTop(this.panel.container);
     }
 
-    // We don't create the placement preview immediately anymore
-    // It will be created after the user clicks Place Platform
+    // Print some helpful messages
+    console.log(
+      "Platform Tool: 1) Configure the platform orientation and segment count"
+    );
+    console.log("Platform Tool: 2) Click 'Place Platform' button when ready");
+    console.log(
+      "Platform Tool: 3) Click in the scene to position and place the platform"
+    );
 
-    // Make sure everything is ordered correctly in the display list
-    if (this.overlay && this.overlay.scene) {
-      // Ensure overlay is behind the panel
-      this.scene.children.bringToTop(this.overlay);
-
-      // Ensure the panel is at the top of everything
-      if (this.panel.container) {
-        this.scene.children.bringToTop(this.panel.container);
-        console.log("Panel container brought to top immediately");
-      }
-    }
-
-    // Double check visibility after a short delay to make sure it's really displayed
-    this.scene.time.delayedCall(100, () => {
-      if (this.panel && this.panel.container) {
-        this.panel.container.setVisible(true);
-        this.scene.children.bringToTop(this.panel.container);
-        console.log("Panel visibility enforced after delay");
-      }
-    });
+    // Clear activation flag after panel is shown
+    this.isActivating = false;
   }
 
   deactivate(): void {
     console.log("PlatformTool.deactivate() called");
 
     // Hide the panel
-    this.panel.hide();
+    if (this.panel) {
+      this.panel.hide();
+    }
 
     // Remove the placement preview
     this.destroyPlacementPreview();
@@ -226,6 +234,9 @@ export class PlatformTool {
       this.overlay.destroy();
       this.overlay = null;
     }
+
+    // Ensure we're no longer in activating state
+    this.isActivating = false;
   }
 
   private createPlacementPreview(): void {

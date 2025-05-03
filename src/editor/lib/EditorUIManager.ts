@@ -26,6 +26,9 @@ export class EditorUIManager {
   private onClear: () => void;
   private onRemoveEntity: ((entity: EditorEntity) => void) | null = null;
 
+  // Flag to track if activation is in progress
+  private isActivatingPlatformTool = false;
+
   constructor(
     scene: Scene,
     onEntityTypeSelect: (type: string, config?: any) => void,
@@ -135,7 +138,11 @@ export class EditorUIManager {
       {
         id: "platform",
         label: "Platform",
-        onClick: () => this.activatePlatformTool(),
+        onClick: () => {
+          console.log("Platform button clicked in toolbar");
+          // Direct activation - we'll handle timing within the activatePlatformTool method
+          this.activatePlatformTool();
+        },
         style: {
           bgColor: 0x00aa00,
           hoverColor: 0x00cc00,
@@ -263,6 +270,16 @@ export class EditorUIManager {
   private activatePlatformTool(): void {
     console.log("EditorUIManager: activating platform tool");
 
+    // Prevent multiple activations at once
+    if (this.isActivatingPlatformTool) {
+      console.log(
+        "Platform tool activation already in progress, ignoring request"
+      );
+      return;
+    }
+
+    this.isActivatingPlatformTool = true;
+
     // Force hide any potentially visible UI elements that might conflict
     if (this.inspector) {
       this.inspector.selectEntity(null);
@@ -271,51 +288,17 @@ export class EditorUIManager {
     // Clear palette selection when activating the platform tool
     this.clearPaletteSelection();
 
-    // Ensure the platform tool is properly initialized
-    const tool = this.platformTool;
-    if (tool) {
-      // Ensure any previous instances are properly deactivated first
-      tool.deactivate();
+    // First ensure any previous platform tool is deactivated
+    this.platformTool.deactivate();
 
-      // Ensure we're waiting for any DOM updates to complete
-      this.scene.time.delayedCall(10, () => {
-        // Make sure the platform tool is visible and centered
-        tool.activate();
+    // Make sure the platform tool is visible and centered immediately
+    // Don't use setTimeout which can cause timing issues
+    this.platformTool.activate();
 
-        console.log(
-          "Platform Tool: 1) Configure the platform orientation and segment count"
-        );
-        console.log(
-          "Platform Tool: 2) Click 'Place Platform' button when ready"
-        );
-        console.log(
-          "Platform Tool: 3) Click in the scene to position and place the platform"
-        );
-
-        // Verify panel is visible and positioned correctly
-        const panel = tool.getPanel();
-        if (panel) {
-          // Force visibility after a short delay to ensure all DOM updates are applied
-          this.scene.time.delayedCall(50, () => {
-            if (panel.container) {
-              panel.container.setVisible(true);
-              panel.container.setDepth(2500);
-              this.scene.children.bringToTop(panel.container);
-              console.log("Platform panel visibility enforced after delay");
-            }
-          });
-
-          console.log("Platform panel status:", {
-            visible: panel.visible,
-            config: panel.getConfig(),
-          });
-        } else {
-          console.error("Platform panel not found");
-        }
-      });
-    } else {
-      console.error("Platform tool not initialized");
-    }
+    // Reset the activation flag after a delay to prevent rapid re-activations
+    this.scene.time.delayedCall(500, () => {
+      this.isActivatingPlatformTool = false;
+    });
   }
 
   /**

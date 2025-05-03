@@ -27,6 +27,7 @@ export class Toolbar {
   private container: Phaser.GameObjects.Container;
   private background: Phaser.GameObjects.Rectangle;
   private buttons: { [key: string]: Phaser.GameObjects.Container } = {};
+  private activeButton: string | null = null;
 
   constructor(scene: Scene, config: ToolbarConfig, buttons: ToolbarButton[]) {
     this.scene = scene;
@@ -45,6 +46,14 @@ export class Toolbar {
       bg.alpha || 0.8
     );
     this.background.setOrigin(0, 0);
+    this.background.setInteractive();
+
+    // Make the background catch and stop event propagation
+    this.background.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      // Stop event propagation
+      pointer.event.stopPropagation();
+    });
+
     this.container.add(this.background);
 
     // Create buttons
@@ -52,6 +61,7 @@ export class Toolbar {
 
     // Set toolbar to be fixed to camera
     this.container.setScrollFactor(0);
+    this.container.setDepth(9000); // Very high depth to ensure it's above other UI elements
 
     // Add to scene display list
     scene.add.existing(this.container);
@@ -101,8 +111,26 @@ export class Toolbar {
       buttonBg.setInteractive({ useHandCursor: true });
 
       // Add event listeners
-      buttonBg.on("pointerdown", () => {
-        button.onClick();
+      buttonBg.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+        // Stop event propagation to prevent clicks from reaching elements below
+        pointer.event.stopPropagation();
+
+        // Visual feedback
+        buttonBg.setFillStyle(style.hoverColor || 0x666666);
+
+        // Store the active button
+        this.activeButton = button.id;
+
+        // Use setTimeout to ensure click handling happens outside of the current event loop
+        setTimeout(() => {
+          // Call the onClick handler
+          button.onClick();
+
+          // Reset the button state after a short delay
+          setTimeout(() => {
+            buttonBg.setFillStyle(bgColor);
+          }, 200);
+        }, 10);
       });
 
       buttonBg.on("pointerover", () => {
@@ -110,7 +138,10 @@ export class Toolbar {
       });
 
       buttonBg.on("pointerout", () => {
-        buttonBg.setFillStyle(bgColor);
+        // Only reset if this isn't the active button
+        if (this.activeButton !== button.id) {
+          buttonBg.setFillStyle(bgColor);
+        }
       });
 
       // Add to container and store reference

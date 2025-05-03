@@ -159,8 +159,10 @@ export class EditorScene extends Phaser.Scene {
 
     this.levelDataManager = new LevelDataManager(this);
 
+    console.log("EDITOR_SCENE: Setting up input..."); // LOGGING
     this.setupCamera();
-    this.setupInput();
+    this.setupInput(); // Ensure this is called and listeners are added
+    console.log("EDITOR_SCENE: Input setup complete."); // LOGGING
 
     this.scale.on("resize", this.handleResize, this);
     this.handleResize(this.scale.gameSize); // Initial positioning
@@ -245,10 +247,23 @@ export class EditorScene extends Phaser.Scene {
   }
 
   setupInput() {
+    console.log("EDITOR_SCENE: setupInput called."); // LOGGING
+    // Ensure the main pointerdown listener is active
+    this.input.off("pointerdown", this.handlePointerDown, this); // Remove first to avoid duplicates
     this.input.on("pointerdown", this.handlePointerDown, this);
-    // Add listeners for pointer move and up if implementing dragging
+    console.log("EDITOR_SCENE: Pointerdown listener added."); // LOGGING
 
     // Add keyboard listeners for delete
+    this.input.keyboard?.off(
+      "keydown-DELETE",
+      this.handleDeleteKeyPressed,
+      this
+    );
+    this.input.keyboard?.off(
+      "keydown-BACKSPACE",
+      this.handleDeleteKeyPressed,
+      this
+    );
     this.input.keyboard?.on(
       "keydown-DELETE",
       this.handleDeleteKeyPressed,
@@ -259,12 +274,14 @@ export class EditorScene extends Phaser.Scene {
       this.handleDeleteKeyPressed,
       this
     );
-    console.log("Keyboard delete listeners added.");
+    console.log("EDITOR_SCENE: Keyboard delete listeners added."); // LOGGING
   }
 
   handlePointerDown(pointer: Phaser.Input.Pointer) {
+    console.log("EDITOR_SCENE: handlePointerDown triggered"); // LOGGING (Top level)
     // Ignore clicks on UI elements
     if (this.isPointerOverUI(pointer)) {
+      console.log("Click ignored (over UI)");
       return;
     }
 
@@ -276,10 +293,12 @@ export class EditorScene extends Phaser.Scene {
       Math.floor(worldPoint.y / this.gridSnapSize) * this.gridSnapSize +
       this.gridSnapSize / 2;
 
-    // First check if clicking on an existing object (check entityLayer first, then platformLayer)
-    let clickedObject: Phaser.GameObjects.GameObject | null = null;
-    const hitAreaSize = 16; // Adjust as needed for easier selection
+    console.log(`Click worldPoint: {x: ${worldPoint.x}, y: ${worldPoint.y}}`);
 
+    let clickedObject: Phaser.GameObjects.GameObject | null = null;
+    const hitAreaSize = 16;
+
+    console.log("Checking entityLayer...");
     // Check Entity Layer
     for (const obj of [...this.entityLayer.list].reverse()) {
       // Reverse to check topmost first
@@ -307,6 +326,7 @@ export class EditorScene extends Phaser.Scene {
         );
         if (interactiveBounds.contains(worldPoint.x, worldPoint.y)) {
           clickedObject = obj;
+          console.log("Clicked object found in entityLayer:", clickedObject); // LOGGING
           break;
         }
       }
@@ -314,7 +334,9 @@ export class EditorScene extends Phaser.Scene {
 
     // Check Platform Layer if nothing found in entity layer
     if (!clickedObject) {
+      console.log("Checking platformLayer...");
       for (const obj of [...this.platformLayer.list].reverse()) {
+        console.log(`Checking platform object:`, obj); // LOGGING
         if (
           obj instanceof Phaser.GameObjects.Image ||
           obj instanceof Phaser.GameObjects.Sprite ||
@@ -336,22 +358,35 @@ export class EditorScene extends Phaser.Scene {
           );
           if (interactiveBounds.contains(worldPoint.x, worldPoint.y)) {
             clickedObject = obj;
+            console.log(
+              "Clicked object found in platformLayer:",
+              clickedObject
+            ); // LOGGING
             break;
+          } else {
+            console.log("Click did not hit platform interactive bounds."); // LOGGING
           }
+        } else {
+          console.log(
+            "Object in platformLayer is not an instance of Platform?",
+            obj
+          ); // LOGGING
         }
       }
     }
 
     if (clickedObject) {
       // Select the clicked object
+      console.log("Setting selected object:", clickedObject); // LOGGING
       this.setSelectedObject(clickedObject);
       this.selectedEntityType = null; // Deselect palette type
-      console.log("Selected object:", clickedObject);
     } else if (this.selectedEntityType) {
       // Place a new object if a type is selected from the palette
+      console.log("Placing new entity:", this.selectedEntityType); // LOGGING
       this.placeEntity(this.selectedEntityType, gridX, gridY);
     } else {
       // Clicked on empty space with nothing selected
+      console.log("Clicked empty space, deselecting."); // LOGGING
       this.setSelectedObject(null);
     }
   }
@@ -374,6 +409,12 @@ export class EditorScene extends Phaser.Scene {
         entity = platform;
         this.platformLayer.add(platform);
         platform.setDepth(10); // Use numeric depth
+        console.log(
+          "Placed Platform:",
+          platform,
+          "Added to platformLayer. Interactive:",
+          platform.interactive
+        ); // LOGGING
         break;
       case "enemy-large":
         const enemyLarge = new EnemyLarge(this, x, y);
@@ -418,7 +459,13 @@ export class EditorScene extends Phaser.Scene {
 
     if (entity) {
       (entity as any).entityType = entityType;
+      // Ensure interactivity is set AFTER adding to layer/scene
       entity.setInteractive();
+      console.log(
+        `Entity ${entityType} setInteractive. Interactive:`,
+        (entity as any).interactive
+      ); // LOGGING
+
       console.log(`Placed ${entityType} at (${x}, ${y})`);
       this.setSelectedObject(entity);
       this.selectedEntityType = null;

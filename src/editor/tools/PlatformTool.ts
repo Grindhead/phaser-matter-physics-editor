@@ -223,23 +223,32 @@ export class PlatformTool {
 
   deactivate(): void {
     console.log("PlatformTool.deactivate() called");
+    this.isActivating = false;
 
-    // Hide the panel
+    // Hide the panel if it exists
     if (this.panel) {
       this.panel.hide();
     }
 
-    // Remove the placement preview
+    // Destroy the placement preview if it exists
     this.destroyPlacementPreview();
 
-    // Remove the overlay
+    // Destroy the overlay if it exists
     if (this.overlay) {
       this.overlay.destroy();
       this.overlay = null;
+      console.log("PlatformTool: Overlay destroyed");
     }
 
-    // Ensure we're no longer in activating state
-    this.isActivating = false;
+    // IMPORTANT: Remove specific listeners added by this tool?
+    // Currently, the listeners are added globally in the constructor.
+    // If this tool should ONLY handle input when active, these listeners
+    // should be added in activate() and removed here.
+    // For now, we assume they are meant to be global for the scene
+    // but this might be incorrect.
+    console.log(
+      "PlatformTool: Deactivation complete (Note: Global listeners potentially remain)"
+    );
   }
 
   private createPlacementPreview(): void {

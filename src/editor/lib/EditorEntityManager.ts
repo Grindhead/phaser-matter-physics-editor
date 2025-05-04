@@ -23,11 +23,22 @@ export class EditorEntityManager {
   private isEntityDragging: boolean = false;
   private newEntityDragging: boolean = false;
   private _platformConfig: any = {};
+  // Add containers for entity layering
+  private platformContainer: Phaser.GameObjects.Container;
+  private entityContainer: Phaser.GameObjects.Container;
 
   constructor(scene: Scene) {
     this.scene = scene;
     this.levelData = LevelDataManager.createEmpty();
-
+    // Create display containers for layering
+    this.platformContainer = this.scene.add
+      .container(0, 0)
+      .setScrollFactor(1)
+      .setDepth(0);
+    this.entityContainer = this.scene.add
+      .container(0, 0)
+      .setScrollFactor(1)
+      .setDepth(1);
     // Setup input handlers for entity selection and dragging
     this.setupInputHandlers();
     // Setup keyboard handlers
@@ -232,6 +243,12 @@ export class EditorEntityManager {
     }
 
     if (entity) {
+      // Add gameObject to the correct container for layering
+      if (entity.type === "platform") {
+        this.platformContainer.add(entity.gameObject);
+      } else {
+        this.entityContainer.add(entity.gameObject);
+      }
       this.entities.push(entity);
 
       // Temporarily highlight the newly placed entity
@@ -843,6 +860,9 @@ export class EditorEntityManager {
         (platform.body as MatterJS.BodyType).collisionFilter.group = -1;
       }
 
+      // Add platform to its container for proper layering
+      this.platformContainer.add(platform);
+
       this.entities.push({
         type: "platform",
         x: platformData.x,
@@ -869,6 +889,9 @@ export class EditorEntityManager {
       // Ensure it's interactive for selection
       enemyInstance.setInteractive();
 
+      // Add enemy to entity container for proper layering
+      this.entityContainer.add(enemyInstance);
+
       this.entities.push({
         type: enemyData.type, // Use the specific type from data
         x: enemyData.x,
@@ -889,6 +912,9 @@ export class EditorEntityManager {
 
       // Ensure it's interactive for selection
       barrel.setInteractive();
+
+      // Add barrel to entity container for proper layering
+      this.entityContainer.add(barrel);
 
       this.entities.push({
         type: "barrel",
@@ -916,6 +942,9 @@ export class EditorEntityManager {
       // Ensure it's interactive for selection
       crate.setInteractive();
 
+      // Add crate to entity container for proper layering
+      this.entityContainer.add(crate);
+
       this.entities.push({
         type: `crate-${crateData.type}`,
         x: crateData.x,
@@ -938,6 +967,9 @@ export class EditorEntityManager {
       // Ensure it's interactive for selection
       finish.setInteractive();
 
+      // Add finish line to entity container for proper layering
+      this.entityContainer.add(finish);
+
       this.entities.push({
         type: "finish-line",
         x: finishLineData.x,
@@ -956,6 +988,9 @@ export class EditorEntityManager {
     this.entities.forEach((entity) => {
       entity.gameObject.destroy();
     });
+    // Clear display containers
+    this.platformContainer.removeAll();
+    this.entityContainer.removeAll();
 
     // Clear arrays
     this.entities = [];

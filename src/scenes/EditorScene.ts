@@ -2,7 +2,6 @@ import { Scene } from "phaser";
 import { EditorEntity } from "../editor/ui/Inspector";
 import { TEXTURE_ATLAS, PHYSICS } from "../lib/constants";
 import { EditorEntityManager } from "../editor/lib/EditorEntityManager";
-import { EditorUIManager } from "../editor/lib/EditorUIManager";
 import { EditorGrid } from "../editor/lib/EditorGrid";
 import { EditorLevelHandler } from "../editor/lib/EditorLevelHandler";
 import { setupAnimations } from "../lib/level-generation/createAnimations";
@@ -11,7 +10,6 @@ import Phaser from "phaser";
 export class EditorScene extends Scene {
   // Components
   private entityManager!: EditorEntityManager;
-  private uiManager!: EditorUIManager;
   private levelHandler!: EditorLevelHandler;
   // Grid renderer
   private grid!: EditorGrid;
@@ -69,37 +67,68 @@ export class EditorScene extends Scene {
     this.entityManager = new EditorEntityManager(this);
     this.levelHandler = new EditorLevelHandler(this.entityManager);
 
-    // Create UI manager with callbacks
-    const handleEntityTypeSelection = (type: string, config?: any) => {
-      this.entityManager.setSelectedEntityType(type, config);
-    };
-
-    const handlePropertyChange = (
-      entity: EditorEntity,
-      property: string,
-      value: any
-    ) => {
-      this.entityManager.updateEntityProperty(entity, property, value);
-    };
-
-    const handleRemoveEntity = (entity: EditorEntity) => {
-      this.entityManager.removeEntity(entity);
-    };
-
-    this.uiManager = new EditorUIManager(
-      this,
-      handleEntityTypeSelection,
-      handlePropertyChange,
-      () => this.levelHandler.saveLevel(),
-      () => this.uiManager.getFileInput()?.click(),
-      () => this.levelHandler.clearLevel(),
-      handleRemoveEntity
+    // Setup event handlers for UI interactions
+    this.events.on(
+      "ENTITY_SELECT",
+      (type: string, config?: any) => {
+        this.entityManager.setSelectedEntityType(type, config);
+      },
+      this
     );
 
-    // Setup file loading
-    this.uiManager.setupFileInput((file: File) =>
-      this.levelHandler.handleFileLoad(file)
+    this.events.on(
+      "PROPERTY_CHANGE",
+      (entity: EditorEntity, property: string, value: any) => {
+        this.entityManager.updateEntityProperty(entity, property, value);
+      },
+      this
     );
+
+    this.events.on(
+      "REMOVE_ENTITY",
+      (entity: EditorEntity) => {
+        this.entityManager.removeEntity(entity);
+      },
+      this
+    );
+
+    this.events.on(
+      "SAVE",
+      () => {
+        this.levelHandler.saveLevel();
+      },
+      this
+    );
+
+    this.events.on(
+      "LOAD",
+      () => {
+        const uiScene = this.scene.get("EditorUIScene") as Phaser.Scene & {
+          getFileInput: () => HTMLInputElement | null;
+        };
+        uiScene.getFileInput()?.click();
+      },
+      this
+    );
+
+    this.events.on(
+      "CLEAR",
+      () => {
+        this.levelHandler.clearLevel();
+      },
+      this
+    );
+
+    this.events.on(
+      "FILE_LOAD",
+      (file: File) => {
+        this.levelHandler.handleFileLoad(file);
+      },
+      this
+    );
+
+    // Launch the UI scene for editor UI
+    this.scene.launch("EditorUIScene");
 
     console.log("Level Editor initialized!");
   }

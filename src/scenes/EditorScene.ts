@@ -132,12 +132,4 @@ export class EditorScene extends Scene {
 
     console.log("Level Editor initialized!");
   }
-
-  update() {
-    // No update logic needed as components handle their own updates
-  }
-
-  handleResize(gameSize: Phaser.Structs.Size) {
-    // ... existing code ...
-  }
 }

@@ -100,23 +100,15 @@ export class PaletteButton {
       .on("pointerout", () => {
         buttonBg.setFillStyle(0x444444);
       })
-      .on(
-        "pointerdown",
-        (
-          pointer: Phaser.Input.Pointer,
-          localX: number,
-          localY: number,
-          event: Phaser.Types.Input.EventData
-        ) => {
-          // Prevent click from propagating to scene handlers
-          event.stopPropagation();
-          if (this.entity.needsConfiguration) {
-            this.onSelect(this.entity.type, false);
-          } else {
-            this.onSelect(this.entity.type, true);
-          }
+      .on("pointerdown", (event: Phaser.Types.Input.EventData) => {
+        // Prevent click from propagating to scene handlers
+        event.stopPropagation();
+        if (this.entity.needsConfiguration) {
+          this.onSelect(this.entity.type, false);
+        } else {
+          this.onSelect(this.entity.type, true);
         }
-      );
+      });
   }
 
   setSelected(selected: boolean): void {

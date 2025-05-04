@@ -39,7 +39,7 @@ export class EditorGrid {
     this.gridGraphics.strokeRect(0, 0, width, height);
 
     // Center the grid relative to (0,0)
-    this.gridGraphics.setPosition(-width / 2, -height / 2);
+    this.gridGraphics.setPosition(0, 0);
 
     // Make sure the grid scrolls with the camera
     this.gridGraphics.setScrollFactor(1);

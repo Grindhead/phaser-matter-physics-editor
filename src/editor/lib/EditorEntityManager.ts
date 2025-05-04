@@ -76,12 +76,9 @@ export class EditorEntityManager {
           // Exit placement mode
           this.selectedEntityType = null;
         } else {
-          // Regular click in placement mode - place the entity
-          this.placeEntity(this.selectedEntityType, worldX, worldY);
-
-          // Exit placement mode immediately after placing an entity
-          // This allows for direct creation by clicking palette buttons
-          this.selectedEntityType = null;
+          // Regular click in placement mode - create and start dragging new entity
+          this.createAndDragEntity(this.selectedEntityType as string);
+          // Exit placement mode is handled inside createAndDragEntity
         }
       } else {
         // Not in placement mode - select or deselect entities
@@ -1031,7 +1028,14 @@ export class EditorEntityManager {
       config
     );
 
-    // Store platform configuration if provided
+    // Deselect if no type provided
+    if (type === null) {
+      this.selectedEntityType = null;
+      this.selectEntity(null);
+      return;
+    }
+
+    // Handle platform configuration and creation
     if (type === "platform" && config) {
       console.log("Setting platform config:", config);
       this._platformConfig = { ...config };
@@ -1053,10 +1057,19 @@ export class EditorEntityManager {
       }
     }
 
-    // Normal handling for other types
-    this.selectedEntityType = type;
+    // Immediate create and drag for non-platform entities
+    if (type !== "platform") {
+      // Clear any currently selected entity
+      this.selectEntity(null);
 
-    // Clear any currently selected entity
+      // Create the entity and start dragging immediately
+      this.createAndDragEntity(type);
+
+      return;
+    }
+
+    // For platform placement mode without immediate coordinates, enter placement mode
+    this.selectedEntityType = type;
     this.selectEntity(null);
   }
 

@@ -19,6 +19,7 @@ import { CrateSmall } from "../../entities/Items/CrateSmall";
 import { CrateBig } from "../../entities/Items/CrateBig";
 import { Barrel } from "../../entities/Items/Barrel";
 import { FinishLine } from "../../entities/Items/FinishLine";
+import { Player } from "../../entities/Player/Player";
 
 export class EditorScene extends Phaser.Scene {
   private palette!: Palette;
@@ -428,6 +429,12 @@ export class EditorScene extends Phaser.Scene {
         entity = finishLine;
         this.entityLayer.add(finishLine);
         finishLine.setDepth(20); // Use numeric depth
+        break;
+      case "player":
+        const player = new Player(this, x, y);
+        entity = player;
+        this.entityLayer.add(player);
+        player.setDepth(15);
         break;
       // Add cases for other entity types
       default:

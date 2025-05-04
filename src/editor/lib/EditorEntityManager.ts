@@ -12,6 +12,7 @@ import { FinishLineInterface } from "../../entities/Finish/Finish";
 import { Barrel } from "../../entities/Barrel/Barrel";
 import { Finish } from "../../entities/Finish/Finish";
 import { Crate } from "../../entities/Crate/Crate";
+import { Player } from "../../entities/Player/Player";
 
 export class EditorEntityManager {
   private scene: Scene;
@@ -204,6 +205,9 @@ export class EditorEntityManager {
     let entity: EditorEntity | null = null;
 
     switch (type) {
+      case "player":
+        entity = this.createPlayer(snappedX, snappedY);
+        break;
       case "platform":
         entity = this.createPlatform(snappedX, snappedY);
         break;
@@ -1164,5 +1168,26 @@ export class EditorEntityManager {
     if (this.selectedEntity === entity) {
       this.selectedEntity = null;
     }
+  }
+
+  /**
+   * Creates a player entity in editor mode.
+   */
+  private createPlayer(x: number, y: number): EditorEntity {
+    // Create the player instance
+    const player = new Player(this.scene, x, y);
+    // Disable physics collisions in editor mode
+    if (player.body) {
+      (player.body as MatterJS.BodyType).collisionFilter.group = -1;
+    }
+    // Make interactive for selection and dragging
+    player.setInteractive();
+    return {
+      type: "player",
+      x,
+      y,
+      gameObject: player,
+      data: { x, y } as any,
+    };
   }
 }

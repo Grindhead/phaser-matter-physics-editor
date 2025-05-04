@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import Phaser from "phaser";
 import { TILE_WIDTH, TILE_HEIGHT } from "../../lib/constants";
 import { EditorEntity } from "../ui/Inspector";
 import { LevelData, LevelDataManager } from "./LevelData";
@@ -26,6 +27,8 @@ export class EditorEntityManager {
   // Add containers for entity layering
   private platformContainer: Phaser.GameObjects.Container;
   private entityContainer: Phaser.GameObjects.Container;
+  // Bounding rectangle for UI (screen coords)
+  private uiBounds?: Phaser.Geom.Rectangle;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -49,8 +52,27 @@ export class EditorEntityManager {
    * Sets up all input handlers related to entity manipulation
    */
   private setupInputHandlers(): void {
+    // Add spacebar-based grid panning state
+    const spaceKey = this.scene.input.keyboard!.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE
+    );
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+
     // Setup click handler for entity placement and selection
     this.scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      // Skip clicks over UI
+      if (this.uiBounds && this.uiBounds.contains(pointer.x, pointer.y)) {
+        return;
+      }
+      // If spacebar is held, initiate grid panning and skip entity logic
+      if (spaceKey.isDown) {
+        isPanning = true;
+        panStartX = pointer.x;
+        panStartY = pointer.y;
+        return;
+      }
       // Skip if not left-click or if camera is being dragged
       if (!pointer.leftButtonDown()) return;
 
@@ -95,8 +117,22 @@ export class EditorEntityManager {
       }
     });
 
-    // Handle entity dragging
+    // Handle entity dragging and grid panning
     this.scene.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+      // Skip drags over UI
+      if (this.uiBounds && this.uiBounds.contains(pointer.x, pointer.y)) {
+        return;
+      }
+      // If currently panning, move camera and skip entity dragging
+      if (isPanning && pointer.leftButtonDown()) {
+        const dx = pointer.x - panStartX;
+        const dy = pointer.y - panStartY;
+        this.scene.cameras.main.scrollX -= dx / this.scene.cameras.main.zoom;
+        this.scene.cameras.main.scrollY -= dy / this.scene.cameras.main.zoom;
+        panStartX = pointer.x;
+        panStartY = pointer.y;
+        return;
+      }
       if (
         this.isEntityDragging &&
         this.selectedEntity &&
@@ -158,8 +194,13 @@ export class EditorEntityManager {
       }
     });
 
-    // Handle end of entity dragging
+    // Handle end of entity dragging and panning
     this.scene.input.on("pointerup", () => {
+      // End panning if active
+      if (isPanning) {
+        isPanning = false;
+        return;
+      }
       if (this.isEntityDragging && this.selectedEntity) {
         // Update entity data one last time to ensure all changes are saved
         this.updateEntityInLevelData(this.selectedEntity);
@@ -181,7 +222,7 @@ export class EditorEntityManager {
    * Sets up keyboard handlers for actions like deletion.
    */
   private setupKeyboardHandlers(): void {
-    this.scene.input.keyboard?.on("keydown", (event: KeyboardEvent) => {
+    this.scene.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
       if (event.key === "Delete" || event.key === "Backspace") {
         console.log("EDITOR_ENTITY_MANAGER: Delete/Backspace key pressed.");
         event.preventDefault();
@@ -1237,5 +1278,12 @@ export class EditorEntityManager {
       gameObject: player,
       data: { x, y } as any,
     };
+  }
+
+  /**
+   * Sets the UI bounding rectangle to skip pointer events over UI.
+   */
+  public setUIBounds(bounds: Phaser.Geom.Rectangle): void {
+    this.uiBounds = bounds;
   }
 }

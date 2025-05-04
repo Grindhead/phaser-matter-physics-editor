@@ -34,6 +34,10 @@ export class EditorGrid {
     // Stroke the lines
     this.gridGraphics.strokePath();
 
+    // Draw red border around the grid
+    this.gridGraphics.lineStyle(2, 0xff0000, 1);
+    this.gridGraphics.strokeRect(0, 0, width, height);
+
     // Center the grid relative to (0,0)
     this.gridGraphics.setPosition(-width / 2, -height / 2);
 

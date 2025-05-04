@@ -6,12 +6,20 @@ import { EditorUIManager } from "../editor/lib/EditorUIManager";
 import { EditorGrid } from "../editor/lib/EditorGrid";
 import { EditorLevelHandler } from "../editor/lib/EditorLevelHandler";
 import { setupAnimations } from "../lib/level-generation/createAnimations";
+import Phaser from "phaser";
 
 export class EditorScene extends Scene {
   // Components
   private entityManager!: EditorEntityManager;
   private uiManager!: EditorUIManager;
   private levelHandler!: EditorLevelHandler;
+  // Grid renderer
+  private grid!: EditorGrid;
+  // Spacebar-driven panning state
+  private spaceKey!: Phaser.Input.Keyboard.Key;
+  private isSpacePanning: boolean = false;
+  private panLastX: number = 0;
+  private panLastY: number = 0;
 
   constructor() {
     super("EditorScene");
@@ -29,8 +37,33 @@ export class EditorScene extends Scene {
     // Setup animations
     setupAnimations(this);
 
-    // Create grid
-    new EditorGrid(this);
+    // Create and store grid for drawing
+    this.grid = new EditorGrid(this);
+    // Setup spacebar-driven pan: hold SPACE and drag to move grid
+    this.spaceKey = this.input.keyboard!.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE
+    );
+    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      if (pointer.leftButtonDown() && this.spaceKey.isDown) {
+        this.isSpacePanning = true;
+        this.panLastX = pointer.x;
+        this.panLastY = pointer.y;
+      }
+    });
+    this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+      if (this.isSpacePanning && pointer.leftButtonDown()) {
+        const dx = pointer.x - this.panLastX;
+        const dy = pointer.y - this.panLastY;
+        this.cameras.main.scrollX -= dx / this.cameras.main.zoom;
+        this.cameras.main.scrollY -= dy / this.cameras.main.zoom;
+        this.panLastX = pointer.x;
+        this.panLastY = pointer.y;
+        this.grid.resize();
+      }
+    });
+    this.input.on("pointerup", () => {
+      this.isSpacePanning = false;
+    });
 
     // Initialize managers in correct order
     this.entityManager = new EditorEntityManager(this);
@@ -73,5 +106,9 @@ export class EditorScene extends Scene {
 
   update() {
     // No update logic needed as components handle their own updates
+  }
+
+  handleResize(gameSize: Phaser.Structs.Size) {
+    // ... existing code ...
   }
 }

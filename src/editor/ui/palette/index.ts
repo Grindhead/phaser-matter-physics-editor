@@ -24,6 +24,23 @@ export class Palette {
     // Create container
     this.container = scene.add.container(config.x, config.y);
 
+    // Intercept any pointerdown on the palette container to prevent scene callbacks
+    this.container.setInteractive(
+      new Phaser.Geom.Rectangle(
+        0,
+        0,
+        config.width,
+        this.calculateHeight(config)
+      ),
+      Phaser.Geom.Rectangle.Contains
+    );
+    this.container.on(
+      "pointerdown",
+      (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: any) => {
+        event.stopPropagation();
+      }
+    );
+
     // Create background
     const bg = config.background || { color: 0x222222, alpha: 0.8 };
     this.background = scene.add.rectangle(

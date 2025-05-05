@@ -53,6 +53,7 @@ export class PaletteButton {
 
     // Use the provided width, but keep the static height
     this.buttonWidth = width;
+    this.buttonHeight = BUTTON_HEIGHT;
 
     // Create button container
     this.container = this.scene.add.container(x, y);
@@ -62,7 +63,7 @@ export class PaletteButton {
       0,
       0,
       this.buttonWidth,
-      BUTTON_HEIGHT,
+      this.buttonHeight,
       0x444444
     );
     this.buttonBg.setOrigin(0, 0);
@@ -107,10 +108,6 @@ export class PaletteButton {
       }
     }
 
-    // Apply a predetermined scale
-    const finalScale = this.entity.scale || 0.7;
-    entityInstance.setScale(finalScale);
-
     // Set origin for consistent positioning
     if (typeof entityInstance.setOrigin === "function") {
       entityInstance.setOrigin(0.5, 0.5);
@@ -119,19 +116,58 @@ export class PaletteButton {
     // Reset position to origin to start with a clean slate
     entityInstance.setPosition(0, 0);
 
-    // Get predefined static position for this entity type
-    const position =
-      ENTITY_POSITIONS[this.entity.type] || ENTITY_POSITIONS["default"];
+    // Calculate available space for the entity
+    const availableWidth = this.buttonWidth * 0.45; // Use 45% of button width for entity
+    const availableHeight = this.buttonHeight * 0.8; // Use 80% of button height
 
-    // Use custom offsets if defined in the entity configuration
-    const posX =
-      this.entity.offsetX !== undefined ? this.entity.offsetX : position.x;
-    const posY =
-      this.entity.offsetY !== undefined ? this.entity.offsetY : position.y;
+    // Get entity dimensions (if available)
+    let entityWidth = 0;
+    let entityHeight = 0;
 
-    // Apply X and Y positions separately - force them to be numbers
-    entityInstance.x = Number(posX);
-    entityInstance.y = Number(posY);
+    if (
+      entityInstance.width !== undefined &&
+      entityInstance.height !== undefined
+    ) {
+      entityWidth = entityInstance.width;
+      entityHeight = entityInstance.height;
+    } else if (
+      entityInstance.displayWidth !== undefined &&
+      entityInstance.displayHeight !== undefined
+    ) {
+      entityWidth = entityInstance.displayWidth;
+      entityHeight = entityInstance.displayHeight;
+    }
+
+    // Calculate appropriate scale to fit within available space
+    // while maintaining aspect ratio
+    let finalScale = this.entity.scale || 0.7;
+
+    if (entityWidth && entityHeight) {
+      const widthScale = availableWidth / entityWidth;
+      const heightScale = availableHeight / entityHeight;
+
+      // Use the smaller scale to ensure it fits within both dimensions
+      const fitScale = Math.min(widthScale, heightScale);
+
+      // Apply a sensible maximum scale to prevent very large or very small entities
+      finalScale = Math.min(Math.max(fitScale, 0.3), 1.2);
+    }
+
+    // Apply the calculated scale
+    entityInstance.setScale(finalScale);
+
+    // Position entity in the left portion of the button
+    entityInstance.x = this.buttonWidth * 0.25; // 25% from left
+    entityInstance.y = this.buttonHeight * 0.5; // Center vertically
+
+    // Apply custom offsets if defined in the entity configuration
+    if (this.entity.offsetX !== undefined) {
+      entityInstance.x += this.entity.offsetX;
+    }
+
+    if (this.entity.offsetY !== undefined) {
+      entityInstance.y += this.entity.offsetY;
+    }
 
     // Add to container with a consistent depth
     entityInstance.setDepth(1);
@@ -143,7 +179,7 @@ export class PaletteButton {
   private addLabel(): void {
     const label = this.scene.add.text(
       this.buttonWidth * 0.6,
-      BUTTON_HEIGHT * 0.5,
+      this.buttonHeight * 0.5,
       this.entity.displayName,
       {
         fontFamily: "Arial",

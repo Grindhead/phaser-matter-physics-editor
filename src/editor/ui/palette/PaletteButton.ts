@@ -15,14 +15,20 @@ type EntityPositions = {
 const BUTTON_HEIGHT = 50;
 const BUTTON_WIDTH = 200;
 const ENTITY_POSITIONS: EntityPositions = {
-  player: { x: 50, y: 25 },
+  player: { x: 45, y: 25 },
   "enemy-large": { x: 50, y: 25 },
   "enemy-small": { x: 45, y: 25 },
   "crate-small": { x: 50, y: 25 },
   "crate-big": { x: 50, y: 25 },
-  barrel: { x: 50, y: 25 },
+  barrel: { x: 50, y: -5 },
   "finish-line": { x: 50, y: 25 },
   default: { x: 50, y: 25 },
+};
+
+// Define entity-specific scales
+const ENTITY_SCALES: Record<string, number> = {
+  barrel: 0.8,
+  default: 0.7,
 };
 
 export class PaletteButton {
@@ -116,49 +122,59 @@ export class PaletteButton {
     // Reset position to origin to start with a clean slate
     entityInstance.setPosition(0, 0);
 
-    // Calculate available space for the entity
-    const availableWidth = this.buttonWidth * 0.45; // Use 45% of button width for entity
-    const availableHeight = this.buttonHeight * 0.8; // Use 80% of button height
+    // For barrel, directly apply the scale without auto-calculation
+    if (this.entity.type === "barrel") {
+      entityInstance.setScale(ENTITY_SCALES.barrel);
+    } else {
+      // Calculate available space for other entities
+      const availableWidth = this.buttonWidth * 0.45;
+      const availableHeight = this.buttonHeight * 0.8;
 
-    // Get entity dimensions (if available)
-    let entityWidth = 0;
-    let entityHeight = 0;
+      // Get entity dimensions (if available)
+      let entityWidth = 0;
+      let entityHeight = 0;
 
-    if (
-      entityInstance.width !== undefined &&
-      entityInstance.height !== undefined
-    ) {
-      entityWidth = entityInstance.width;
-      entityHeight = entityInstance.height;
-    } else if (
-      entityInstance.displayWidth !== undefined &&
-      entityInstance.displayHeight !== undefined
-    ) {
-      entityWidth = entityInstance.displayWidth;
-      entityHeight = entityInstance.displayHeight;
+      if (
+        entityInstance.width !== undefined &&
+        entityInstance.height !== undefined
+      ) {
+        entityWidth = entityInstance.width;
+        entityHeight = entityInstance.height;
+      } else if (
+        entityInstance.displayWidth !== undefined &&
+        entityInstance.displayHeight !== undefined
+      ) {
+        entityWidth = entityInstance.displayWidth;
+        entityHeight = entityInstance.displayHeight;
+      }
+
+      // Calculate appropriate scale to fit within available space
+      // while maintaining aspect ratio
+      let finalScale =
+        this.entity.scale ||
+        ENTITY_SCALES[this.entity.type] ||
+        ENTITY_SCALES.default;
+
+      if (entityWidth && entityHeight) {
+        const widthScale = availableWidth / entityWidth;
+        const heightScale = availableHeight / entityHeight;
+
+        // Use the smaller scale to ensure it fits within both dimensions
+        const fitScale = Math.min(widthScale, heightScale);
+
+        // Apply a sensible maximum scale to prevent very large or very small entities
+        finalScale = Math.min(Math.max(fitScale, 0.3), 1.2);
+      }
+
+      // Apply the calculated scale
+      entityInstance.setScale(finalScale);
     }
 
-    // Calculate appropriate scale to fit within available space
-    // while maintaining aspect ratio
-    let finalScale = this.entity.scale || 0.7;
-
-    if (entityWidth && entityHeight) {
-      const widthScale = availableWidth / entityWidth;
-      const heightScale = availableHeight / entityHeight;
-
-      // Use the smaller scale to ensure it fits within both dimensions
-      const fitScale = Math.min(widthScale, heightScale);
-
-      // Apply a sensible maximum scale to prevent very large or very small entities
-      finalScale = Math.min(Math.max(fitScale, 0.3), 1.2);
-    }
-
-    // Apply the calculated scale
-    entityInstance.setScale(finalScale);
-
-    // Position entity in the left portion of the button
-    entityInstance.x = this.buttonWidth * 0.25; // 25% from left
-    entityInstance.y = this.buttonHeight * 0.5; // Center vertically
+    // Use predefined position based on entity type
+    const entityPosition =
+      ENTITY_POSITIONS[this.entity.type] || ENTITY_POSITIONS.default;
+    entityInstance.x = entityPosition.x;
+    entityInstance.y = entityPosition.y;
 
     // Apply custom offsets if defined in the entity configuration
     if (this.entity.offsetX !== undefined) {

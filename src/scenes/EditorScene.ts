@@ -6,6 +6,7 @@ import { EditorGrid } from "../editor/lib/EditorGrid";
 import { EditorLevelHandler } from "../editor/lib/EditorLevelHandler";
 import { setupAnimations } from "../lib/level-generation/createAnimations";
 import Phaser from "phaser";
+import { EditorUIManager } from "../editor/lib/EditorUIManager";
 
 export class EditorScene extends Scene {
   // Components
@@ -63,9 +64,62 @@ export class EditorScene extends Scene {
       this.isSpacePanning = false;
     });
 
-    // Initialize managers in correct order
-    this.entityManager = new EditorEntityManager(this);
+    // Launch the UI scene *first*
+    this.scene.launch("EditorUIScene");
+
+    // Get the UI scene (it should be launched now)
+    const uiScene = this.scene.get("EditorUIScene");
+    if (!uiScene) {
+      console.error("EditorScene: Could not get launched EditorUIScene.");
+      return;
+    }
+
+    // Listen for the UI Manager to be ready
+    uiScene.events.once(
+      "uiManagerReady",
+      (uiManager: EditorUIManager) => {
+        console.log("EditorScene: uiManagerReady event received.");
+        // Initialize managers *after* UI manager is ready
+        this.initializeManagers(uiManager);
+      },
+      this
+    );
+
+    // Launch the scene responsible for displaying entities on top
+    this.scene.launch("EntityDisplayScene");
+
+    console.log("Level Editor create() finished initial setup.");
+  }
+
+  /**
+   * Initializes EntityManager and LevelHandler once the UIManager is ready.
+   */
+  private initializeManagers(uiManager: EditorUIManager): void {
+    console.log("EditorScene: Initializing managers...");
+    // Provide the clearPaletteSelection callback to EntityManager
+    this.entityManager = new EditorEntityManager(this, () => {
+      uiManager.clearPaletteSelection();
+    });
     this.levelHandler = new EditorLevelHandler(this.entityManager);
+
+    // Setup event handlers that depend on entityManager
+    this.setupEditorEventHandlers();
+
+    console.log("EditorScene: Managers initialized.");
+  }
+
+  /**
+   * Sets up event listeners for UI interactions after managers are initialized.
+   */
+  private setupEditorEventHandlers(): void {
+    // Clear existing listeners if any (safety measure)
+    this.events.off("ENTITY_SELECT");
+    this.events.off("PROPERTY_CHANGE");
+    this.events.off("REMOVE_ENTITY");
+    this.events.off("SAVE");
+    this.events.off("LOAD");
+    this.events.off("CLEAR");
+    this.events.off("FILE_LOAD");
 
     // Setup event handlers for UI interactions
     this.events.on(
@@ -127,15 +181,6 @@ export class EditorScene extends Scene {
       this
     );
 
-    // Launch the UI scene for editor UI
-    this.scene.launch("EditorUIScene");
-
-    // Launch the scene responsible for displaying entities on top
-    this.scene.launch("EntityDisplayScene");
-
-    // Ensure the UI scene is rendered on top
-    // this.scene.bringToTop("EditorUIScene"); // Removed - will be called from EditorUIScene itself
-
-    console.log("Level Editor initialized!");
+    console.log("EditorScene: Event handlers set up.");
   }
 }

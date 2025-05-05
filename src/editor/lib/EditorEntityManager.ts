@@ -26,10 +26,12 @@ export class EditorEntityManager {
   private _platformConfig: any = {};
   // Bounding rectangle for UI (screen coords)
   private uiBounds?: Phaser.Geom.Rectangle;
+  private clearPaletteCallback: () => void;
 
-  constructor(scene: Scene) {
+  constructor(scene: Scene, clearPaletteCallback: () => void) {
     this.scene = scene;
     this.levelData = LevelDataManager.createEmpty();
+    this.clearPaletteCallback = clearPaletteCallback;
     // Setup input handlers for entity selection and dragging
     this.setupInputHandlers();
     // Setup keyboard handlers
@@ -87,6 +89,7 @@ export class EditorEntityManager {
           // Exit placement mode
           this.selectedEntityType = null;
           this.scene.registry.set("isPlacementModeActive", false);
+          this.clearPaletteCallback();
         } else {
           // Regular click in placement mode - Place the selected entity type
           const entityTypeToPlace = this.selectedEntityType;
@@ -115,6 +118,7 @@ export class EditorEntityManager {
           // Exit placement mode regardless of whether placement succeeded
           this.selectedEntityType = null;
           this.scene.registry.set("isPlacementModeActive", false);
+          this.clearPaletteCallback();
         }
       } else {
         // Not in placement mode - select or deselect entities

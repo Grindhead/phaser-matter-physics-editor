@@ -9,6 +9,7 @@ export class PaletteButton {
   buttonWidth: number;
   buttonHeight: number;
   onSelect: (type: string, generate: boolean) => void;
+  private isSelected: boolean = false;
 
   constructor(
     scene: Scene,
@@ -95,10 +96,16 @@ export class PaletteButton {
     buttonBg
       .setInteractive()
       .on("pointerover", () => {
-        buttonBg.setFillStyle(0x666666);
+        if (!this.isSelected) {
+          buttonBg.setFillStyle(0x666666);
+        }
       })
       .on("pointerout", () => {
-        buttonBg.setFillStyle(0x444444);
+        if (!this.isSelected) {
+          buttonBg.setFillStyle(0x444444);
+        } else {
+          buttonBg.setFillStyle(0x88aaff);
+        }
       })
       .on(
         "pointerdown",
@@ -122,6 +129,7 @@ export class PaletteButton {
   }
 
   setSelected(selected: boolean): void {
+    this.isSelected = selected;
     const buttonBg = this.container.getAt(0) as Phaser.GameObjects.Rectangle;
     buttonBg.setFillStyle(selected ? 0x88aaff : 0x444444);
   }

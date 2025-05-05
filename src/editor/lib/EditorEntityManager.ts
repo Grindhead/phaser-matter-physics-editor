@@ -267,41 +267,60 @@ export class EditorEntityManager {
    * Places a new entity of the specified type at the given coordinates
    */
   public placeEntity(type: string, x: number, y: number): EditorEntity | null {
+    console.log(
+      `EditorEntityManager.placeEntity called with type: ${type}, x: ${x}, y: ${y}`
+    );
+
     // Snap to grid
     const snappedX = Math.floor(x / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
     const snappedY =
       Math.floor(y / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2;
 
+    console.log(`Snapped position: x: ${snappedX}, y: ${snappedY}`);
+
     let entity: EditorEntity | null = null;
 
     switch (type) {
       case "player":
+        console.log("Creating player entity");
         entity = this.createPlayer(snappedX, snappedY);
         break;
       case "platform":
+        console.log("Creating platform entity");
         entity = this.createPlatform(snappedX, snappedY);
         break;
       case "enemy-large":
+        console.log("Creating large enemy entity");
         entity = this.createEnemy(snappedX, snappedY, "enemy-large");
         break;
       case "enemy-small":
+        console.log("Creating small enemy entity");
         entity = this.createEnemy(snappedX, snappedY, "enemy-small");
         break;
       case "crate-small":
+        console.log("Creating small crate entity");
         entity = this.createCrate(snappedX, snappedY, "small");
         break;
       case "crate-big":
+        console.log("Creating big crate entity");
         entity = this.createCrate(snappedX, snappedY, "big");
         break;
       case "barrel":
+        console.log("Creating barrel entity");
         entity = this.createBarrel(snappedX, snappedY);
         break;
       case "finish-line":
+        console.log("Creating finish line entity");
         entity = this.createFinishLine(snappedX, snappedY);
+        break;
+      default:
+        console.error(`Unknown entity type: ${type}`);
         break;
     }
 
     if (entity) {
+      console.log(`Entity created successfully: ${type}`, entity);
+
       // Emit event for EntityDisplayScene to handle adding the visual
       this.scene.events.emit(
         "ADD_ENTITY_TO_DISPLAY",
@@ -313,6 +332,8 @@ export class EditorEntityManager {
 
       // Temporarily highlight the newly placed entity
       this.temporarilyHighlightEntity(entity);
+    } else {
+      console.error(`Failed to create entity of type: ${type}`);
     }
 
     return entity;

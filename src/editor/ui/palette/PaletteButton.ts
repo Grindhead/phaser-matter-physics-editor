@@ -14,6 +14,7 @@ type EntityPositions = {
 // Define static constants for consistent button dimensions
 const BUTTON_HEIGHT = 50;
 const BUTTON_WIDTH = 200;
+const BUTTON_PADDING = 10; // Minimum padding around entities
 const ENTITY_POSITIONS: EntityPositions = {
   player: { x: 45, y: 25 },
   "enemy-large": { x: 50, y: 25 },
@@ -39,7 +40,6 @@ export class PaletteButton {
   buttonHeight: number = BUTTON_HEIGHT;
   onSelect: (type: string, generate: boolean) => void;
   private isSelected: boolean = false;
-  private entityInstance: EntityInstance;
   private buttonBg: Phaser.GameObjects.Rectangle;
   private dragStartPosition = { x: 0, y: 0 };
   private isDragging: boolean = false;
@@ -75,8 +75,8 @@ export class PaletteButton {
     this.buttonBg.setOrigin(0, 0);
     this.container.add(this.buttonBg);
 
-    // Create entity instance for display
-    this.entityInstance = this.addEntityPreview();
+    // Create entity insta
+    this.addEntityPreview();
 
     // Add text label
     this.addLabel();
@@ -126,7 +126,8 @@ export class PaletteButton {
     if (this.entity.type === "barrel") {
       entityInstance.setScale(ENTITY_SCALES.barrel);
     } else {
-      // Calculate available space for other entities
+      // Calculate available space for other entities, accounting for padding
+      // Don't change the available width/height calculation as it affects positioning
       const availableWidth = this.buttonWidth * 0.45;
       const availableHeight = this.buttonHeight * 0.8;
 
@@ -149,7 +150,7 @@ export class PaletteButton {
       }
 
       // Calculate appropriate scale to fit within available space
-      // while maintaining aspect ratio
+      // while maintaining aspect ratio and ensuring padding
       let finalScale =
         this.entity.scale ||
         ENTITY_SCALES[this.entity.type] ||
@@ -170,7 +171,7 @@ export class PaletteButton {
       entityInstance.setScale(finalScale);
     }
 
-    // Use predefined position based on entity type
+    // Use predefined position based on entity type - keep the original positions
     const entityPosition =
       ENTITY_POSITIONS[this.entity.type] || ENTITY_POSITIONS.default;
     entityInstance.x = entityPosition.x;

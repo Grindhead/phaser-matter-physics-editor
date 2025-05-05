@@ -76,8 +76,8 @@ export class CameraPanManager {
         this.lastX = pointer.x;
         this.lastY = pointer.y;
 
-        // Emit pan event
-        this.eventBus.emit(EditorEvents.CAMERA_PAN, {
+        // Emit pan event - using CAMERA_PANNING instead of CAMERA_PAN
+        this.eventBus.emit(EditorEvents.CAMERA_PANNING, {
           x: pointer.x,
           y: pointer.y,
           dx,
@@ -105,8 +105,13 @@ export class CameraPanManager {
     if (this.isPanning) {
       this.isPanning = false;
 
-      // Emit pan end event
-      this.eventBus.emit(EditorEvents.CAMERA_PAN_END);
+      // Emit pan end event with required payload
+      this.eventBus.emit(EditorEvents.CAMERA_PAN_END, {
+        x: this.lastX,
+        y: this.lastY,
+        dx: 0,
+        dy: 0,
+      });
     }
   }
 

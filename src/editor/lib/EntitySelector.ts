@@ -15,6 +15,7 @@ export class EntitySelector {
   private entities: EditorEntity[] = [];
   private uiBounds?: Phaser.Geom.Rectangle;
   private readonly HIGHLIGHT_TINT: number = 0x44aaff; // Blue highlight tint
+  private isDeselecting: boolean = false; // Flag to prevent recursive deselection
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -187,11 +188,20 @@ export class EntitySelector {
     // Skip if selecting the same entity
     if (entity === this.selectedEntity) return;
 
+    // Prevent recursive deselection
+    if (this.isDeselecting) return;
+
     // Deselect the current entity
     if (this.selectedEntity) {
+      // Set the flag to prevent recursion
+      this.isDeselecting = true;
+
       // Clear tint from the previously selected entity
       this.clearTintFromEntity(this.selectedEntity);
       this.eventBus.emit(EditorEvents.ENTITY_DESELECTED, this.selectedEntity);
+
+      // Reset flag after deselection complete
+      this.isDeselecting = false;
     }
 
     // Update selection
@@ -280,6 +290,24 @@ export class EntitySelector {
       },
       this
     );
+
+    // Deselect entity when a new entity is placed
+    this.eventBus.on(
+      EditorEvents.ENTITY_PLACED,
+      () => {
+        this.selectEntity(null);
+      },
+      this
+    );
+
+    // Also listen for the prefixed version
+    this.eventBus.on(
+      `EB_${EditorEvents.ENTITY_PLACED}`,
+      () => {
+        this.selectEntity(null);
+      },
+      this
+    );
   }
 
   /**
@@ -354,5 +382,8 @@ export class EntitySelector {
     // Remove event listeners
     this.scene.input.off("pointerdown");
     this.eventBus.off(EditorEvents.ENTITY_REMOVED, undefined, this);
+    this.eventBus.off(`EB_${EditorEvents.ENTITY_REMOVED}`, undefined, this);
+    this.eventBus.off(EditorEvents.ENTITY_PLACED, undefined, this);
+    this.eventBus.off(`EB_${EditorEvents.ENTITY_PLACED}`, undefined, this);
   }
 }

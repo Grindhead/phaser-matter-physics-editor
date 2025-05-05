@@ -130,6 +130,12 @@ export class EditorScene extends Scene {
     // Launch the UI scene for editor UI
     this.scene.launch("EditorUIScene");
 
+    // Launch the scene responsible for displaying entities on top
+    this.scene.launch("EntityDisplayScene");
+
+    // Ensure the UI scene is rendered on top
+    // this.scene.bringToTop("EditorUIScene"); // Removed - will be called from EditorUIScene itself
+
     console.log("Level Editor initialized!");
   }
 }

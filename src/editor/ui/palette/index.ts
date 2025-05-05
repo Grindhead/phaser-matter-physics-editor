@@ -21,8 +21,8 @@ export class Palette {
     this.onSelectCallback = onSelect;
     this.entities = getEntityDefinitions();
 
-    // Create container
-    this.container = scene.add.container(config.x, config.y);
+    // Create container and set depth
+    this.container = scene.add.container(config.x, config.y).setDepth(10);
 
     // Intercept any pointerdown on the palette container to prevent scene callbacks
     this.container.setInteractive(

@@ -39,5 +39,10 @@ export class EditorUIScene extends Phaser.Scene {
     this.uiManager.setupFileInput((file: File) => {
       editorScene.events.emit("FILE_LOAD", file);
     });
+
+    // Bring this UI scene to the top after a short delay -- No longer needed, launch order handles it
+    // this.time.delayedCall(10, () => {
+    //   this.scene.bringToTop();
+    // });
   }
 }

@@ -24,24 +24,12 @@ export class EditorEntityManager {
   private isEntityDragging: boolean = false;
   private newEntityDragging: boolean = false;
   private _platformConfig: any = {};
-  // Add containers for entity layering
-  private platformContainer: Phaser.GameObjects.Container;
-  private entityContainer: Phaser.GameObjects.Container;
   // Bounding rectangle for UI (screen coords)
   private uiBounds?: Phaser.Geom.Rectangle;
 
   constructor(scene: Scene) {
     this.scene = scene;
     this.levelData = LevelDataManager.createEmpty();
-    // Create display containers for layering
-    this.platformContainer = this.scene.add
-      .container(0, 0)
-      .setScrollFactor(1)
-      .setDepth(0);
-    this.entityContainer = this.scene.add
-      .container(0, 0)
-      .setScrollFactor(1)
-      .setDepth(1);
     // Setup input handlers for entity selection and dragging
     this.setupInputHandlers();
     // Setup keyboard handlers
@@ -281,12 +269,13 @@ export class EditorEntityManager {
     }
 
     if (entity) {
-      // Add gameObject to the correct container for layering
-      if (entity.type === "platform") {
-        this.platformContainer.add(entity.gameObject);
-      } else {
-        this.entityContainer.add(entity.gameObject);
-      }
+      // Emit event for EntityDisplayScene to handle adding the visual
+      this.scene.events.emit(
+        "ADD_ENTITY_TO_DISPLAY",
+        entity.gameObject,
+        entity.type
+      );
+
       this.entities.push(entity);
 
       // Temporarily highlight the newly placed entity
@@ -300,40 +289,47 @@ export class EditorEntityManager {
    * Creates a platform entity
    */
   private createPlatform(x: number, y: number): EditorEntity {
-    // Create platform data with configuration provided by the platform tool
-    const platformData: PlatformInterface = {
-      scene: this.scene,
-      x,
-      y,
-      segmentCount: this._platformConfig?.segmentCount || 3,
-      id:
-        this._platformConfig?.id ||
-        `platform-${this.levelData.platforms.length}`,
-      isVertical: this._platformConfig?.isVertical || false,
-    };
+    const id = Phaser.Math.RND.uuid();
 
-    // Add to level data
-    this.levelData.platforms.push(platformData);
+    // Use the stored platformConfig from setSelectedEntityType or defaults
+    const segmentCount = this._platformConfig?.segmentCount || 5;
+    const isVertical = this._platformConfig?.isVertical || false;
+    const segmentWidth = this._platformConfig?.segmentWidth || 32;
 
-    // Create actual platform instance with physics disabled
+    // Create actual platform instance
     const platform = new Platform(
       this.scene,
       x,
       y,
-      platformData.segmentCount, // Use configured segment count
-      platformData.id,
-      platformData.isVertical
+      segmentCount,
+      id,
+      isVertical,
+      segmentWidth
     );
 
-    // Disable physics collisions in editor mode
-    if (platform.body) {
-      (platform.body as MatterJS.BodyType).collisionFilter.group = -1;
-    }
+    // Define the platform data for level storage, including the scene
+    const platformData: PlatformInterface = {
+      scene: this.scene,
+      id: id,
+      x: x,
+      y: y,
+      segmentCount: segmentCount,
+      isVertical: isVertical,
+      segmentWidth: segmentWidth,
+    };
 
-    // Ensure it's interactive for selection and dragging
+    // Add to level data store
+    this.levelData.platforms.push(platformData);
+
+    // Disable physics collisions in editor mode
+    platform.setCollisionCategory(0); // Prevent interaction
+    platform.setCollidesWith([]);
+    platform.setStatic(true); // Ensure it remains static
+
+    // Make platform interactive for selection
     platform.setInteractive();
 
-    // Return entity
+    // Return entity structure for editor management
     return {
       type: "platform",
       x: x,
@@ -376,6 +372,9 @@ export class EditorEntityManager {
     // Ensure it's interactive for selection
     enemyInstance.setInteractive();
 
+    // Emit event for display scene
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", enemyInstance, type);
+
     // Return entity
     return {
       type: type,
@@ -415,6 +414,9 @@ export class EditorEntityManager {
     // Ensure it's interactive for selection
     crate.setInteractive();
 
+    // Emit event for display scene
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", crate, `crate-${type}`);
+
     // Return entity
     return {
       type: `crate-${type}`,
@@ -449,6 +451,9 @@ export class EditorEntityManager {
 
     // Ensure it's interactive for selection
     barrel.setInteractive();
+
+    // Emit event for display scene
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", barrel, "barrel");
 
     // Return entity
     return {
@@ -497,6 +502,9 @@ export class EditorEntityManager {
 
     // Ensure it's interactive for selection
     finish.setInteractive();
+
+    // Emit event for display scene
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", finish, "finish-line");
 
     // Return entity
     return {
@@ -898,8 +906,8 @@ export class EditorEntityManager {
         (platform.body as MatterJS.BodyType).collisionFilter.group = -1;
       }
 
-      // Add platform to its container for proper layering
-      this.platformContainer.add(platform);
+      // Emit event for display scene
+      this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", platform, "platform");
 
       this.entities.push({
         type: "platform",
@@ -927,8 +935,12 @@ export class EditorEntityManager {
       // Ensure it's interactive for selection
       enemyInstance.setInteractive();
 
-      // Add enemy to entity container for proper layering
-      this.entityContainer.add(enemyInstance);
+      // Emit event for display scene
+      this.scene.events.emit(
+        "ADD_ENTITY_TO_DISPLAY",
+        enemyInstance,
+        enemyData.type
+      );
 
       this.entities.push({
         type: enemyData.type, // Use the specific type from data
@@ -951,8 +963,8 @@ export class EditorEntityManager {
       // Ensure it's interactive for selection
       barrel.setInteractive();
 
-      // Add barrel to entity container for proper layering
-      this.entityContainer.add(barrel);
+      // Emit event for display scene
+      this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", barrel, "barrel");
 
       this.entities.push({
         type: "barrel",
@@ -980,8 +992,12 @@ export class EditorEntityManager {
       // Ensure it's interactive for selection
       crate.setInteractive();
 
-      // Add crate to entity container for proper layering
-      this.entityContainer.add(crate);
+      // Emit event for display scene
+      this.scene.events.emit(
+        "ADD_ENTITY_TO_DISPLAY",
+        crate,
+        `crate-${crateData.type}`
+      );
 
       this.entities.push({
         type: `crate-${crateData.type}`,
@@ -1005,8 +1021,8 @@ export class EditorEntityManager {
       // Ensure it's interactive for selection
       finish.setInteractive();
 
-      // Add finish line to entity container for proper layering
-      this.entityContainer.add(finish);
+      // Emit event for display scene
+      this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", finish, "finish-line");
 
       this.entities.push({
         type: "finish-line",
@@ -1016,6 +1032,16 @@ export class EditorEntityManager {
         data: finishLineData,
       });
     }
+
+    // Clear display containers - Handled by emitting event
+    this.scene.events.emit("CLEAR_ENTITY_DISPLAY");
+
+    // Clear arrays
+    this.entities = [];
+    this.levelData = LevelDataManager.createEmpty();
+
+    // Deselect any selected entity
+    this.selectEntity(null);
   }
 
   /**
@@ -1026,9 +1052,9 @@ export class EditorEntityManager {
     this.entities.forEach((entity) => {
       entity.gameObject.destroy();
     });
-    // Clear display containers
-    this.platformContainer.removeAll();
-    this.entityContainer.removeAll();
+
+    // Clear display containers - Handled by emitting event
+    this.scene.events.emit("CLEAR_ENTITY_DISPLAY");
 
     // Clear arrays
     this.entities = [];
@@ -1253,6 +1279,9 @@ export class EditorEntityManager {
     // Destroy the game object
     entity.gameObject.destroy();
 
+    // Emit event for EntityDisplayScene to remove the visual
+    this.scene.events.emit("REMOVE_ENTITY_FROM_DISPLAY", entity.gameObject);
+
     // If this was the selected entity, deselect it
     if (this.selectedEntity === entity) {
       this.selectedEntity = null;
@@ -1271,6 +1300,10 @@ export class EditorEntityManager {
     }
     // Make interactive for selection and dragging
     player.setInteractive();
+
+    // Emit event for display scene
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", player, "player");
+
     return {
       type: "player",
       x,

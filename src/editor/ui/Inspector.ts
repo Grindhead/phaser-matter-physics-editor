@@ -59,8 +59,8 @@ export class Inspector {
     this.onPropertyChangeCallback = onPropertyChange;
     this.onDeleteCallback = onDelete || null;
 
-    // Create container
-    this.container = scene.add.container(config.x, config.y);
+    // Create container and set depth
+    this.container = scene.add.container(config.x, config.y).setDepth(10);
 
     // Create background
     const bg = config.background || { color: 0x222222, alpha: 0.8 };

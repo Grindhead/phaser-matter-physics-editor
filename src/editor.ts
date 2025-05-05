@@ -1,6 +1,7 @@
 import { Game, Types } from "phaser";
 import { EditorScene } from "./scenes/EditorScene";
 import { EditorUIScene } from "./scenes/EditorUIScene";
+import { EntityDisplayScene } from "./scenes/EntityDisplayScene";
 
 // Add debug information
 console.log("Editor script initializing");
@@ -28,7 +29,7 @@ const config: Types.Core.GameConfig = {
       debug: false, // Disable all debug rendering for Matter.js
     },
   },
-  scene: [EditorScene, EditorUIScene],
+  scene: [EditorScene, EditorUIScene, EntityDisplayScene],
 };
 
 // Create and start the editor

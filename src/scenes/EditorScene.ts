@@ -64,7 +64,10 @@ export class EditorScene extends Scene {
       this.isSpacePanning = false;
     });
 
-    // Launch the UI scene *first*
+    // Launch the scene responsible for displaying entities *first*
+    this.scene.launch("EntityDisplayScene");
+
+    // Launch the UI scene *after* the entity display scene
     this.scene.launch("EditorUIScene");
 
     // Get the UI scene (it should be launched now)
@@ -85,8 +88,11 @@ export class EditorScene extends Scene {
       this
     );
 
-    // Launch the scene responsible for displaying entities on top
-    this.scene.launch("EntityDisplayScene");
+    // Ensure the UI Scene renders on top of the Entity Display Scene
+    this.scene.bringToTop("EditorUIScene");
+
+    // // Launch the scene responsible for displaying entities on top <-- Comment out or remove the old launch call
+    // this.scene.launch("EntityDisplayScene"); // <-- Comment out or remove the old launch call
 
     console.log("Level Editor create() finished initial setup.");
   }

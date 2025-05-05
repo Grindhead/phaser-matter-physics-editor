@@ -18,7 +18,7 @@
 
 - **Level Creation:** Levels are designed manually using the dedicated Level Editor and saved as JSON files. **Procedural generation is not used.**
 - **Level Loading (Game):** The main game scene (`Game.ts`) loads level data from a specified JSON file. It parses this data to instantiate platforms, enemies (large/small), crates, barrels, and the finish line using the corresponding entity classes from `src/entities/`.
-- **Level Editor Implementation:**
+- **Level Editor Implementation:**Cannot find module './EditorEntity' or its corresponding type declarations.
   - **Separate Scene/State:** The editor runs within a dedicated Phaser Scene (`EditorScene.ts`), launched via a separate script (`pnpm run editor`).
   - **Data Format:** A defined JSON format stores level layouts. The structure includes arrays for `platforms` (with `x`, `y`, `segmentCount`, `isVertical`), `enemies` (with `x`, `y`, `type` - either "enemy-large" or "enemy-small"), `barrels` (with `x`, `y`), `crates` (with `x`, `y`, `type`), and a single `finishLine` object (with `x`, `y`).
     ```json

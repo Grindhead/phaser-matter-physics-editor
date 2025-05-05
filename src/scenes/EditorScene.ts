@@ -126,6 +126,7 @@ export class EditorScene extends Scene {
     this.events.off("LOAD");
     this.events.off("CLEAR");
     this.events.off("FILE_LOAD");
+    this.events.off("PLACE_ENTITY");
 
     // Setup event handlers for UI interactions
     this.events.on(
@@ -148,6 +149,18 @@ export class EditorScene extends Scene {
       "REMOVE_ENTITY",
       (entity: EditorEntity) => {
         this.entityManager.removeEntity(entity);
+      },
+      this
+    );
+
+    // Add handler for PLACE_ENTITY event from PaletteButton drag operations
+    this.events.on(
+      "PLACE_ENTITY",
+      (data: { type: string; x: number; y: number; config: any }) => {
+        const worldPoint = this.cameras.main.getWorldPoint(data.x, data.y);
+        this.entityManager.placeEntity(data.type, worldPoint.x, worldPoint.y);
+
+        // No need to call updateEntityInLevelData as that's handled internally by placeEntity
       },
       this
     );

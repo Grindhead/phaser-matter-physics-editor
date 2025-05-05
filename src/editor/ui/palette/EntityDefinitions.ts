@@ -18,7 +18,7 @@ export const getEntityDefinitions = (): EntityButton[] => {
       displayName: "Player",
       scale: 0.6,
       heightFactor: 1.1,
-      offsetX: 0,
+      offsetX: 10,
     },
     {
       type: "enemy-large",
@@ -27,7 +27,7 @@ export const getEntityDefinitions = (): EntityButton[] => {
       displayName: "Large Enemy",
       scale: 0.5,
       heightFactor: 1.2,
-      offsetX: 0,
+      offsetX: 10,
     },
     {
       type: "enemy-small",
@@ -36,7 +36,7 @@ export const getEntityDefinitions = (): EntityButton[] => {
       displayName: "Small Enemy",
       scale: 0.5,
       heightFactor: 1.0,
-      offsetX: 0,
+      offsetX: 10,
     },
     {
       type: "crate-small",
@@ -47,7 +47,7 @@ export const getEntityDefinitions = (): EntityButton[] => {
       displayName: "Small Crate",
       scale: 0.5,
       heightFactor: 0.9,
-      offsetX: 0,
+      offsetX: 10,
     },
     {
       type: "crate-big",
@@ -58,7 +58,7 @@ export const getEntityDefinitions = (): EntityButton[] => {
       displayName: "Big Crate",
       scale: 0.5,
       heightFactor: 1.1,
-      offsetX: 0,
+      offsetX: 10,
     },
     {
       type: "barrel",

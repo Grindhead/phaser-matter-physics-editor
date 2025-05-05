@@ -54,9 +54,9 @@ export class PaletteButton {
   }
 
   private addEntityPreview(): void {
-    // Position calculation for entity preview
-    const iconX = this.buttonWidth / 6;
-    const iconY = this.buttonHeight / 2;
+    // Define target position for the entity's visual center
+    const targetX = this.buttonWidth * 0.2; // Place origin at 20% width
+    const targetY = this.buttonHeight / 2; // Place origin vertically centered
 
     // Create entity instance
     const entityInstance = EntityFactory.createEntityInstance(
@@ -65,14 +65,30 @@ export class PaletteButton {
       this.entity.entityConfig
     );
 
-    // Set scale
-    const scale = this.entity.scale || 0.7;
-    entityInstance.setScale(scale);
+    // Apply a predetermined scale
+    const finalScale = this.entity.scale || 0.7;
+    entityInstance.setScale(finalScale);
 
-    // Position entity
-    entityInstance.setPosition(iconX, iconY);
+    // Set the origin to the center for consistent positioning
+    if (typeof entityInstance.setOrigin === "function") {
+      entityInstance.setOrigin(0.5, 0.5);
+    } else {
+      // Handle cases where setOrigin might not exist (e.g., complex containers)
+      // Consider logging a warning or alternative centering logic if needed
+      console.warn(
+        `Entity type ${this.entity.type} might not support setOrigin. Positioning may be inaccurate.`
+      );
+    }
 
-    // Add to container with proper depth
+    // Calculate final position based on target and custom offsets
+    const offsetX = this.entity.offsetX || 0;
+    const offsetY = this.entity.offsetY || 0;
+    const finalX = targetX + offsetX;
+    const finalY = targetY + offsetY;
+
+    entityInstance.setPosition(finalX, finalY);
+
+    // Add to container
     entityInstance.setDepth(1);
     this.container.add(entityInstance);
   }

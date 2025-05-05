@@ -9,6 +9,7 @@ export class EntityDisplayScene extends Phaser.Scene {
   private platformContainer!: Phaser.GameObjects.Container;
   private entityContainer!: Phaser.GameObjects.Container;
   private editorSceneEvents!: Phaser.Events.EventEmitter;
+  private editorScene!: Phaser.Scene;
 
   constructor() {
     super("EntityDisplayScene");
@@ -19,17 +20,23 @@ export class EntityDisplayScene extends Phaser.Scene {
     setupAnimations(this);
 
     // Create containers for layering within this scene
-    this.platformContainer = this.add.container(0, 0).setDepth(0);
-    this.entityContainer = this.add.container(0, 0).setDepth(1);
+    this.platformContainer = this.add
+      .container(0, 0)
+      .setDepth(0)
+      .setScrollFactor(1, 1);
+    this.entityContainer = this.add
+      .container(0, 0)
+      .setDepth(1)
+      .setScrollFactor(1, 1);
 
     // Get reference to the EditorScene's event emitter
     // We listen to events from EditorScene to know when to add/remove visuals
-    const editorScene = this.scene.get("EditorScene");
-    if (!editorScene) {
+    this.editorScene = this.scene.get("EditorScene");
+    if (!this.editorScene) {
       console.error("EntityDisplayScene: Could not get EditorScene.");
       return;
     }
-    this.editorSceneEvents = editorScene.events;
+    this.editorSceneEvents = this.editorScene.events;
 
     // Listen for events to add/remove entities
     this.editorSceneEvents.on(
@@ -62,6 +69,28 @@ export class EntityDisplayScene extends Phaser.Scene {
     });
 
     console.log("EntityDisplayScene created and listening for entities.");
+  }
+
+  /**
+   * Update method called every frame to synchronize camera with EditorScene
+   */
+  update(): void {
+    if (
+      this.editorScene &&
+      this.editorScene.cameras &&
+      this.editorScene.cameras.main
+    ) {
+      // Sync our camera with the editor scene's camera
+      const editorCamera = this.editorScene.cameras.main;
+      const ourCamera = this.cameras.main;
+
+      // Synchronize scroll position
+      ourCamera.scrollX = editorCamera.scrollX;
+      ourCamera.scrollY = editorCamera.scrollY;
+
+      // Synchronize zoom
+      ourCamera.zoom = editorCamera.zoom;
+    }
   }
 
   private handleAddEntity(

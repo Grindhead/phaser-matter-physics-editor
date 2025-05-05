@@ -14,6 +14,7 @@ export class EntitySelector {
   private selectionHighlight: Phaser.GameObjects.Rectangle | null = null;
   private entities: EditorEntity[] = [];
   private uiBounds?: Phaser.Geom.Rectangle;
+  private readonly HIGHLIGHT_TINT: number = 0x44aaff; // Blue highlight tint
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -123,6 +124,62 @@ export class EntitySelector {
   }
 
   /**
+   * Apply tint to the entity's game object
+   * @param entity The entity to tint
+   */
+  private applyTintToEntity(entity: EditorEntity): void {
+    const gameObject = entity.gameObject as any;
+    if (!gameObject) return;
+
+    // Apply tint based on entity type
+    if (entity.type === "platform") {
+      // For platforms, we may need to tint individual segments
+      if (Array.isArray(gameObject.segments)) {
+        gameObject.segments.forEach((segment: any) => {
+          if (segment && typeof segment.setTint === "function") {
+            segment.setTint(this.HIGHLIGHT_TINT);
+          }
+        });
+      } else if (typeof gameObject.setTint === "function") {
+        gameObject.setTint(this.HIGHLIGHT_TINT);
+      }
+    } else {
+      // For other entities that support tinting
+      if (typeof gameObject.setTint === "function") {
+        gameObject.setTint(this.HIGHLIGHT_TINT);
+      }
+    }
+  }
+
+  /**
+   * Clear tint from the entity's game object
+   * @param entity The entity to clear tint from
+   */
+  private clearTintFromEntity(entity: EditorEntity): void {
+    const gameObject = entity.gameObject as any;
+    if (!gameObject) return;
+
+    // Clear tint based on entity type
+    if (entity.type === "platform") {
+      // For platforms, we may need to clear tint from individual segments
+      if (Array.isArray(gameObject.segments)) {
+        gameObject.segments.forEach((segment: any) => {
+          if (segment && typeof segment.clearTint === "function") {
+            segment.clearTint();
+          }
+        });
+      } else if (typeof gameObject.clearTint === "function") {
+        gameObject.clearTint();
+      }
+    } else {
+      // For other entities that support tinting
+      if (typeof gameObject.clearTint === "function") {
+        gameObject.clearTint();
+      }
+    }
+  }
+
+  /**
    * Selects an entity
    * @param entity The entity to select, or null to deselect
    */
@@ -132,6 +189,8 @@ export class EntitySelector {
 
     // Deselect the current entity
     if (this.selectedEntity) {
+      // Clear tint from the previously selected entity
+      this.clearTintFromEntity(this.selectedEntity);
       this.eventBus.emit(EditorEvents.ENTITY_DESELECTED, this.selectedEntity);
     }
 
@@ -140,6 +199,8 @@ export class EntitySelector {
 
     // Update highlight
     if (entity) {
+      // Apply tint to highlight the selected entity
+      this.applyTintToEntity(entity);
       this.updateSelectionHighlight(entity);
       this.eventBus.emit(EditorEvents.ENTITY_SELECTED, entity);
     } else {
@@ -280,6 +341,11 @@ export class EntitySelector {
    * Cleans up resources when the selector is destroyed
    */
   public destroy(): void {
+    // Clear any tinting on the selected entity
+    if (this.selectedEntity) {
+      this.clearTintFromEntity(this.selectedEntity);
+    }
+
     if (this.selectionHighlight) {
       this.selectionHighlight.destroy();
       this.selectionHighlight = null;

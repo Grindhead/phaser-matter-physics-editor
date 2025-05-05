@@ -10,9 +10,21 @@
   - Root: Config files, `index.html`, `assets/`, `public/`, `src/`, `dist/`.
   - `src/`: Main game entry (`main.ts`), game scenes (`scenes/`), shared entities (`entities/`), shared libraries/helpers (`lib/`).
   - `src/editor/`: Contains all code specific to the Level Editor, including:
-    - `scenes/`: Editor scene (`EditorScene.ts`).
-    - `ui/`: UI components (`Palette.ts`, `Inspector.ts`, `Toolbar.ts`).
-    - `lib/`: Editor-specific logic (`LevelData.ts`).
+    - `lib/`: Editor-specific logic and components:
+      - `EditorEventBus.ts` - Centralized event communication system
+      - `EditorEventTypes.ts` - Event type definitions
+      - `EntityCreator.ts` - Entity factory methods
+      - `EntitySelector.ts` - Entity selection logic
+      - `EntityDragHandler.ts` - Entity dragging behavior
+      - `EntityUpdater.ts` - Entity property updates
+      - `EntityManager.ts` - Core entity management facade
+      - `KeyboardManager.ts` - Keyboard input handling
+      - `CameraPanManager.ts` - Camera control logic
+      - `EditorGrid.ts` - Grid rendering
+      - `EditorLevelHandler.ts` - Level saving/loading
+      - `LevelData.ts` - Level data structure
+    - `ui/`: UI components (`Palette.ts`, `Inspector.ts`, `Toolbar.ts`, `PlatformConfig.ts`).
+    - `tools/`: Editor tool implementations (`PlatformTool.ts`).
 
 ## Key Technical Decisions
 
@@ -56,22 +68,28 @@
 ## Design Patterns
 
 - **Entity State Management:** Entities track state.
-- **Event-Driven Animation:** Animations triggered by events.
+- **Event-Driven Architecture:** Editor components communicate via the centralized event bus.
 - **Entity-Specific Configuration:** Platforms and other complex entities implement configuration interfaces for pre-placement setup.
 - **Collision Detection Strategy:** Matter.js collision events and helpers.
 - **Editor UI Components:** Separate classes for `Palette`, `Inspector`, `Toolbar`, `PlatformConfig`.
-- **Command Pattern (Potential):** For undo/redo.
-- **Scene Graph:** Editor manages placed game objects (including `Platform`, `EnemyLarge`, `EnemySmall` instances).
-- **Factory Pattern (Implicit):** `EditorScene` acts as a factory for creating entities based on palette selection.
-- **Observer Pattern (Potential for Editor):** UI elements update based on changes.
-- **Layer Pattern (Phaser):** Used in `EditorScene` to separate platform rendering/management from other entities.
+- **Factory Pattern:** `EntityCreator` creates entities based on type.
+- **Observer Pattern:** UI elements update based on events through the event bus.
+- **Facade Pattern:** `EntityManager` presents a simplified interface to the specialized editor components.
+- **Singleton Pattern:** Used for the `EditorEventBus` to ensure a single point of event communication.
+- **Command Pattern (Potential):** For undo/redo functionality.
 
 ## Component Relationships
 
-- **Editor Scene (`EditorScene.ts`):** Manages editor canvas, UI, layers (`platformLayer`, `entityLayer`) containing placed entity instances, input handling, save/load triggers.
-- **Editor UI Components (`src/editor/ui/`):** Provide controls, trigger actions/updates via callbacks passed during construction (e.g., `Palette`, `Inspector`, `Toolbar`).
-- **Level Data Manager (`src/editor/lib/LevelDataManager.ts`):** Handles JSON serialization/deserialization. Receives entity lists from `EditorScene` layers for saving.
-- **Game Scene (`Game.ts`):** (To be updated) Loads JSON, instantiates entities, manages game loop, physics, input. Calls coin placement logic.
-- **LevelGenerator (`LevelGenerator.ts` - To be Repurposed):** Contains coin placement logic.
-- **Shared Entities (`src/entities/`):** Classes (`Platform.ts`, `EnemyLarge.ts`, `EnemySmall.ts`, etc.) used by editor and game.
-- **Platform Builder (`src/lib/level-generation/platformBuilder.ts`):** Used by `Platform` class.
+- **Editor Scene (`EditorScene.ts`):** Manages editor canvas and overall coordination.
+- **Entity Manager (`EntityManager.ts`):** Coordinates between specialized entity components:
+  - **Entity Creator (`EntityCreator.ts`):** Creates different types of entities
+  - **Entity Selector (`EntitySelector.ts`):** Handles entity selection and highlighting
+  - **Entity Updater (`EntityUpdater.ts`):** Updates entity properties
+  - **Entity Drag Handler (`EntityDragHandler.ts`):** Manages entity dragging
+- **Camera Pan Manager (`CameraPanManager.ts`):** Handles camera movement and zoom.
+- **Keyboard Manager (`KeyboardManager.ts`):** Manages keyboard shortcuts.
+- **Editor UI Components (`src/editor/ui/`):** Provide controls, trigger actions via the event bus.
+- **Editor Level Handler (`EditorLevelHandler.ts`):** Handles JSON serialization/deserialization.
+- **Game Scene (`Game.ts`):** Loads JSON, instantiates entities, manages game loop.
+- **LevelGenerator (Repurposed):** Contains coin placement logic.
+- **Shared Entities (`src/entities/`):** Classes used by both editor and game.

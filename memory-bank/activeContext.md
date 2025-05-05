@@ -2,77 +2,60 @@
 
 ## Current Focus
 
-- **Integrate Editor Levels into Game:** Modify `Game.ts` to load level data from the editor's JSON format and instantiate entities using their respective classes (including specific enemy types).
-- **Adapt Game Mechanics:** Ensure core mechanics (player movement, physics, interactions, death zones, restart) work correctly with manually loaded levels.
-- **Implement Coin Placement:** Repurpose `LevelGenerator.ts` (or create a new system) solely for placing coins on loaded platforms, avoiding those with enemies/crates.
-- **Refine Editor:** Implement entity dragging/movement. Consider UI improvements (e.g., enemy type selection) and undo/redo.
+- **Implementing refactored editor components** with a clean architecture
+- Maintaining a clear separation of concerns between specialized modules
+- Creating an event-driven system for better component communication
+- Improving maintainability through smaller, focused files
 
 ## Recent Changes
 
-- **Level Editor Core Implemented:**
-  - Created `EditorScene` with UI (`Palette`, `Inspector`, `Toolbar`).
-  - Implemented entity placement (snapped to grid), selection, and property editing.
-  - **Platforms use actual `Platform` class:** Editor now instantiates `Platform` entities directly. `isVertical` property handled correctly.
-  - **Special Platform Configuration:** Platforms are now handled differently from other entities, allowing segment count and orientation to be configured before placement.
-  - **Enemies use actual `EnemyLarge`/`EnemySmall` classes:** Editor differentiates and instantiates specific enemy types.
-  - Implemented Save/Load functionality for level JSON data (handles specific enemy types).
-  - Added graphics-based grid.
-  - Configured separate editor launch (`pnpm run editor`).
-- **Memory Bank Updated:** Reflects implementation progress, including specific enemy types and use of actual entity classes.
-- **Editor Layering:** Implemented `Phaser.GameObjects.Layer` in `EditorScene` (`platformLayer`, `entityLayer`) to separate platforms from other entities. Updated entity placement, selection, and save/load logic accordingly.
-- **UI Callback Refactor:** Updated `Palette`, `Inspector`, and `Toolbar` instantiation in `EditorScene` to use configuration objects and pass event callbacks during construction rather than using `.on()`. Removed `setupUIEvents` method as callbacks are handled directly.
-- **Editor Deletion:** Added functionality to delete the selected entity by pressing the `DELETE` or `BACKSPACE` key. Implemented `deleteSelectedObject` method in `EditorScene`.
-- **Editor Deletion (Confirmed):** Functionality to delete the selected entity by pressing `DELETE` or `BACKSPACE` is confirmed working. The `setupInput` method correctly attaches keyboard listeners which call `handleDeleteKeyPressed`, triggering the `deleteSelectedObject` method to remove the entity from its layer and deselect it.
+### Editor Refactoring
+
+- Created a complete event system with `EditorEventTypes.ts` and `EditorEventBus.ts` singleton
+- Refactored the monolithic `EditorEntityManager.ts` (1300+ lines) into specialized components:
+  - `EntityCreator.ts` - Factory methods for creating different entity types
+  - `EntitySelector.ts` - Selection and highlighting logic
+  - `EntityDragHandler.ts` - Entity drag handling behavior
+  - `EntityUpdater.ts` - Entity property update logic
+  - `EntityManager.ts` - Core coordination between components
+  - `KeyboardManager.ts` - Keyboard shortcut handling
+  - `CameraPanManager.ts` - Camera movement and zoom controls
+- Updated `EditorScene.ts` to use the new component architecture
+- Modified `EditorLevelHandler.ts` to work with the event system
+- Created standardized event types for consistent communication
 
 ## Next Steps
 
-- **Game Scene (`Game.ts`) Modifications:**
-  - Remove procedural generation logic.
-  - Add functionality to load a specified level JSON file.
-  - Parse the JSON and instantiate all entities (Platforms, Enemies - large/small, Barrels, Crates, FinishLine) using classes from `src/entities/`.
-- **Coin Placement Logic:**
-  - Design and implement the method to place coins on loaded platforms, checking for enemy/crate conflicts.
-  - Call this coin placement logic from `Game.ts` _after_ other entities are loaded.
-- **Editor Dragging:** Implement dragging logic for selected entities within `EditorScene`.
-- **Testing:** Begin testing the game scene's ability to load and render editor-created levels.
+- Address linter errors and type safety issues in the refactored components
+- Complete the UI components refactoring:
+  - Break down `Inspector.ts` into smaller UI components
+  - Create reusable UI controls
+  - Improve component organization
+- Update integration tests to work with the new component structure
+- Clean up redundant code and improve error handling
 
 ## Active Decisions
 
-- **Primary Focus:** Shifted to integrating the editor's output into the game and adapting game mechanics.
-- **Platform Handling in Editor:** Uses `Platform` class instances. `isVertical` changes trigger recreation.
-- **Enemy Handling in Editor:** Uses `EnemyLarge`/`EnemySmall` class instances. Type is set at creation.
-- **No Placement Ghosts:** Removed.
-- **Grid Implementation:** Uses Phaser Graphics API.
-- **Level Data Format:** Remains the agreed JSON structure (includes enemy `type`).
-- **Coin Placement:** Handled post-load in the game scene.
-- **Entity Source:** Editor uses entity classes from `src/entities/`.
-- **Editor Object Management:** Platforms managed in `platformLayer`, others in `entityLayer`.
-- **UI Interaction:** Editor UI components (`Palette`, `Inspector`, `Toolbar`) receive callbacks via constructor configuration.
-- **Entity Deletion:** Handled via `DELETE` / `BACKSPACE` keys in `EditorScene`.
+- Using the singleton pattern for the `EditorEventBus` to simplify communication
+- Adopting a composition-based architecture rather than inheritance
+- Using TypeScript interfaces to ensure proper type safety
+- Keeping related functionality together in specialized classes
+- Ensuring all components properly clean up when destroyed
 
-## Important Patterns & Preferences
+## Important Patterns and Preferences
 
-- **Focus on Game Integration:** Prioritize getting levels loaded and playable in the main game.
-- **Reuse Entity Classes:** Leverage existing entity classes (`Platform`, `EnemyLarge`, `EnemySmall`, etc.) in both editor and game.
-- **Modular Editor Components:** Continue logical structure (Scene, UI, Data Handling).
-- **Special Platform Handling:** Platforms require configuration (segments, orientation) before placement, unlike other entities.
-- **Clear Data Flow:** Maintain clean serialization/deserialization between editor state and JSON format.
-- **Clean Game Scene:** Remove old procedural code paths cleanly when integrating editor data.
-- **Follow custom instructions:** Continue adhering to memory bank, planning, and communication guidelines.
-- **Use Phaser Layers:** Leverage `Phaser.GameObjects.Layer` for render/logical separation in the editor.
-- **Constructor Callbacks for UI:** Pass UI event handlers during instantiation.
+- **Component-based architecture**: Focusing on specialized components with clear responsibilities
+- **Event-driven communication**: Using events for loose coupling between components
+- **Registry-based state sharing**: Using Phaser's registry for cross-component state
+- **Defensive coding**: Adding proper error handling and fallbacks
+- **Clean separation of concerns**: Each class has a single, well-defined purpose
+- **Facade pattern**: The `EntityManager` presents a simplified interface to complex subsystems
 
-## Learnings & Project Insights
+## Learnings and Project Insights
 
-- Using actual entity classes in the editor improves consistency but requires careful handling of recreation when properties change.
-- A graphics-based grid provides flexibility.
-- Type mismatches between components (e.g., `EditorEntity` in Inspector vs. `GameObject` in Scene) require careful mapping or consistent type usage.
-
-## Design Patterns
-
-- **Entity Instantiation:** Game scene will instantiate entities based on loaded JSON data.
-- **Editor Tool Pattern (Potential for Dragging):** Dragging logic could be encapsulated in a tool/state.
-- **Command Pattern (Potential):** Still relevant for undo/redo in the editor.
-- **Scene Graph:** Editor manages placed game objects (including `Platform`, `EnemyLarge`, `EnemySmall` instances).
-- **Observer Pattern (Potential for Editor):** Still relevant for UI updates in the editor.
-- **Layer Pattern (Phaser):** Added for editor object management.
+- Large monolithic managers make maintenance and feature additions difficult
+- Event-driven architecture enables better component isolation
+- Clear separation of responsibilities improves code readability and testability
+- Breaking down large files improves navigation and reduces merge conflicts
+- Composition offers more flexibility than inheritance for component organization
+- Singletons can be useful for services like event buses when used judiciously

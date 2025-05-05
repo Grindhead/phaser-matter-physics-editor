@@ -1,24 +1,21 @@
 import { Scene } from "phaser";
-import { EditorEntity } from "../editor/ui/Inspector";
 import { TEXTURE_ATLAS, PHYSICS } from "../lib/constants";
-import { EditorEntityManager } from "../editor/lib/EditorEntityManager";
 import { EditorGrid } from "../editor/lib/EditorGrid";
 import { EditorLevelHandler } from "../editor/lib/EditorLevelHandler";
 import { setupAnimations } from "../lib/level-generation/createAnimations";
-import Phaser from "phaser";
 import { EditorUIManager } from "../editor/lib/EditorUIManager";
+import { EntityManager } from "../editor/lib/EntityManager";
+import { EditorEventBus } from "../editor/lib/EditorEventBus";
+import { EditorEvents } from "../editor/lib/EditorEventTypes";
 
 export class EditorScene extends Scene {
   // Components
-  private entityManager!: EditorEntityManager;
+  private entityManager!: EntityManager;
   private levelHandler!: EditorLevelHandler;
   // Grid renderer
   private grid!: EditorGrid;
-  // Spacebar-driven panning state
-  private spaceKey!: Phaser.Input.Keyboard.Key;
-  private isSpacePanning: boolean = false;
-  private panLastX: number = 0;
-  private panLastY: number = 0;
+  // UI bounds for input handling
+  private uiBounds!: Phaser.Geom.Rectangle;
 
   constructor() {
     super("EditorScene");
@@ -36,38 +33,16 @@ export class EditorScene extends Scene {
     // Setup animations
     setupAnimations(this);
 
-    // Create and store grid for drawing
+    // Create grid for drawing
     this.grid = new EditorGrid(this);
-    // Setup spacebar-driven pan: hold SPACE and drag to move grid
-    this.spaceKey = this.input.keyboard!.addKey(
-      Phaser.Input.Keyboard.KeyCodes.SPACE
-    );
-    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      if (pointer.leftButtonDown() && this.spaceKey.isDown) {
-        this.isSpacePanning = true;
-        this.panLastX = pointer.x;
-        this.panLastY = pointer.y;
-      }
-    });
-    this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
-      if (this.isSpacePanning && pointer.leftButtonDown()) {
-        const dx = pointer.x - this.panLastX;
-        const dy = pointer.y - this.panLastY;
-        this.cameras.main.scrollX -= dx / this.cameras.main.zoom;
-        this.cameras.main.scrollY -= dy / this.cameras.main.zoom;
-        this.panLastX = pointer.x;
-        this.panLastY = pointer.y;
-        this.grid.resize();
-      }
-    });
-    this.input.on("pointerup", () => {
-      this.isSpacePanning = false;
-    });
 
-    // Launch the scene responsible for displaying entities *first*
+    // Default UI bounds - will be updated when UI is created
+    this.uiBounds = new Phaser.Geom.Rectangle(0, 0, this.scale.width, 60);
+
+    // Launch the scene responsible for displaying entities first
     this.scene.launch("EntityDisplayScene");
 
-    // Launch the UI scene *after* the entity display scene
+    // Launch the UI scene after the entity display scene
     this.scene.launch("EditorUIScene");
 
     // Get the UI scene (it should be launched now)
@@ -82,7 +57,7 @@ export class EditorScene extends Scene {
       "uiManagerReady",
       (uiManager: EditorUIManager) => {
         console.log("EditorScene: uiManagerReady event received.");
-        // Initialize managers *after* UI manager is ready
+        // Initialize managers after UI manager is ready
         this.initializeManagers(uiManager);
       },
       this
@@ -90,9 +65,6 @@ export class EditorScene extends Scene {
 
     // Ensure the UI Scene renders on top of the Entity Display Scene
     this.scene.bringToTop("EditorUIScene");
-
-    // // Launch the scene responsible for displaying entities on top <-- Comment out or remove the old launch call
-    // this.scene.launch("EntityDisplayScene"); // <-- Comment out or remove the old launch call
 
     console.log("Level Editor create() finished initial setup.");
   }
@@ -102,13 +74,22 @@ export class EditorScene extends Scene {
    */
   private initializeManagers(uiManager: EditorUIManager): void {
     console.log("EditorScene: Initializing managers...");
-    // Provide the clearPaletteSelection callback to EntityManager
-    this.entityManager = new EditorEntityManager(this, () => {
-      uiManager.clearPaletteSelection();
-    });
+
+    // Initialize the entity manager
+    this.entityManager = new EntityManager(this);
+
+    // Set UI bounds for entity manager to handle input properly
+    this.entityManager.setUIBounds(this.uiBounds);
+
+    // Initialize level handler with entity manager
     this.levelHandler = new EditorLevelHandler(this.entityManager);
 
-    // Setup event handlers that depend on entityManager
+    // Setup file input for level loading
+    uiManager.setupFileInput((file: File) => {
+      this.events.emit(EditorEvents.FILE_LOAD, file);
+    });
+
+    // Setup event handlers
     this.setupEditorEventHandlers();
 
     console.log("EditorScene: Managers initialized.");
@@ -128,77 +109,67 @@ export class EditorScene extends Scene {
     this.events.off("FILE_LOAD");
     this.events.off("PLACE_ENTITY");
 
-    // Setup event handlers for UI interactions
+    // Forward events from the scene event emitter to the centralized event bus
+    const eventBus = EditorEventBus.getInstance();
+
+    // Use UI_ prefix for scene events to distinguish from event bus events
+    // Entity selection from palette
+    this.events.on("UI_ENTITY_SELECT", (type: string, config?: any) => {
+      console.log(`EditorScene: UI_ENTITY_SELECT received for type ${type}`);
+      eventBus.emit(EditorEvents.ENTITY_SELECT, type, config);
+    });
+
+    // Property changes from inspector
     this.events.on(
-      "ENTITY_SELECT",
-      (type: string, config?: any) => {
-        this.entityManager.setSelectedEntityType(type, config);
-      },
-      this
+      "UI_PROPERTY_CHANGE",
+      (entity: any, property: string, value: any) => {
+        console.log(`EditorScene: UI_PROPERTY_CHANGE received for ${property}`);
+        eventBus.emit(EditorEvents.PROPERTY_CHANGE, entity, property, value);
+      }
     );
 
-    this.events.on(
-      "PROPERTY_CHANGE",
-      (entity: EditorEntity, property: string, value: any) => {
-        this.entityManager.updateEntityProperty(entity, property, value);
-      },
-      this
-    );
+    // Entity removal
+    this.events.on("UI_REMOVE_ENTITY", (entity: any) => {
+      console.log("EditorScene: UI_REMOVE_ENTITY received");
+      eventBus.emit(EditorEvents.REMOVE_ENTITY, entity);
+    });
 
+    // Entity placement from drag operations
     this.events.on(
-      "REMOVE_ENTITY",
-      (entity: EditorEntity) => {
-        this.entityManager.removeEntity(entity);
-      },
-      this
-    );
-
-    // Add handler for PLACE_ENTITY event from PaletteButton drag operations
-    this.events.on(
-      "PLACE_ENTITY",
+      "UI_PLACE_ENTITY",
       (data: { type: string; x: number; y: number; config: any }) => {
+        console.log(
+          `EditorScene: UI_PLACE_ENTITY received for type ${data.type}`
+        );
         const worldPoint = this.cameras.main.getWorldPoint(data.x, data.y);
-        this.entityManager.placeEntity(data.type, worldPoint.x, worldPoint.y);
-
-        // No need to call updateEntityInLevelData as that's handled internally by placeEntity
-      },
-      this
+        eventBus.emit(EditorEvents.PLACE_ENTITY, {
+          type: data.type,
+          x: worldPoint.x,
+          y: worldPoint.y,
+          config: data.config,
+        });
+      }
     );
 
-    this.events.on(
-      "SAVE",
-      () => {
-        this.levelHandler.saveLevel();
-      },
-      this
-    );
+    // Level management events
+    this.events.on("UI_SAVE", () => {
+      this.levelHandler.saveLevel();
+    });
 
-    this.events.on(
-      "LOAD",
-      () => {
-        const uiScene = this.scene.get("EditorUIScene") as Phaser.Scene & {
-          getFileInput: () => HTMLInputElement | null;
-        };
-        uiScene.getFileInput()?.click();
-      },
-      this
-    );
+    this.events.on("UI_LOAD", () => {
+      const uiScene = this.scene.get("EditorUIScene") as Phaser.Scene & {
+        getFileInput: () => HTMLInputElement | null;
+      };
+      uiScene.getFileInput()?.click();
+    });
 
-    this.events.on(
-      "CLEAR",
-      () => {
-        this.levelHandler.clearLevel();
-      },
-      this
-    );
+    this.events.on("UI_CLEAR", () => {
+      this.levelHandler.clearLevel();
+    });
 
-    this.events.on(
-      "FILE_LOAD",
-      (file: File) => {
-        this.levelHandler.handleFileLoad(file);
-      },
-      this
-    );
+    this.events.on("UI_FILE_LOAD", (file: File) => {
+      this.levelHandler.handleFileLoad(file);
+    });
 
     console.log("EditorScene: Event handlers set up.");
   }

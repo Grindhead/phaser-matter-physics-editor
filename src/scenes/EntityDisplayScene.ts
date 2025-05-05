@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { setupAnimations } from "../lib/level-generation/createAnimations";
 
 /**
  * A scene dedicated solely to rendering the entity GameObjects
@@ -14,6 +15,9 @@ export class EntityDisplayScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Setup animations for entity display
+    setupAnimations(this);
+
     // Create containers for layering within this scene
     this.platformContainer = this.add.container(0, 0).setDepth(0);
     this.entityContainer = this.add.container(0, 0).setDepth(1);

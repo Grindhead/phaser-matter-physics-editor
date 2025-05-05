@@ -131,3 +131,111 @@
 - **Editor Rendering:** Adopted Phaser Layers for managing platforms separately from other entities.
 - **UI Component Interaction:** Shifted from event listeners (`.on()`) to passing callbacks during UI component construction.
 - **Entity Deletion Trigger:** Implemented via keyboard input (`DELETE`/`BACKSPACE`) in the editor scene.
+
+## Core Implementation
+
+- **Editor Core:** ✅ Implemented
+
+  - **Platform Editing:** ✅ Added
+  - **Entity Placement:** ✅ Added
+  - **Save/Load:** ✅ Added
+  - **Selection/Deselection:** ✅ Added
+  - **Property Editing:** ✅ Added
+  - **Layer Management:** ✅ Added
+  - **Deletion:** ✅ Added
+
+- **Code Architecture:** ✅ Established
+
+  - **Project Structure:** ✅ Defined
+  - **Core Classes:** ✅ Created
+  - **Code Refactoring:** ✅ Improved organization
+
+- **Editor Refactoring:** ✅ Completed
+  - **Event System:** ✅ Created centralized event types and event bus
+  - **Entity Management:** ✅ Split into specialized components
+  - **Input Handling:** ✅ Created dedicated input manager components
+  - **Component Architecture:** ✅ Established clean separation of concerns
+  - **Code Organization:** ✅ Reduced file sizes and improved maintainability
+
+## Current Status
+
+- The editor has been successfully refactored with an improved architecture
+- Core editor functionality is working, including entity placement, selection, and property editing
+- The codebase is now more maintainable with smaller, focused components
+- Event-driven communication simplifies component interaction
+
+## Known Issues
+
+- Some TypeScript typing issues may need attention
+- UI components still need refactoring
+- The main editor scene needs to be updated to use the new component architecture
+
+## Next Steps
+
+1. Complete UI components refactoring
+2. Update the main editor scene to use the new components
+3. Ensure proper event handling between all components
+4. Implement comprehensive cleanup methods
+
+## Design Evolution
+
+Initially, the editor was implemented with large, monolithic classes that handled multiple responsibilities. We've now shifted to a more modular, component-based approach with:
+
+- Specialized entity components with clear responsibilities
+- Centralized event system for cross-component communication
+- Registry-based state sharing
+- Clean separation of concerns
+- Improved code organization and maintainability
+
+This architecture:
+
+- Improves maintainability
+- Makes adding new features easier
+- Reduces merge conflicts
+- Enhances code readability
+
+## Next Features
+
+1. Complete UI component refactoring
+2. Implement undo/redo system
+3. Add additional entity types support (if needed)
+4. Enhance visual feedback during editing
+
+## Editor Refactoring
+
+### Completed
+
+- [x] Created the event system architecture
+
+  - [x] Designed `EditorEventTypes.ts` with comprehensive event definitions
+  - [x] Implemented `EditorEventBus.ts` singleton for centralized communication
+  - [x] Added typed event payload interfaces for improved type safety
+
+- [x] Refactored the monolithic `EditorEntityManager.ts` into specialized components
+
+  - [x] Created `EntityCreator.ts` for entity factory methods
+  - [x] Implemented `EntitySelector.ts` for selection and highlighting
+  - [x] Built `EntityDragHandler.ts` for drag operations
+  - [x] Developed `EntityUpdater.ts` for property updates
+  - [x] Designed `EntityManager.ts` as a facade for the specialized components
+  - [x] Added `KeyboardManager.ts` for keyboard shortcuts
+  - [x] Implemented `CameraPanManager.ts` for camera controls
+
+- [x] Updated `EditorScene.ts` to use the new component architecture
+- [x] Refactored `EditorLevelHandler.ts` to use the event system
+- [x] Updated memory-bank documentation with the new architecture details
+
+### In Progress
+
+- [ ] Address linter errors and type safety issues in the refactored components
+- [ ] UI components refactoring
+  - [ ] Break down `Inspector.ts` into smaller components
+  - [ ] Create reusable UI controls
+  - [ ] Update UI components to use the event system
+
+### To Do
+
+- [ ] Complete integration tests for the new component architecture
+- [ ] Implement undo/redo functionality using the Command pattern
+- [ ] Clean up redundant code and improve error handling
+- [ ] Create comprehensive technical documentation for the editor architecture

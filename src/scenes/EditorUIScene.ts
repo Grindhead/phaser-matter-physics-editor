@@ -18,26 +18,32 @@ export class EditorUIScene extends Phaser.Scene {
     this.uiManager = new EditorUIManager(
       this,
       (type: string, config?: any) => {
-        editorScene.events.emit("ENTITY_SELECT", type, config);
+        console.log(`EditorUIScene: Entity select callback for type: ${type}`);
+        editorScene.events.emit("UI_ENTITY_SELECT", type, config);
       },
       (entity: EditorEntity, property: string, value: any) => {
-        editorScene.events.emit("PROPERTY_CHANGE", entity, property, value);
+        console.log(`EditorUIScene: Property change callback for ${property}`);
+        editorScene.events.emit("UI_PROPERTY_CHANGE", entity, property, value);
       },
       () => {
-        editorScene.events.emit("SAVE");
+        console.log("EditorUIScene: Save callback");
+        editorScene.events.emit("UI_SAVE");
       },
       () => {
-        editorScene.events.emit("LOAD");
+        console.log("EditorUIScene: Load callback");
+        editorScene.events.emit("UI_LOAD");
       },
       () => {
-        editorScene.events.emit("CLEAR");
+        console.log("EditorUIScene: Clear callback");
+        editorScene.events.emit("UI_CLEAR");
       },
       (entity: EditorEntity) => {
-        editorScene.events.emit("REMOVE_ENTITY", entity);
+        console.log("EditorUIScene: Remove entity callback");
+        editorScene.events.emit("UI_REMOVE_ENTITY", entity);
       }
     );
     this.uiManager.setupFileInput((file: File) => {
-      editorScene.events.emit("FILE_LOAD", file);
+      editorScene.events.emit("UI_FILE_LOAD", file);
     });
 
     // Emit event to signal UI Manager is ready
@@ -47,5 +53,12 @@ export class EditorUIScene extends Phaser.Scene {
     // this.time.delayedCall(10, () => {
     //   this.scene.bringToTop();
     // });
+  }
+
+  /**
+   * Returns the file input element used for loading levels
+   */
+  public getFileInput(): HTMLInputElement | null {
+    return this.uiManager.getFileInput();
   }
 }

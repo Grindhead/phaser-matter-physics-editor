@@ -24,22 +24,32 @@ export class Palette {
     // Create container and set depth
     this.container = scene.add.container(config.x, config.y).setDepth(10);
 
-    // Intercept any pointerdown on the palette container to prevent scene callbacks
-    this.container.setInteractive(
-      new Phaser.Geom.Rectangle(
-        0,
-        0,
-        config.width,
-        this.calculateHeight(config)
-      ),
-      Phaser.Geom.Rectangle.Contains
+    // Intercept any pointerdown on the palette container to prevent scene callbacks,
+    // but allow events through if an entity drag is active.
+    const paletteHitArea = new Phaser.Geom.Rectangle(
+      0,
+      0,
+      config.width,
+      this.calculateHeight(config)
     );
-    this.container.on(
-      "pointerdown",
-      (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: any) => {
-        event.stopPropagation();
-      }
-    );
+    this.container.setInteractive({
+      hitArea: paletteHitArea,
+      hitAreaCallback: (
+        hitArea: Phaser.Geom.Rectangle,
+        x: number,
+        y: number,
+        gameObject: Phaser.GameObjects.Container
+      ): boolean => {
+        // Only interactive if NOT dragging an entity AND NOT in placement mode
+        const isDragging = this.scene.registry.get("isDraggingEntity");
+        const isPlacing = this.scene.registry.get("isPlacementModeActive");
+        if (isDragging || isPlacing) {
+          return false; // Ignore hits during drag or placement mode
+        }
+        return Phaser.Geom.Rectangle.Contains(hitArea, x, y); // Default check
+      },
+      useHandCursor: false, // Optional: don't show hand cursor on background
+    });
 
     // Create background
     const bg = config.background || { color: 0x222222, alpha: 0.8 };

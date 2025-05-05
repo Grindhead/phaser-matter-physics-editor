@@ -46,12 +46,24 @@ export class Toolbar {
       bg.alpha || 0.8
     );
     this.background.setOrigin(0, 0);
-    this.background.setInteractive();
 
-    // Make the background catch and stop event propagation
-    this.background.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      // Stop event propagation
-      pointer.event.stopPropagation();
+    // Make background interactive, but disable hits during entity drag
+    this.background.setInteractive({
+      hitAreaCallback: (
+        hitArea: any,
+        x: number,
+        y: number,
+        gameObject: Phaser.GameObjects.Rectangle
+      ): boolean => {
+        const isDragging = this.scene.registry.get("isDraggingEntity");
+        const isPlacing = this.scene.registry.get("isPlacementModeActive");
+        if (isDragging || isPlacing) {
+          return false; // Ignore hits during drag or placement mode
+        }
+        // Use default rectangle hit test
+        return Phaser.Geom.Rectangle.Contains(gameObject.getBounds(), x, y);
+      },
+      useHandCursor: false,
     });
 
     this.container.add(this.background);

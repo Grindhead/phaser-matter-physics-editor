@@ -82,13 +82,39 @@ export class EditorEntityManager {
 
           // Start entity dragging
           this.isEntityDragging = true;
+          this.scene.registry.set("isDraggingEntity", true);
 
           // Exit placement mode
           this.selectedEntityType = null;
+          this.scene.registry.set("isPlacementModeActive", false);
         } else {
-          // Regular click in placement mode - create and start dragging new entity
-          this.createAndDragEntity(this.selectedEntityType as string);
-          // Exit placement mode is handled inside createAndDragEntity
+          // Regular click in placement mode - Place the selected entity type
+          const entityTypeToPlace = this.selectedEntityType;
+          const entity = this.placeEntity(entityTypeToPlace, worldX, worldY);
+
+          if (entity) {
+            this.selectEntity(entity); // Select the new entity
+            this.isEntityDragging = true; // Start dragging it
+            this.newEntityDragging = true; // Mark as new for pointerup logic
+            this.scene.registry.set("isDraggingEntity", true); // Set registry flag
+
+            // Add the one-time pointerup handler to finish the drag
+            const completeHandler = () => {
+              if (this.isEntityDragging && this.selectedEntity === entity) {
+                // Ensure we only process for this specific entity
+                this.updateEntityInLevelData(this.selectedEntity);
+                this.isEntityDragging = false;
+                this.newEntityDragging = false;
+                this.scene.registry.set("isDraggingEntity", false);
+                this.scene.input.off("pointerup", completeHandler); // Clean up listener
+              }
+            };
+            this.scene.input.once("pointerup", completeHandler);
+          } // End if (entity)
+
+          // Exit placement mode regardless of whether placement succeeded
+          this.selectedEntityType = null;
+          this.scene.registry.set("isPlacementModeActive", false);
         }
       } else {
         // Not in placement mode - select or deselect entities
@@ -98,9 +124,11 @@ export class EditorEntityManager {
 
           // Start entity dragging
           this.isEntityDragging = true;
+          this.scene.registry.set("isDraggingEntity", true);
         } else {
           // Clicking empty space - deselect current entity
           this.selectEntity(null);
+          this.scene.registry.set("isPlacementModeActive", false);
         }
       }
     });
@@ -195,10 +223,11 @@ export class EditorEntityManager {
 
         // Reset dragging state
         this.isEntityDragging = false;
+        this.scene.registry.set("isDraggingEntity", false);
 
         // If this was a new entity being dragged, we're done with it now
-        // The specific one-time handler in createAndDragEntity will handle
-        // most cases, but this is a fallback
+        // The specific one-time handler added during placement will handle this,
+        // but clear the flag here as a fallback.
         if (this.newEntityDragging) {
           this.newEntityDragging = false;
         }
@@ -1099,6 +1128,7 @@ export class EditorEntityManager {
     if (type === null) {
       this.selectedEntityType = null;
       this.selectEntity(null);
+      this.scene.registry.set("isPlacementModeActive", false); // Clear placement mode flag
       return;
     }
 
@@ -1124,64 +1154,11 @@ export class EditorEntityManager {
       }
     }
 
-    // Immediate create and drag for non-platform entities
-    if (type !== "platform") {
-      // Clear any currently selected entity
-      this.selectEntity(null);
-
-      // Create the entity and start dragging immediately
-      this.createAndDragEntity(type);
-
-      return;
-    }
-
     // For platform placement mode without immediate coordinates, enter placement mode
+    // Also applies to non-platform types now - just select the type
     this.selectedEntityType = type;
-    this.selectEntity(null);
-  }
-
-  /**
-   * Immediately creates an entity of the specified type and attaches it to the cursor
-   * for dragging until mouse up
-   */
-  public createAndDragEntity(type: string): void {
-    // Get current mouse position
-    const pointer = this.scene.input.activePointer;
-    const worldX = pointer.worldX;
-    const worldY = pointer.worldY;
-
-    // Create the entity at the current mouse position
-    const entity = this.placeEntity(type, worldX, worldY);
-
-    // If entity creation succeeded
-    if (entity) {
-      // Select this entity
-      this.selectEntity(entity);
-
-      // Start dragging immediately
-      this.isEntityDragging = true;
-      this.newEntityDragging = true;
-
-      // No need to keep the selected entity type since we've already created it
-      this.selectedEntityType = null;
-
-      // Add a one-time pointerup event to complete the placement when the user releases the mouse
-      const completeHandler = () => {
-        if (this.isEntityDragging && this.selectedEntity) {
-          // Update entity data to ensure all changes are saved
-          this.updateEntityInLevelData(this.selectedEntity);
-
-          // Reset dragging states
-          this.isEntityDragging = false;
-          this.newEntityDragging = false;
-
-          // Clean up this one-time handler
-          this.scene.input.off("pointerup", completeHandler);
-        }
-      };
-
-      this.scene.input.once("pointerup", completeHandler);
-    }
+    this.selectEntity(null); // Deselect any currently selected entity
+    this.scene.registry.set("isPlacementModeActive", true); // Signal placement mode is active
   }
 
   /**

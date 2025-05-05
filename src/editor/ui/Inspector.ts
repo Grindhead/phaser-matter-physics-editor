@@ -75,6 +75,32 @@ export class Inspector {
     this.background.setOrigin(0, 0);
     this.container.add(this.background);
 
+    // Make background interactive to catch clicks, but allow pass-through during drag
+    // Use a callback to disable hit detection during entity drag
+    this.background.setInteractive({
+      hitAreaCallback: (
+        hitArea: any,
+        x: number,
+        y: number,
+        gameObject: Phaser.GameObjects.Rectangle
+      ): boolean => {
+        const isDragging = this.scene.registry.get("isDraggingEntity");
+        const isPlacing = this.scene.registry.get("isPlacementModeActive");
+        if (isDragging || isPlacing) {
+          return false; // Ignore hits during drag or placement mode
+        }
+        // Use default rectangle hit test
+        return Phaser.Geom.Rectangle.Contains(gameObject.getBounds(), x, y);
+      },
+      useHandCursor: false,
+    });
+
+    this.background.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      if (!this.scene.registry.get("isDraggingEntity")) {
+        pointer.event.stopPropagation();
+      }
+    });
+
     // Create title
     const padding = config.padding || 10;
     this.titleText = scene.add.text(padding, padding, "No Selection", {

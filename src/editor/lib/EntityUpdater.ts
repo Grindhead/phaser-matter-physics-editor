@@ -157,6 +157,11 @@ export class EntityUpdater {
       case "crate-big":
         this.updateCrateInLevelData(entity);
         break;
+      case "player":
+        // Player position is handled separately in level data
+        // Just log a debug message instead of warning
+        console.debug("Player position updated in editor");
+        break;
       default:
         console.warn(
           `Unknown entity type for level data update: ${entity.type}`

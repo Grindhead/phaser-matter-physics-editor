@@ -31,6 +31,7 @@ export class EntityManager {
 
   // State tracking
   private selectedEntityType: string | null = null;
+  private placementConfig: any = null;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -140,76 +141,90 @@ export class EntityManager {
    * Sets up input handlers for entity placement
    */
   private setupInputHandlers(): void {
-    // Set up pointer down handler for entity placement
+    // Set up pointer down handler for entity placement AND selection triggering
     this.scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      // --- UNCOMMENTING LOGIC BELOW ---
+      // /* // Remove start comment
       // Only handle left clicks
       if (!pointer.leftButtonDown()) {
-        console.log("EntityManager: Input handler - Not left click, skipping");
+        // console.log("EntityManager: Input handler - Not left click, skipping"); // Can be noisy
         return;
       }
 
       // Skip if over UI
       if (this.uiBounds && this.uiBounds.contains(pointer.x, pointer.y)) {
-        console.log("EntityManager: Input handler - Over UI bounds, skipping");
+        // console.log("EntityManager: Input handler - Over UI bounds, skipping"); // Can be noisy
         return;
       }
 
-      // Skip if spacebar is held (for camera panning)
-      const spaceKey = this.scene.input.keyboard?.addKey(
-        Phaser.Input.Keyboard.KeyCodes.SPACE
-      );
-      if (spaceKey && spaceKey.isDown) {
-        console.log("EntityManager: Input handler - Space key held, skipping");
-        return;
-      }
-
-      // Check if we're in placement mode
+      // Check if placement mode is active
       const isPlacementModeActive = this.scene.registry.get(
         "isPlacementModeActive"
       );
-      console.log(
-        `EntityManager: Input handler - Placement mode active: ${isPlacementModeActive}, Selected type: ${this.selectedEntityType}`
-      );
 
-      if (!isPlacementModeActive || !this.selectedEntityType) {
-        console.log(
-          "EntityManager: Input handler - Not in placement mode or no type selected, skipping"
+      if (isPlacementModeActive && this.selectedEntityType) {
+        // --- PLACEMENT LOGIC ---
+        // console.log( // REMOVE
+        //  `EntityManager: Input handler - In Placement Mode for ${this.selectedEntityType}. Config:`,
+        //  this.placementConfig
+        // );
+
+        // Skip if spacebar is held (for camera panning)
+        const spaceKey = this.scene.input.keyboard?.addKey(
+          Phaser.Input.Keyboard.KeyCodes.SPACE
         );
-        return;
-      }
-
-      console.log(
-        `EntityManager: Placing entity of type ${this.selectedEntityType} at (${pointer.worldX}, ${pointer.worldY})`
-      );
-
-      try {
-        // Place entity at world position
-        const entity = this.placeEntity(
-          this.selectedEntityType,
-          pointer.worldX,
-          pointer.worldY
-        );
-
-        if (entity) {
-          console.log("EntityManager: Entity created successfully");
-
-          // Emit entity placed event
-          this.eventBus.emit(EditorEvents.ENTITY_PLACED, entity);
-
-          // Exit placement mode after successful placement
-          this.selectedEntityType = null;
-          this.scene.registry.set("isPlacementModeActive", false);
-
-          // Select the entity but don't start dragging automatically
-          this.selector.selectEntity(entity);
-        } else {
-          console.log(
-            `EntityManager: Failed to create entity of type ${this.selectedEntityType}`
-          );
+        if (spaceKey && spaceKey.isDown) {
+          // console.log(
+          //   "EntityManager: Input handler - Space key held, skipping placement"
+          // );
+          return;
         }
-      } catch (error) {
-        console.error("Error placing entity:", error);
+
+        // console.log(
+        //   `EntityManager: Placing entity of type ${this.selectedEntityType} at (${pointer.worldX}, ${pointer.worldY})`
+        // );
+
+        try {
+          // Place entity at world position
+          const entity = this.placeEntity(
+            this.selectedEntityType,
+            pointer.worldX,
+            pointer.worldY,
+            this.placementConfig // Pass stored config
+          );
+
+          if (entity) {
+            // console.log("EntityManager: Entity created successfully");
+
+            // Emit entity placed event
+            this.eventBus.emit(EditorEvents.ENTITY_PLACED, entity);
+
+            // Exit placement mode after successful placement
+            this.selectedEntityType = null;
+            this.scene.registry.set("isPlacementModeActive", false);
+            this.placementConfig = null; // Reset config here too
+
+            // Select the entity but don't start dragging automatically
+            this.selector.selectEntity(entity);
+          } else {
+            // console.log(
+            //   `EntityManager: Failed to create entity of type ${this.selectedEntityType}`
+            // );
+          }
+        } catch (error) {
+          // console.error("Error placing entity:", error);
+        }
+        // --- END PLACEMENT LOGIC ---
+      } else {
+        // --- SELECTION LOGIC ---
+        // console.log( // REMOVE
+        //  "EntityManager: Input handler - Not in placement mode, attempting selection."
+        // );
+        // Call the selector's handler
+        this.selector.handleSelectionClick(pointer);
+        // --- END SELECTION LOGIC ---
       }
+      // */ // Remove end comment
     });
   }
 
@@ -219,10 +234,12 @@ export class EntityManager {
    * @param config Optional configuration for the entity
    */
   private handleEntityTypeSelection(type: string, config?: any): void {
-    console.log(`EntityManager: Entity type selected: ${type}`);
+    // console.log(`EntityManager: Entity type selected: ${type} with config:`, config); // REMOVE
     this.selectedEntityType = type;
+    this.placementConfig = config; // Store the config
     this.scene.registry.set("isPlacementModeActive", true);
-    console.log(`EntityManager: Placement mode activated for ${type}`);
+    // console.log(`EntityManager: Placement mode activated for ${type}`); // REMOVE
+    // console.log(`   Registry value \'isPlacementModeActive\': ${this.scene.registry.get("isPlacementModeActive")}`); // REMOVE
 
     // Deselect any current entity
     this.selector.selectEntity(null);
@@ -236,8 +253,9 @@ export class EntityManager {
     // Store the selected entity in registry for other components
     this.scene.registry.set("selectedEntity", entity);
 
-    // Reset placement mode
+    // Reset placement mode and config
     this.selectedEntityType = null;
+    this.placementConfig = null;
     this.scene.registry.set("isPlacementModeActive", false);
   }
 
@@ -259,9 +277,9 @@ export class EntityManager {
     y: number;
     config?: any;
   }): void {
-    console.log(
-      `EntityManager: handlePlaceEntity called for ${data.type} at (${data.x}, ${data.y})`
-    );
+    // console.log(
+    //   `EntityManager: handlePlaceEntity called for ${data.type} at (${data.x}, ${data.y})`
+    // );
     const { type, x, y, config } = data;
 
     try {
@@ -269,7 +287,7 @@ export class EntityManager {
       const entity = this.placeEntity(type, x, y, config);
 
       if (entity) {
-        console.log(`EntityManager: Entity placed successfully from UI drag`);
+        // console.log(`EntityManager: Entity placed successfully from UI drag`);
 
         // Emit entity placed event
         this.eventBus.emit(EditorEvents.ENTITY_PLACED, entity);
@@ -281,10 +299,10 @@ export class EntityManager {
         this.selectedEntityType = null;
         this.scene.registry.set("isPlacementModeActive", false);
       } else {
-        console.log(`EntityManager: Failed to place entity of type ${type}`);
+        // console.log(`EntityManager: Failed to place entity of type ${type}`);
       }
     } catch (error) {
-      console.error("Error handling place entity:", error);
+      // console.error("Error handling place entity:", error);
     }
   }
 
@@ -301,21 +319,21 @@ export class EntityManager {
     y: number,
     config?: any
   ): EditorEntity | null {
-    console.log(`EntityManager.placeEntity: Creating ${type} at ${x},${y}`);
+    // console.log(`EntityManager.placeEntity: Creating ${type} at ${x},${y}`);
 
     // Create the entity
     const entity = this.creator.createEntity(type, x, y, config);
 
     if (!entity) {
-      console.error(
-        `EntityManager.placeEntity: Failed to create entity of type ${type}`
-      );
+      // console.error(
+      //   `EntityManager.placeEntity: Failed to create entity of type ${type}`
+      // );
       return null;
     }
 
-    console.log(
-      `EntityManager.placeEntity: Entity created: ${entity.type} at ${entity.x},${entity.y}`
-    );
+    // console.log(
+    //   `EntityManager.placeEntity: Entity created: ${entity.type} at ${entity.x},${entity.y}`
+    // );
 
     // Add to entities list
     this.entities.push(entity);

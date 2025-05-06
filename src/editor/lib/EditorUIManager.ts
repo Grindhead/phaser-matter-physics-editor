@@ -8,11 +8,12 @@ import { Platform } from "../../entities/Platforms/Platform";
 export class EditorUIManager {
   private scene: Scene;
   private palette: Palette;
-  private inspector: Inspector;
-  private toolbar: Toolbar;
+  private inspector: Inspector | null = null;
+  private toolbar: Toolbar | null = null;
   private fileInput: HTMLInputElement | null = null;
-  private platformTool: PlatformTool;
+  private platformTool: PlatformTool | null = null;
   private selectedEntity: EditorEntity | null = null;
+  private activeTool: any = null; // Track the active tool
 
   // Callbacks
   private onEntityTypeSelect: (type: string, config?: any) => void;
@@ -51,40 +52,12 @@ export class EditorUIManager {
     this.onRemoveEntity = onRemoveEntity || null;
 
     // Create platform tool
-    this.platformTool = new PlatformTool(
-      scene,
-      (platform: Platform) => {
-        // When a platform is placed, we need to create an entity from it
-
-        // Pass type and coordinates to the entity selection callback,
-        // which will then call placeEntity to properly register it
-        this.onEntityTypeSelect("platform", {
-          segmentCount: platform.segmentCount,
-          isVertical: platform.isVertical,
-          segmentWidth: platform.segmentWidth,
-          id: platform.id,
-          // Add position information to place it at the right position
-          x: platform.x,
-          y: platform.y,
-        });
-
-        // Since we're not using the typical placement flow, we need to
-        // manually clean up the existing platform instance
-        // (placeEntity will create a fresh instance)
-        platform.destroy();
-      },
-      (platform: Platform) => {
-        // When a platform is removed, find the corresponding entity and remove it
-        if (
-          this.onRemoveEntity &&
-          this.selectedEntity &&
-          this.selectedEntity.type === "platform" &&
-          this.selectedEntity.gameObject === platform
-        ) {
-          this.onRemoveEntity(this.selectedEntity);
-        }
-      }
-    );
+    this.platformTool = new PlatformTool(scene, (config: any) => {
+      console.log("EditorUIManager: Platform placement configured:", config);
+      // Emit the standard entity select event
+      // This will be picked up by EditorScene and forwarded to EntityManager
+      this.onEntityTypeSelect("platform", config);
+    });
 
     this.createUI();
 
@@ -93,6 +66,44 @@ export class EditorUIManager {
 
     // Setup keyboard shortcuts
     this.setupKeyboardShortcuts();
+
+    // Listen for placement mode changes to enable/disable palette
+    this.scene.registry.events.on(
+      "changedata-isPlacementModeActive",
+      (
+        parent: any, // Reference to the registry that emitted the event
+        key: string, // The key of the data that changed ('isPlacementModeActive')
+        value: boolean // The new value of the data
+      ) => {
+        console.log(
+          `EditorUIManager: isPlacementModeActive changed to: ${value}`
+        );
+        if (this.palette) {
+          if (value === true) {
+            // This case might be redundant if handleEntityTypeSelect already disables it,
+            // but good for safety if placement mode is set externally.
+            this.palette.disable();
+          } else {
+            // Placement mode ended, re-enable palette
+            this.palette.enable();
+          }
+        }
+      }
+    );
+
+    // Clean up when scene shuts down
+    this.scene.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+      console.log("EditorUIManager: Cleaning up on scene shutdown");
+      if (this.platformTool) {
+        this.platformTool.cleanup();
+      }
+      if (this.fileInput && this.fileInput.parentElement) {
+        this.fileInput.parentElement.removeChild(this.fileInput);
+        this.fileInput = null;
+      }
+      // Also potentially cleanup inspector/palette/toolbar listeners if needed
+      this.scene.registry.events.off("changedata-isPlacementModeActive"); // Cleanup listener
+    });
   }
 
   /**
@@ -109,12 +120,12 @@ export class EditorUIManager {
         // Check if this is a platform type selection
         if (type === "platform") {
           // Activate the platform tool for configuration
-          this.activatePlatformTool();
+          this.activateTool("platform");
           return; // Don't proceed with normal entity selection
         }
 
         // For other entity types, deactivate platform tool and pass to callback
-        this.platformTool.deactivate();
+        this.platformTool?.deactivate();
         this.onEntityTypeSelect(type, config);
       }
     );
@@ -140,8 +151,7 @@ export class EditorUIManager {
         label: "Platform",
         onClick: () => {
           console.log("Platform button clicked in toolbar");
-          // Direct activation - we'll handle timing within the activatePlatformTool method
-          this.activatePlatformTool();
+          this.activateTool("platform");
         },
         style: {
           bgColor: 0x00aa00,
@@ -161,7 +171,7 @@ export class EditorUIManager {
     );
 
     // Make sure the platform tool is properly initialized but hidden
-    this.platformTool.deactivate();
+    this.platformTool?.deactivate();
   }
 
   /**
@@ -185,9 +195,9 @@ export class EditorUIManager {
   /**
    * Sets up the file input for loading levels
    */
-  public setupFileInput(onFileLoad: (file: File) => void): void {
+  public setupFileInput(onFileLoaded: (file: File) => void): void {
     if (this.toolbar) {
-      this.fileInput = this.toolbar.createFileInput(onFileLoad);
+      this.fileInput = this.toolbar.createFileInput(onFileLoaded);
     }
   }
 
@@ -201,7 +211,7 @@ export class EditorUIManager {
   /**
    * Gets the inspector component
    */
-  public getInspector(): Inspector {
+  public getInspector(): Inspector | null {
     return this.inspector;
   }
 
@@ -215,7 +225,7 @@ export class EditorUIManager {
   /**
    * Gets the platform tool
    */
-  public getPlatformTool(): PlatformTool {
+  public getPlatformTool(): PlatformTool | null {
     return this.platformTool;
   }
 
@@ -244,16 +254,17 @@ export class EditorUIManager {
   public selectEntity(entity: EditorEntity | null): void {
     this.selectedEntity = entity;
 
-    if (this.inspector) {
-      this.inspector.selectEntity(entity);
-    }
-
-    // Clear palette selection when an entity is selected
     if (entity) {
-      this.clearPaletteSelection();
-
+      this.inspector?.selectEntity(entity);
+      // If a platform is selected, ensure the platform tool is inactive
+      if (entity.type === "platform") {
+        this.platformTool?.deactivate();
+      }
+    } else {
+      // Clear inspector if no entity is selected
+      this.inspector?.selectEntity(null);
       // Also deactivate platform tool if an entity is selected
-      this.platformTool.deactivate();
+      this.platformTool?.deactivate();
     }
   }
 
@@ -267,8 +278,8 @@ export class EditorUIManager {
   }
 
   // Add a new method to activate the platform tool
-  private activatePlatformTool(): void {
-    console.log("EditorUIManager: activating platform tool");
+  private activateTool(toolType: string): void {
+    console.log(`EditorUIManager: activating tool ${toolType}`);
 
     // Prevent multiple activations at once
     if (this.isActivatingPlatformTool) {
@@ -289,11 +300,11 @@ export class EditorUIManager {
     this.clearPaletteSelection();
 
     // First ensure any previous platform tool is deactivated
-    this.platformTool.deactivate();
+    this.platformTool?.deactivate();
 
     // Make sure the platform tool is visible and centered immediately
     // Don't use setTimeout which can cause timing issues
-    this.platformTool.activate();
+    this.platformTool?.activate();
 
     // Reset the activation flag after a delay to prevent rapid re-activations
     this.scene.time.delayedCall(500, () => {
@@ -320,5 +331,44 @@ export class EditorUIManager {
         }
       });
     }
+  }
+
+  private handleRegistrySelectedEntity(entity: EditorEntity | null): void {
+    // Update selectedEntity property
+    this.selectedEntity = entity;
+
+    // Update inspector
+    if (this.inspector) {
+      this.inspector.selectEntity(entity);
+    }
+
+    // Deactivate platform tool if an entity is selected OR if nothing is selected
+    if (this.platformTool) {
+      if (entity) {
+        // Deactivate if any entity is selected (platform or otherwise)
+        // because selection means we are not in platform placement mode.
+        this.platformTool.deactivate();
+      } else {
+        // Also deactivate if selection is cleared (entity is null)
+        this.platformTool.deactivate();
+      }
+    }
+  }
+
+  private handleEntityTypeSelect(type: string, config?: any): void {
+    // This is called when a non-platform button is clicked OR
+    // when PlatformTool signals configuration is complete.
+    console.log(
+      `EditorUIManager: handleEntityTypeSelect called for type: ${type}`
+    );
+
+    // Disable palette interaction when entering placement mode
+    if (this.palette) {
+      console.log("EditorUIManager: Disabling palette for placement.");
+      this.palette.disable();
+    }
+
+    // Forward to EditorScene -> EntityManager
+    this.scene.events.emit("UI_ENTITY_SELECT", type, config);
   }
 }

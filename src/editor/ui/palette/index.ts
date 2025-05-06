@@ -11,6 +11,7 @@ export class Palette {
   private selectedButton: string | null = null;
   private onSelectCallback: (type: string, config?: any) => void;
   private entities: EntityButton[] = [];
+  private enabled: boolean = true;
 
   constructor(
     scene: Scene,
@@ -43,8 +44,9 @@ export class Palette {
         // Only interactive if NOT dragging an entity AND NOT in placement mode
         const isDragging = this.scene.registry.get("isDraggingEntity");
         const isPlacing = this.scene.registry.get("isPlacementModeActive");
-        if (isDragging || isPlacing) {
-          return false; // Ignore hits during drag or placement mode
+        // Check internal enabled flag
+        if (!this.enabled || isDragging || isPlacing) {
+          return false; // Ignore hits if disabled, dragging, or in placement mode
         }
         return Phaser.Geom.Rectangle.Contains(hitArea, x, y); // Default check
       },
@@ -181,5 +183,18 @@ export class Palette {
   updatePositionForResize(): void {
     // Update position when the window is resized
     this.container.setPosition(10, 10);
+  }
+
+  public enable(): void {
+    this.enabled = true;
+    // Optional: visually indicate enabled state (e.g., change alpha)
+    this.container.setAlpha(1);
+  }
+
+  public disable(): void {
+    this.enabled = false;
+    this.clearSelection(); // Deselect button when disabled
+    // Optional: visually indicate disabled state
+    this.container.setAlpha(0.5);
   }
 }

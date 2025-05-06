@@ -36,7 +36,6 @@ export class EntitySelector {
 
     // Setup event handlers
     this.setupEventHandlers();
-    this.setupInputHandlers();
   }
 
   /**
@@ -311,51 +310,47 @@ export class EntitySelector {
   }
 
   /**
-   * Set up input handlers for selection
+   * Attempts to select an entity at the pointer's location.
+   * Called by EntityManager when not in placement mode.
+   * @param pointer The input pointer
    */
-  private setupInputHandlers(): void {
-    // Handle clicks for entity selection
-    this.scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      // Skip if right click or not left button
-      if (!pointer.leftButtonDown()) return;
-
-      // Skip if over UI
-      if (this.uiBounds && this.uiBounds.contains(pointer.x, pointer.y)) {
-        return;
-      }
-
-      // Check if placement mode is active - if so, the EntityManager will handle it
-      const isPlacementModeActive = this.scene.registry.get(
-        "isPlacementModeActive"
+  public handleSelectionClick(pointer: Phaser.Input.Pointer): void {
+    // Skip if over UI
+    if (this.uiBounds && this.uiBounds.contains(pointer.x, pointer.y)) {
+      console.log(
+        "[EntitySelector] Click within UI bounds, ignoring selection."
       );
-      if (isPlacementModeActive) {
-        console.log(
-          "EntitySelector: Placement mode active, skipping selection logic"
-        );
-        return;
-      }
+      return;
+    }
 
-      // Skip if spacebar is held (for camera panning)
-      const spaceKey = this.scene.input.keyboard?.addKey(
-        Phaser.Input.Keyboard.KeyCodes.SPACE
+    // Skip if spacebar is held (for camera panning)
+    const spaceKey = this.scene.input.keyboard?.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE
+    );
+    if (spaceKey && spaceKey.isDown) {
+      console.log("[EntitySelector] Space held, ignoring selection.");
+      return;
+    }
+
+    // Get world position
+    const worldX = pointer.worldX;
+    const worldY = pointer.worldY;
+
+    // Check if clicking on an entity
+    const clickedEntity = this.getEntityAtPosition(worldX, worldY);
+
+    if (clickedEntity) {
+      // Select the entity
+      console.log(
+        "[EntitySelector] Entity found at click, selecting:",
+        clickedEntity.type
       );
-      if (spaceKey && spaceKey.isDown) return;
-
-      // Get world position
-      const worldX = pointer.worldX;
-      const worldY = pointer.worldY;
-
-      // Check if clicking on an entity
-      const clickedEntity = this.getEntityAtPosition(worldX, worldY);
-
-      if (clickedEntity) {
-        // Select the entity
-        this.selectEntity(clickedEntity);
-      } else {
-        // Clicking empty space - deselect
-        this.selectEntity(null);
-      }
-    });
+      this.selectEntity(clickedEntity);
+    } else {
+      // Clicking empty space - deselect
+      console.log("[EntitySelector] Empty space clicked, deselecting.");
+      this.selectEntity(null);
+    }
   }
 
   /**
@@ -380,7 +375,6 @@ export class EntitySelector {
     }
 
     // Remove event listeners
-    this.scene.input.off("pointerdown");
     this.eventBus.off(EditorEvents.ENTITY_REMOVED, undefined, this);
     this.eventBus.off(`EB_${EditorEvents.ENTITY_REMOVED}`, undefined, this);
     this.eventBus.off(EditorEvents.ENTITY_PLACED, undefined, this);

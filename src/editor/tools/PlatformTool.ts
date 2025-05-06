@@ -10,21 +10,15 @@ export class PlatformTool {
     segmentCount: 3,
     segmentWidth: 32,
   };
-  private onPlacePlatform: (platform: Platform) => void;
-  private onRemovePlatform: (platform: Platform) => void;
+  private onPlacementConfigured: (config: any) => void;
   private placementPreview: Phaser.GameObjects.Rectangle | null = null;
   private overlay: Phaser.GameObjects.Rectangle | null = null;
   private escKey: Phaser.Input.Keyboard.Key;
   private isActivating: boolean = false;
 
-  constructor(
-    scene: Scene,
-    onPlacePlatform: (platform: Platform) => void,
-    onRemovePlatform: (platform: Platform) => void = () => {}
-  ) {
+  constructor(scene: Scene, onPlacementConfigured: (config: any) => void) {
     this.scene = scene;
-    this.onPlacePlatform = onPlacePlatform;
-    this.onRemovePlatform = onRemovePlatform;
+    this.onPlacementConfigured = onPlacementConfigured;
 
     // Create the platform configuration panel
     this.panel = new PlatformPanel(this.scene, {
@@ -64,12 +58,12 @@ export class PlatformTool {
       onPlaceButtonClick: () => {
         console.log("PlatformTool: place button clicked");
 
-        // Hide the panel immediately - this should happen before preview creation
+        // Hide the panel immediately
         if (this.panel) {
           this.panel.hide();
         }
 
-        // Remove blocking rectangle on the panel to allow clicks through
+        // Remove blocking rectangle if it exists
         const blockingRect = this.scene.children.getByName(
           "platformPanelBlockingRect"
         );
@@ -77,33 +71,18 @@ export class PlatformTool {
           blockingRect.destroy();
         }
 
-        // Short delay to allow panel to hide fully
-        this.scene.time.delayedCall(50, () => {
-          // If there's no preview yet, create it now
-          if (!this.placementPreview) {
-            this.createPlacementPreview();
-            console.log(
-              "PlatformTool: preview created, follow cursor to position platform"
-            );
-          }
-
-          // The overlay should remain visible to dim the background
-          // while placing the platform
-          if (this.overlay) {
-            this.scene.children.bringToTop(this.overlay);
-            if (this.placementPreview) {
-              this.scene.children.bringToTop(this.placementPreview);
-            }
-          }
-        });
+        // --- NEW LOGIC ---
+        console.log(
+          "PlatformTool: Signaling placement configured with:",
+          this.platformConfig
+        );
+        // Signal that configuration is done and placement mode should activate
+        this.onPlacementConfigured(this.platformConfig);
+        // Deactivate the tool's UI elements (overlay)
+        this.deactivate();
+        // --- END NEW LOGIC ---
       },
     });
-
-    // Setup pointer move event
-    this.scene.input.on("pointermove", this.onPointerMove, this);
-
-    // Setup pointer down event
-    this.scene.input.on("pointerdown", this.onPointerDown, this);
 
     // Setup ESC key to cancel
     if (this.scene.input.keyboard) {
@@ -112,40 +91,8 @@ export class PlatformTool {
     }
   }
 
-  private onPointerMove(pointer: Phaser.Input.Pointer): void {
-    // Only check if we have a preview - we don't need the panel to be visible anymore
-    if (!this.placementPreview) return;
-
-    const worldPoint = this.scene.cameras.main.getWorldPoint(
-      pointer.x,
-      pointer.y
-    );
-    this.updatePreviewPosition(worldPoint.x, worldPoint.y);
-  }
-
-  private onPointerDown(pointer: Phaser.Input.Pointer): void {
-    // Skip if not a left mouse button click
-    if (pointer.button !== 0) return;
-
-    // Only handle this click if we have a placement preview
-    // This ensures we don't interfere with panel interactions
-    if (!this.placementPreview) return;
-
-    // Get the world position
-    const worldPoint = this.scene.cameras.main.getWorldPoint(
-      pointer.x,
-      pointer.y
-    );
-
-    // Update the preview position
-    this.updatePreviewPosition(worldPoint.x, worldPoint.y);
-
-    // Place the platform at this position
-    this.placePlatform();
-  }
-
   activate(): void {
-    console.log("PlatformTool.activate() called");
+    console.log("[PlatformTool] activate() called");
 
     // Prevent multiple activations
     if (this.isActivating) {
@@ -194,8 +141,12 @@ export class PlatformTool {
     this.panel.updatePosition(centerX, centerY);
 
     // Show the panel immediately
-    console.log("Showing platform panel");
+    console.log("[PlatformTool] Showing platform panel...");
     this.panel.show();
+    console.log(
+      "[PlatformTool] After panel.show(). Panel container visibility:",
+      this.panel.container?.visible
+    );
 
     // Ensure good Z-ordering - overlay must be below panel
     if (this.overlay && this.overlay.scene) {
@@ -241,14 +192,11 @@ export class PlatformTool {
     }
 
     // IMPORTANT: Remove specific listeners added by this tool?
-    // Currently, the listeners are added globally in the constructor.
-    // If this tool should ONLY handle input when active, these listeners
-    // should be added in activate() and removed here.
-    // For now, we assume they are meant to be global for the scene
-    // but this might be incorrect.
-    console.log(
-      "PlatformTool: Deactivation complete (Note: Global listeners potentially remain)"
-    );
+    // Removing the listeners we commented out earlier
+    // this.scene.input.off("pointermove", this.onPointerMove, this);
+    // this.scene.input.off("pointerdown", this.onPointerDown, this);
+
+    console.log("PlatformTool: Deactivation complete");
   }
 
   private createPlacementPreview(): void {
@@ -315,64 +263,6 @@ export class PlatformTool {
     }
   }
 
-  private placePlatform(): void {
-    if (!this.placementPreview) return;
-
-    // Get the current position
-    const x = this.placementPreview.x;
-    const y = this.placementPreview.y;
-
-    // Create a unique ID for the platform
-    const platformId = `platform-${Date.now()}`;
-
-    console.log("Creating platform with config:", {
-      segmentCount: this.platformConfig.segmentCount,
-      isVertical: this.platformConfig.isVertical,
-      segmentWidth: this.platformConfig.segmentWidth,
-      id: platformId,
-      position: { x, y },
-    });
-
-    // Create the actual platform
-    const platform = new Platform(
-      this.scene,
-      x,
-      y,
-      this.platformConfig.segmentCount,
-      platformId,
-      this.platformConfig.isVertical,
-      this.platformConfig.segmentWidth
-    );
-
-    // Make the platform interactive so it can be selected
-    platform.setInteractive();
-
-    // If physics is enabled, disable collisions in editor mode
-    if (platform.body) {
-      (platform.body as MatterJS.BodyType).collisionFilter.group = -1;
-    }
-
-    console.log("Platform created:", platform);
-
-    // Call the callback with the created platform
-    this.onPlacePlatform(platform);
-
-    // Deactivate after placement
-    this.deactivate();
-  }
-
-  /**
-   * Removes a platform from the scene
-   */
-  public removePlatform(platform: Platform): void {
-    if (!platform) return;
-
-    // Call the removal callback if it exists
-    if (this.onRemovePlatform) {
-      this.onRemovePlatform(platform);
-    }
-  }
-
   getPanel(): PlatformPanel {
     return this.panel;
   }
@@ -395,8 +285,8 @@ export class PlatformTool {
 
   cleanup(): void {
     // Clean up event listeners when tool is disposed
-    this.scene.input.off("pointermove", this.onPointerMove, this);
-    this.scene.input.off("pointerdown", this.onPointerDown, this);
+    // this.scene.input.off("pointermove", this.onPointerMove, this);
+    // this.scene.input.off("pointerdown", this.onPointerDown, this);
 
     if (this.escKey) {
       this.escKey.off("down", this.deactivate, this);

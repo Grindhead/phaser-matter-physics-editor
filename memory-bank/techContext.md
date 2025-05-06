@@ -8,8 +8,10 @@
 
 ## Dependencies
 
-(To be defined as the editor is built)
+- (To be defined as the editor is built)
+- **Potentially:** A UI library for the editor interface, if Phaser's built-in elements are insufficient.
 
 ## Tool Usage Patterns
 
 - Using PowerShell for batch file operations.
+- **Node.js/pnpm:** Will be used to manage dependencies and run scripts (including the separate editor script).

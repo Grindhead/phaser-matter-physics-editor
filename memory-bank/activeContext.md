@@ -2,151 +2,60 @@
 
 ## Current Focus
 
-- The core gameplay features are complete. Awaiting further instructions or definition of the next phase.
+- **Implementing refactored editor components** with a clean architecture
+- Maintaining a clear separation of concerns between specialized modules
+- Creating an event-driven system for better component communication
+- Improving maintainability through smaller, focused files
 
 ## Recent Changes
 
-- **Implemented Single-Input Restart:**
+### Editor Refactoring
 
-  - Combined game over dismissal and restart into a single automatic action with a delay.
-  - Game now automatically restarts after player death or level completion.
-  - Removed the need for explicit player input to restart, creating a smoother gameplay flow.
-
-- **Implemented Multiple Dynamic Death Zones:**
-
-  - Added death zone colliders positioned 500px below platforms at various points throughout the level.
-  - For longer levels, multiple death zones are created with appropriate spacing and overlap.
-  - This reduces the time players fall after a mistake before the level restarts.
-
-- **Implemented Box Respawning on Restart:**
-
-  - Added tracking of original crate positions in `Game.ts`.
-  - On level restart, all crates are respawned at their original positions.
-  - Utilizes the `respawnCrates` method in both `Game.ts` and `LevelGenerator.ts`.
-
-- **Implemented Crate Destruction in Death Zones:**
-
-  - Crates now get destroyed when they hit a death zone collider.
-  - Implemented in the `checkFallSensorCollision` method in `Game.ts`.
-  - Properly removes crates from both the physics world and the LevelGenerator's crate array.
-
-- **Fixed Coin Placement Logic:**
-  - Corrected coin spacing to strictly adhere to `MIN_COIN_SPACING`.
-  - Removed the `centerBuffer` logic that caused gaps in coin placement near platform centers.
-  - Prevented coins from being placed on the initial platform (`isInitialPlatform` flag added to `populatePlatformWithCoins`).
-- **Implemented Cool Landing Animation for Level Completion:** Added a dedicated animation that plays when the player completes a level, giving a more satisfying finish.
-- **Ensured Player Renders in Front of Finish Line:** Set proper depth values to ensure the player sprite (depth 10) always renders in front of the finish line (depth 5).
-- **Increased Enemy Density and Level Length:** Modified level generation parameters to increase the number of platforms and enemies per level, creating a more challenging experience.
-- **Refined Crate Placement Logic:** Updated `LevelGenerator.ts` (`placeStrategicCratesNearWalls`) to only place crates when the vertical jump distance to clear the wall exceeds the player's base jump height, considering small/big crate heights. Removed redundant crate placement from `itemPlacementHelper.ts`.
-- **Fixed Keyboard Restart:** Implemented keyboard input (Space/Enter) to restart the level.
-- **Fixed Conditional Landing Animation:** Implemented logic to prevent the 'fx_land' animation from playing if the player collects a coin during landing.
-- **Refined Level Generation Strategy:**
-  - Fixed wall generation logic to correctly place vertical walls at platform edges.
-  - Improved wall positioning calculations for better gameplay accessibility.
-  - Added forced test wall when no natural height differences are found.
-  - Modified crate placement to only position crates where needed for jumping up walls.
-  - Added debug visualization for walls and crates during level generation.
-  - Enhanced crate placement logic to strategically position crates to help players reach higher platforms.
-- **Implemented Vertical Walls:** Added support for vertical wall generation using rotated platform sprites. Updated the Platform class, platformBuilder, and LevelGenerator to handle vertical orientation.
-- **Enhanced Barrel Substitution Logic:** Refined barrel substitution to work properly with vertical walls and prevent conflicting placements.
-- **Implemented Immediate Game Start:** Removed any "click to play" state.
-- **Adjusted Platform Visibility:** Reduced `maxVerticalGap` in `LevelGenerator.ts`.
-- **Implemented Player-Barrel Interaction Logic:** Added collision detection and state management (`isInBarrel`, `enterBarrel`, etc.) in `Game.ts` and `Player.ts`.
-- **Prevented Enemies on First Two Platforms (Level 1):** Updated `LevelGenerator.ts`.
-- **Completed Barrel Placement Testing:** Confirmed correct positioning and accessibility for mandatory and optional barrels.
-- **Uncommented Optional Barrel Placement:** Enabled barrel placement in large gaps.
-- **Completed Mobile Responsiveness and UI Scaling Feature:**
-  - Finalized scaling strategy (`EXPAND`, `CENTER_BOTH`).
-  - Adapted UI elements (`CoinUI`, `LevelUI`, `DebugPanel`, overlays) for responsiveness.
-  - Implemented on-screen mobile controls.
-  - Tested successfully across various resolutions.
-- **Resolved Enemy Positioning:** Fixed spawning issues related to platform length (`MIN_PLATFORM_LENGTH_WITH_ENEMY` adjusted).
-- **Improved Crate Generation Variety:** Modified `placeStrategicCratesNearWalls` in `LevelGenerator.ts` to add randomness (60/40 split) when choosing between small/big crates if both are viable. Added `placeAdditionalRandomCrates` method to scatter additional random crates (50/50 split) on eligible platforms, ensuring both `CrateSmall` and `CrateBig` are used and resolving unused import warning.
+- Created a complete event system with `EditorEventTypes.ts` and `EditorEventBus.ts` singleton
+- Refactored the monolithic `EditorEntityManager.ts` (1300+ lines) into specialized components:
+  - `EntityCreator.ts` - Factory methods for creating different entity types
+  - `EntitySelector.ts` - Selection and highlighting logic
+  - `EntityDragHandler.ts` - Entity drag handling behavior
+  - `EntityUpdater.ts` - Entity property update logic
+  - `EntityManager.ts` - Core coordination between components
+  - `KeyboardManager.ts` - Keyboard shortcut handling
+  - `CameraPanManager.ts` - Camera movement and zoom controls
+- Updated `EditorScene.ts` to use the new component architecture
+- Modified `EditorLevelHandler.ts` to work with the event system
+- Created standardized event types for consistent communication
 
 ## Next Steps
 
-- Project goals achieved for the core game implementation. Awaiting further instructions.
+- Address linter errors and type safety issues in the refactored components
+- Complete the UI components refactoring:
+  - Break down `Inspector.ts` into smaller UI components
+  - Create reusable UI controls
+  - Improve component organization
+- Update integration tests to work with the new component structure
+- Clean up redundant code and improve error handling
 
 ## Active Decisions
 
-- **Automatic Restart Flow:**
-  - Restart occurs immediately after game over or level completion without any delay.
-  - Maintain the keyboard shortcuts (Space/Enter) for optional manual restart during gameplay.
-  - Remove the intermediate UI step, creating a smoother gameplay experience.
-- **Multiple Death Zone Strategy:**
-  - Create segmented death zones for levels wider than 2000px.
-  - Use overlap margin (200px) to ensure no gaps between death zone segments.
-  - Position death zones 500px below the lowest platform in each section.
-- **Crate Management:**
-  - Store original crate positions at level generation time for respawning.
-  - Use LevelGenerator's `respawnCrates` method to recreate crates with correct type and position on restart.
-  - Destroy crates immediately upon collision with death zones.
-- **Coin Placement Rules:**
-  - No coins on the initial starting platform.
-  - Strictly enforce `MIN_COIN_SPACING` between coins.
-  - Place coins evenly across the eligible platform width (no center buffer gaps).
-- **Vertical Wall Placement Strategy:**
-  - Walls now placed at the end of platforms leading to higher platforms.
-  - Wall height calculated based on the vertical gap between platforms.
-  - Wall position aligned to ensure proper access from the lower platform.
-  - Debug visualization added to verify proper wall placement.
-- **Strategic Crate Placement:**
-  - Crates placed near walls to help players climb, with type (big/small) selected based on wall height and added randomness (60/40) if both are viable.
-  - Additional random crates (50/50 small/big) placed on other eligible platforms to increase variety.
-  - Crate positioned on platform edge near wall or randomly within platform bounds for additional crates.
-- **Immediate Start:** Game starts automatically after asset loading.
-- **Orientation Handling:** Display message in portrait mode; use `window.matchMedia`.
-- **Asset Naming:** Use lowercase, hyphens: `[description]-[framenumber].[extension]`.
-- **Vertical Walls:** Implement using rotated platform sprites.
-- **Barrel Substitution:** Replace platforms with barrels in gaps > `maxHorizontalGap`.
-- **Conditional Landing Animation:** Check game state (e.g., coin collection during landing) before playing/suppressing animations (e.g., `fx_land`).
-- **Scale Manager Strategy:** `Phaser.Scale.EXPAND` with `autoCenter: Phaser.Scale.CENTER_BOTH`.
-- **UI Positioning:** Use relative positioning and resize listeners.
-- **Level Generation Logic:** Extend `LevelGenerator.ts` for walls and barrels.
-- **Crate Spawning Constraint:** No crates on the final platform.
-- **Crate Purpose and Placement:** Use for vertical navigation; require platform segment count >= 8.
-- **Depth Management:** Use consistent depth values for entities, with player (depth 10) always rendering above finish line (depth 5).
-- **Difficulty Curve:** Increase platform count and enemy density as level number increases, using multipliers to adjust generation parameters.
-- **Passing Context Flags:** Use boolean flags (e.g., `isInitialPlatform`) passed into helper functions (`populatePlatformWithCoins`) to control conditional logic within generation/placement algorithms.
+- Using the singleton pattern for the `EditorEventBus` to simplify communication
+- Adopting a composition-based architecture rather than inheritance
+- Using TypeScript interfaces to ensure proper type safety
+- Keeping related functionality together in specialized classes
+- Ensuring all components properly clean up when destroyed
 
-## Important Patterns & Preferences
+## Important Patterns and Preferences
 
-- Use PowerShell for file system operations on Windows.
-- Follow custom instructions regarding memory bank updates, planning, and communication style.
-- **Responsive UI:** Position UI relative to screen dimensions using `scene.scale.width/height` and `scene.scale.on('resize', ...)`.
-- **Mobile Touch Controls:** On-screen touch buttons (implemented as interactive `Phaser.GameObjects.Image`) are displayed for movement and jump. Pointer events on these buttons update state flags in the `Player` entity.
-- **State Persistence Across Restarts:** Pass state explicitly via `scene.restart({ key: value })` and retrieve in `init(data)`.
-- **Event Listener Cleanup:** Remove listeners (`game.events.off`, `scene.events.off`) before scene restarts/object destruction.
-- **State Tracking during Generation:** Maintain state (e.g., occupied ranges) within generation loops.
-- **Collision Handling:** Leverage Matter.js collision events (`collisionstart`, `collisionend`). `isGroundBody` helper excludes vertical walls. Player's `processCollision` uses collision normal (`pair.collision.normal.y < -threshold`) to identify top impacts on vertical walls and treat them as ground.
-- **Encapsulation:** Keep entity-specific logic within the entity's class.
-- **State Management:** Use state machines or flags within entities.
-- **Interaction Logic:** Coordinate state changes across interacting entities (e.g., Player, Barrel) using flags/methods.
-- **Conditional Animation:** Check game state (e.g., coin collection during landing) before playing/suppressing animations (e.g., `fx_land`).
-- **Level Design Strategy:** Place vertical walls at platform edges to help reach higher platforms; position crates strategically near walls and randomly elsewhere to help vertical navigation and add variety.
-- **Debug Visualization:** For complex procedural level generation, add debug visualization to verify correct placement.
-- **Delayed Actions:** Use Phaser's time events (`scene.time.delayedCall`) for delayed transitions instead of immediate state changes.
+- **Component-based architecture**: Focusing on specialized components with clear responsibilities
+- **Event-driven communication**: Using events for loose coupling between components
+- **Registry-based state sharing**: Using Phaser's registry for cross-component state
+- **Defensive coding**: Adding proper error handling and fallbacks
+- **Clean separation of concerns**: Each class has a single, well-defined purpose
+- **Facade pattern**: The `EntityManager` presents a simplified interface to complex subsystems
 
-## Learnings & Project Insights
+## Learnings and Project Insights
 
-- **Game Flow Improvement:** Removing intermediary UI steps and implementing auto-restart creates a smoother, more engaging player experience with less interruption.
-- **Death Zone Distribution:** Strategic placement of multiple, overlapping death zones along a level improves player experience by reducing wait time after mistakes without adding unnecessary complexity to the physics system.
-- **State Management for Respawning:** Storing original positions of dynamic objects (crates) at generation time enables clean respawning on level restart.
-- **Level Generation Refinement:** Minor details like coin spacing and initial platform item placement significantly impact the perceived quality and fairness of procedurally generated levels.
-- **Wall Placement Physics:** Vertical wall position is critical for gameplay; center of wall should be positioned to make bottom align with platform and top extend above target height.
-- **Strategic Level Design:** Positioning vertical walls at platform edges and using crates (both strategically placed near walls and randomly placed elsewhere) for vertical navigation creates more deliberate paths and variety through levels.
-- **Debug Visualization Importance:** Visual feedback during level generation helps identify issues with placement algorithms.
-- **Orientation Handling:** `window.matchMedia` is effective; manage game instance creation/destruction carefully.
-- **Scene Restart Lifecycle:** Explicitly passing state via `restart(data)` is safer than reading potentially reset state in `create()`.
-- **Collision Handling:** Leverage Matter.js collision events (`collisionstart`, `collisionend`) and helper functions (`isPlayerBody`, `isGroundBody`) to manage player state (`isGrounded`). Check collision normals (`pair.collision.normal.y`) to differentiate top vs. side collisions on vertical walls.
-- Implementing interactive mechanics requires coordinating state across entities.
-- Animation events/delays are crucial for interaction state sync.
-- Visual asset origins might not align with geometric centers.
-- Adding new generation features can introduce conflicts requiring explicit checks.
-- **Depth Management:** Setting appropriate depth values ensures correct visual layering of game objects, critical for maintaining the player's visibility during gameplay moments like level completion.
-- **Level Generation Tuning:** Adjusting generation parameters can significantly impact gameplay difficulty and flow. Using multipliers for platform count and enemy density creates a natural difficulty progression.
-- **Automated Game Flow:** Using immediate transitions between game states (like instant restart after game over) creates a fluid, uninterrupted experience while still allowing manual intervention (keyboard shortcuts) during normal gameplay.
-
-## Design Patterns
-
-(To be defined)
+- Large monolithic managers make maintenance and feature additions difficult
+- Event-driven architecture enables better component isolation
+- Clear separation of responsibilities improves code readability and testability
+- Breaking down large files improves navigation and reduces merge conflicts
+- Composition offers more flexibility than inheritance for component organization
+- Singletons can be useful for services like event buses when used judiciously

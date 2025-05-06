@@ -1,32 +1,33 @@
 {
-    "name": "template-vite-ts",
-    "description": "A Phaser 3 TypeScript template using Vite.",
-    "version": "1.3.2",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/phaserjs/template-vite-ts.git"
-    },
-    "author": "Phaser Studio <support@phaser.io> (https://phaser.io/)",
-    "license": "MIT",
-    "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
-    "bugs": {
-        "url": "https://github.com/phaserjs/template-vite-ts/issues"
-    },
-    "homepage": "https://github.com/phaserjs/template-vite-ts#readme",
-    "scripts": {
-        "dev": "node log.js dev & vite --config vite/config.dev.mjs",
-        "build": "node log.js build & vite build --config vite/config.prod.mjs",
-        "dev-nolog": "vite --config vite/config.dev.mjs",
-        "build-nolog": "vite build --config vite/config.prod.mjs"
-    },
-    "devDependencies": {
-        "terser": "^5.39.0",
-        "typescript": "^5.8.3",
-        "vite": "^5.4.18"
-    },
-    "dependencies": {
-        "phaser": "^3.88.2",
-        "typeface-roboto": "^1.1.13"
-    },
-    "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f"
+  "name": "template-vite-ts",
+  "description": "A Phaser 3 TypeScript template using Vite.",
+  "version": "1.3.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phaserjs/template-vite-ts.git"
+  },
+  "author": "Phaser Studio <support@phaser.io> (https://phaser.io/)",
+  "license": "MIT",
+  "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
+  "bugs": {
+    "url": "https://github.com/phaserjs/template-vite-ts/issues"
+  },
+  "homepage": "https://github.com/phaserjs/template-vite-ts#readme",
+  "scripts": {
+    "dev": "node log.js dev & vite --config vite/config.dev.mjs",
+    "build": "node log.js build & vite build --config vite/config.prod.mjs",
+    "dev-nolog": "vite --config vite/config.dev.mjs",
+    "build-nolog": "vite build --config vite/config.prod.mjs",
+    "editor": "vite --config vite/config.editor.mjs"
+  },
+  "devDependencies": {
+    "terser": "^5.39.0",
+    "typescript": "^5.8.3",
+    "vite": "^5.4.18"
+  },
+  "dependencies": {
+    "phaser": "^3.88.2",
+    "typeface-roboto": "^1.1.13"
+  },
+  "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f"
 }

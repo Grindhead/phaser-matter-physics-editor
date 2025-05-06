@@ -5,21 +5,34 @@ import {
   BARREL_ROTATION_SPEED,
   BARREL_LAUNCH_SPEED,
 } from "../../lib/constants";
-import { BARREL_ANIMATION_KEYS } from "./barrelAnimations";
-
-// Import Matter JS library type explicitly if needed, or access via scene.matter.matter
-// import * as MatterJS from "matter-js";
-
-export class Barrel extends Phaser.Physics.Matter.Sprite {
+import { BARREL_ANIMATION_KEYS, BARREL_ANIMATIONS } from "./barrelAnimations";
+export interface BarrelInterface {
+  scene: Phaser.Scene;
+  x: number;
+  y: number;
+  type: string;
+}
+export class Barrel
+  extends Phaser.Physics.Matter.Sprite
+  implements BarrelInterface
+{
   public isEntered: boolean = false;
+  public type: string = "barrel";
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
-    super(scene.matter.world, x, y, TEXTURE_ATLAS, undefined, {
-      shape: shapes[PHYSICS_ENTITIES.BARREL],
-      isStatic: true,
-      isSensor: true,
-    });
+    super(
+      scene.matter.world,
+      x,
+      y,
+      TEXTURE_ATLAS,
+      BARREL_ANIMATIONS[BARREL_ANIMATION_KEYS.BARREL_IDLE].prefix + ".png",
+      {
+        shape: shapes[PHYSICS_ENTITIES.BARREL],
+        isStatic: true,
+        isSensor: true,
+      }
+    );
 
     this.angle = -90;
     this.setOrigin(0.22, 0.5); // Set visual origin correctly

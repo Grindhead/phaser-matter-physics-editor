@@ -16,6 +16,11 @@ export function createAnimations<T extends string>(
 ): void {
   (Object.entries(animations) as [T, AnimationDefinition][]).forEach(
     ([key, config]) => {
+      // Skip creation if animation already exists
+      if (anims.exists(key)) {
+        return;
+      }
+
       const isSingleFrame = config.frames <= 1;
 
       if (isSingleFrame) {

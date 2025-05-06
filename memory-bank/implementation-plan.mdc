@@ -3,58 +3,92 @@ description:
 globs: 
 alwaysApply: false
 ---
-# Feature: Mobile Responsiveness and UI Scaling
+# Feature: Level Editor Implementation
 
-**Goal:** Ensure the game UI and layout adapt correctly to various screen sizes, especially mobile, and implement touch controls.
+**Goal:** Create a functional level editor allowing manual placement and configuration of game entities (platforms, enemies, crates, barrels, finish line) and saving/loading levels in JSON format.
 
 ## Implementation Steps
 
-1.  **Research Phaser Scale Manager:**
-    - Task: Investigate Phaser 3 Scale Manager modes (`NONE`, `FIT`, `ENVELOP`, `RESIZE`, `EXPAND`, `WIDTH_CONTROLS_HEIGHT`, `HEIGHT_CONTROLS_WIDTH`) and configuration options (`parent`, `width`, `height`, `zoom`, `autoCenter`).
-    - Outcome: Decided on `FIT` as the initial strategy to maintain aspect ratio and ensure full visibility, potentially exploring `ENVELOP` or `EXPAND` later. `CENTER_BOTH` will be used for centering.
+1.  **Setup Editor Structure:**
+    - Task: Create the `src/editor/` directory and subdirectories (`scenes/`, `ui/`, `lib/`). Create the main editor scene file (`src/editor/scenes/EditorScene.ts`).
+    - Outcome: Basic directory structure and editor scene file exist.
     - Status: Done
-    - Summary: Researched Scale Manager modes via web search. `FIT` ensures visibility while maintaining aspect ratio, suitable for platformers. `ENVELOP` fills space but may crop. `RESIZE` changes aspect ratio. `EXPAND` is a potential hybrid. Decided to start with `FIT` and `CENTER_BOTH`.
+    - Summary: Created the required folders and the initial `EditorScene.ts` file.
 
-2.  **Configure Scale Manager:**
-    - Task: Update the main Phaser game configuration (`src/main.ts`) to use `EXPAND` mode and `CENTER_BOTH` to test adaptive full-screen behavior.
-    - Outcome: Game canvas potentially scales using the EXPAND strategy.
+2.  **Configure Editor Launch:**
+    - Task: Add a script to `package.json` (e.g., `"editor": "vite --config vite.config.editor.js"` or similar) to launch the editor. This might involve a separate Vite config or entry point (`index.editor.html`?) targeting `EditorScene`.
+    - Outcome: `pnpm run editor` successfully launches the editor environment/scene.
     - Status: Done
-    - Summary: Set `scale.mode` to `Phaser.Scale.EXPAND` in `src/main.ts` to test if it fills the screen adaptively without cropping issues seen in `ENVELOP`. Kept `autoCenter` as `CENTER_BOTH`.
+    - Summary: Added `vite/config.editor.mjs`, `index.editor.html`, `src/editor.ts`, and the `editor` script to `package.json`.
 
-3.  **Adapt UI Elements (`CoinUI`, Overlays):**
-    - Task: Modify `CoinUI` and game state overlay logic (in `Game.ts`) to position elements relative to screen dimensions (e.g., using `scene.scale.width`, `scene.scale.height`) instead of fixed coordinates. Consider anchoring to corners or edges.
-    - Outcome: Core UI elements remain visible and reasonably positioned on different screen sizes.
+3.  **Implement Basic Editor Scene:**
+    - Task: Initialize `EditorScene.ts`. Set up a basic camera (possibly with drag controls for panning). Load necessary assets for entity visualization.
+    - Outcome: Editor scene loads, displays a background, and allows basic camera panning and zooming.
     - Status: Done
-    - Summary: Updated `CoinUI.ts` to position text using a `PADDING` constant relative to the top-left corner `(0,0)` and added a resize listener to handle dynamic scale changes. Overlays in `Game.ts` already used relative centering and required no changes.
+    - Summary: Added camera controls (pan/zoom) and a graphics-based grid background. Removed image-based grid. Loaded texture atlas and physics data.
 
-4.  **Adapt Debug UI (Optional):**
-    - Task: Decide if the `DebugUIScene` needs to be responsive for mobile debugging. If so, adapt `DebugPanel` positioning similar to other UI elements. Consider making it toggleable via a touch button instead of 'Q'. Also adapt other UI elements in `DebugUIScene` (`CoinUI`, `LevelUI`).
-    - Outcome: Debug panel, Coin UI, and Level UI (within `DebugUIScene`) are responsive, anchoring to corners and scaling font size.
+4.  **Create Entity Palette UI:**
+    - Task: Build a UI component (`src/editor/ui/Palette.ts`?) displaying buttons/icons for each placeable entity type (Platform, Enemy types, CrateSmall, CrateBig, Barrel, FinishLine).
+    - Outcome: Palette UI is visible in the editor. Clicking an item selects it for placement.
     - Status: Done
-    - Summary: Added resize listeners to `DebugPanel.ts` and `LevelUI.ts` to handle repositioning (anchoring top-right and top-left respectively) and font size scaling based on `scene.scale.displayScale`. Removed fixed width from `DebugPanel`. `CoinUI` was already updated in Step 3.
+    - Summary: Implemented `Palette.ts` component and integrated it into `EditorScene`. Added separate buttons for `enemy-large` and `enemy-small`.
 
-5.  **Test `EXPAND` Mode:**
-    - Task: Thoroughly test the game on various resolutions/aspect ratios.
-    - Outcome: Determine if `EXPAND` mode successfully fills the screen, keeps entities within view, avoids distortion, and positions UI correctly.
-    - Status: Pending
-
-6.  **Implement Mobile Controls:**
-    - Task: Implement the `createMobileControls` function (likely in `Game.ts` or a dedicated UI scene). Add on-screen touch buttons for movement (left/right) and jump. Use Phaser's input system (`this.input.addPointer`, `pointer.isDown`) to detect touches on these buttons.
-    - Outcome: Player can be controlled via touch input on mobile devices.
+5.  **Implement Object Placement:**
+    - Task: Add logic to `EditorScene` to handle pointer clicks on the canvas. When an entity type is selected in the palette, clicking the canvas should create and place a visual representation of that entity at the click coordinates.
+    - Outcome: Users can select an entity from the palette and click to place instances in the editor scene, snapped to the grid. Platforms and Enemies are created using their actual classes (`Platform`, `EnemyLarge`, `EnemySmall`).
     - Status: Done
-    - Summary: Added mobile control state variables (`mobileLeftActive`, etc.) to `Player.ts`. Implemented `createMobileControls` to add interactive image buttons (left, right, jump) to the scene, anchored to the bottom corners with pointer events updating the state variables. Modified `Player.update` to use these states alongside keyboard input.
+    - Summary: Implemented placement logic with grid snapping in `EditorScene`. Refactored platform and enemy placement to use the actual entity classes directly, removing manual rendering/ghost previews.
 
-7.  **Test Across Resolutions:**
-    - Task: Use browser developer tools to simulate various mobile device resolutions and aspect ratios. Test gameplay, UI visibility, and control responsiveness.
-    - Outcome: Identify and fix layout or scaling issues on common screen sizes.
-    - Status: Pending
+6.  **Implement Object Selection & Movement:**
+    - Task: Add logic to select already placed objects (e.g., by clicking on them). Implement dragging functionality to move selected objects.
+    - Outcome: Users can click to select placed objects and drag them to new positions (dragging not yet implemented, but selection works).
+    - Status: Done
+    - Summary: Implemented entity selection logic in `EditorScene`. Added visual feedback (tinting) for selected objects, including handling `Platform`, `EnemyLarge`, and `EnemySmall` classes correctly.
 
-8.  **Refine Camera Behavior (If Needed):**
-    - Task: Evaluate if `CameraManager`'s dynamic zoom needs adjustment based on screen size or aspect ratio. Ensure the player remains clearly visible.
-    - Outcome: Camera behavior feels appropriate across different devices.
-    - Status: Pending
+7.  **Implement Property Inspector UI:**
+    - Task: Create a UI panel (`src/editor/ui/Inspector.ts`?) that displays properties of the currently selected object. Initially, focus on Platform `segmentCount` and `orientation`.
+    - Outcome: Inspector panel shows contextually relevant properties.
+    - Status: Done
+    - Summary: Implemented `Inspector.ts` component and integrated it into `EditorScene`. Displays platform properties and read-only enemy type.
 
-9.  **Update Memory Bank:**
-    - Task: Document the chosen scaling strategy, UI positioning methods, and mobile control implementation in `systemPatterns.md` and `activeContext.md`.
-    - Outcome: Memory bank reflects the new responsive design patterns.
-    - Status: Pending
+8.  **Implement Platform Configuration:**
+    - Task: Add controls (e.g., input fields, buttons) to the Inspector UI to modify `segmentCount` and `orientation` (isVertical) for selected platforms. Update the visual representation and stored data of the platform accordingly.
+    - Outcome: Users can select a platform and change its segment count and orientation via the UI. The platform is recreated with the new properties.
+    - Status: Done
+    - Summary: Added property controls to `Inspector.ts`. `EditorScene` handles property changes by destroying the old platform and creating a new one with the updated configuration, using the `isVertical` boolean correctly.
+
+9.  **Implement Save Functionality:**
+    - Task: Create `src/editor/lib/LevelData.ts` with a `saveLevel` function. Add a "Save" button to the UI. Clicking it should gather data for all placed objects (position, type, properties like `segmentCount`/`orientation`) from the `EditorScene`, format it according to the agreed JSON structure, and trigger a download of the JSON file.
+    - Outcome: Users can click "Save" to download a JSON file representing the current level layout.
+    - Status: Done
+    - Summary: Implemented `LevelDataManager.ts` with save functionality. Added a save button to the `Toolbar.ts` component and integrated it into `EditorScene`.
+
+10. **Implement Load Functionality:**
+    - Task: Add a "Load" button and potentially a file input element. Clicking "Load" should allow the user to select a JSON file. Parse the file using `LevelData.ts` (`loadLevel` function), clear the current editor scene, and populate it with objects based on the loaded data.
+    - Outcome: Users can load a previously saved level JSON file into the editor.
+    - Status: Done
+    - Summary: Added load functionality to `LevelDataManager.ts`. Added a load button and file input handling to `Toolbar.ts`, integrated into `EditorScene`. Loads specific enemy types correctly.
+
+11. **Integrate Levels into Game:**
+    - Task: Modify `src/scenes/Game.ts` to remove procedural generation. Add logic to fetch/load a specific level JSON file. Parse the JSON and instantiate the corresponding entities (Platforms, Enemies, Crates, Barrels, FinishLine) using their respective classes from `src/entities/`.
+    - Outcome: The game scene can load and display a level defined by a JSON file.
+    - Status: TODO
+    - Summary: -
+
+12. **Adapt Game Mechanics & Implement Coin Placement:**
+    - Task: Ensure mechanics like death zones, crate respawning, etc., function correctly with the manually loaded level structure. **Repurpose `LevelGenerator.ts` for coin placement:** Strip unused generation methods. Create/modify a method (e.g., `placeCoinsOnPlatforms`) that takes the loaded platforms and potentially enemy/crate data. Implement logic within this method to iterate through platforms, check if they contain enemies or crates (based on proximity/collision with loaded enemy/crate positions), and if clear, place coins using existing spacing logic. Call this method from `Game.ts` *after* loading other entities.
+    - Outcome: Core gameplay mechanics work as expected on levels loaded from the editor. Coins are placed correctly only on platforms without enemies/crates.
+    - Status: TODO
+    - Summary: -
+
+13. **Refine and Test:**
+    - Task: Test editor usability, save/load reliability, and game integration. Add refinements like grid snapping, better visualization, etc.
+    - Outcome: Editor is stable and usable; game correctly plays editor-created levels.
+    - Status: TODO
+    - Summary: -
+
+14. **Update Memory Bank:**
+    - Task: Document the final editor implementation details, UI components, data flow, and game integration steps in all relevant memory bank files.
+    - Outcome: Memory bank accurately reflects the completed Level Editor feature.
+    - Status: Done
+    - Summary: Updated memory bank after implementing core editor features, including specific enemy types and using actual entity classes.

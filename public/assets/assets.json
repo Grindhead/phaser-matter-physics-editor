@@ -4610,6 +4610,27 @@
 					}
 				},
 				{
+					"filename": "barrel/idle/barrel-idle.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 110
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 29,
+						"w": 63,
+						"h": 52
+					},
+					"frame": {
+						"x": 126,
+						"y": 53,
+						"w": 63,
+						"h": 52
+					}
+				},
+				{
 					"filename": "barrel/launch/barrel-launch-0010.png",
 					"rotated": false,
 					"trimmed": true,
@@ -6001,6 +6022,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:6690e70215a1f86a1db112eaff3fc8e5:e38a3931a49d8b81f1bf1226dca29649:80f8303a9cd2a0a1232cf2650af8f659$"
+		"smartupdate": "$TexturePacker:SmartUpdate:3b710b9609cd9638165e7d74c9959de6:04d7e98f091fec7694846c7094af2345:80f8303a9cd2a0a1232cf2650af8f659$"
 	}
 }

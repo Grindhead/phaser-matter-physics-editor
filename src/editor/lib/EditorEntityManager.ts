@@ -1,0 +1,1324 @@
+import { Scene } from "phaser";
+import Phaser from "phaser";
+import { TILE_WIDTH, TILE_HEIGHT } from "../../lib/constants";
+import { EditorEntity } from "../ui/Inspector";
+import { LevelData, LevelDataManager } from "./LevelData";
+import { Platform, PlatformInterface } from "../../entities/Platforms/Platform";
+import { EnemyInterface } from "../../entities/Enemies/EnemyBase";
+import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
+import { EnemySmall } from "../../entities/Enemies/EnemySmall";
+import { CrateInterface } from "../../entities/Crate/Crate";
+import { BarrelInterface } from "../../entities/Barrel/Barrel";
+import { FinishLineInterface } from "../../entities/Finish/Finish";
+import { Barrel } from "../../entities/Barrel/Barrel";
+import { Finish } from "../../entities/Finish/Finish";
+import { Crate } from "../../entities/Crate/Crate";
+import { Player } from "../../entities/Player/Player";
+
+export class EditorEntityManager {
+  private scene: Scene;
+  private levelData: LevelData;
+  private entities: EditorEntity[] = [];
+  private selectedEntityType: string | null = null;
+  private selectedEntity: EditorEntity | null = null;
+  private isEntityDragging: boolean = false;
+  private newEntityDragging: boolean = false;
+  private _platformConfig: any = {};
+  // Bounding rectangle for UI (screen coords)
+  private uiBounds?: Phaser.Geom.Rectangle;
+  private clearPaletteCallback: () => void;
+
+  constructor(scene: Scene, clearPaletteCallback: () => void) {
+    this.scene = scene;
+    this.levelData = LevelDataManager.createEmpty();
+    this.clearPaletteCallback = clearPaletteCallback;
+    // Setup input handlers for entity selection and dragging
+    this.setupInputHandlers();
+    // Setup keyboard handlers
+    this.setupKeyboardHandlers();
+  }
+
+  /**
+   * Sets up all input handlers related to entity manipulation
+   */
+  private setupInputHandlers(): void {
+    // Add spacebar-based grid panning state
+    const spaceKey = this.scene.input.keyboard!.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE
+    );
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+
+    // Setup click handler for entity placement and selection
+    this.scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      // Skip clicks over UI
+      if (this.uiBounds && this.uiBounds.contains(pointer.x, pointer.y)) {
+        return;
+      }
+      // If spacebar is held, initiate grid panning and skip entity logic
+      if (spaceKey.isDown) {
+        isPanning = true;
+        panStartX = pointer.x;
+        panStartY = pointer.y;
+        return;
+      }
+      // Skip if not left-click or if camera is being dragged
+      if (!pointer.leftButtonDown()) return;
+
+      // If we're already dragging a new entity, ignore this click
+      if (this.newEntityDragging) return;
+
+      // Get world position (accounting for camera)
+      const worldX = pointer.worldX;
+      const worldY = pointer.worldY;
+
+      // Check if clicking on an existing entity for selection
+      const clickedEntity = this.getEntityAtPosition(worldX, worldY);
+
+      // If in placement mode (an entity type is selected)
+      if (this.selectedEntityType) {
+        if (clickedEntity) {
+          // Clicking on an entity while in placement mode - select the entity
+          this.selectEntity(clickedEntity);
+
+          // Start entity dragging
+          this.isEntityDragging = true;
+          this.scene.registry.set("isDraggingEntity", true);
+
+          // Exit placement mode
+          this.selectedEntityType = null;
+          this.scene.registry.set("isPlacementModeActive", false);
+          this.clearPaletteCallback();
+        } else {
+          // Regular click in placement mode - Place the selected entity type
+          const entityTypeToPlace = this.selectedEntityType;
+          const entity = this.placeEntity(entityTypeToPlace, worldX, worldY);
+
+          if (entity) {
+            this.selectEntity(entity); // Select the new entity
+            this.isEntityDragging = true; // Start dragging it
+            this.newEntityDragging = true; // Mark as new for pointerup logic
+            this.scene.registry.set("isDraggingEntity", true); // Set registry flag
+
+            // Add the one-time pointerup handler to finish the drag
+            const completeHandler = () => {
+              if (this.isEntityDragging && this.selectedEntity === entity) {
+                // Ensure we only process for this specific entity
+                this.updateEntityInLevelData(this.selectedEntity);
+                this.isEntityDragging = false;
+                this.newEntityDragging = false;
+                this.scene.registry.set("isDraggingEntity", false);
+                this.scene.input.off("pointerup", completeHandler); // Clean up listener
+              }
+            };
+            this.scene.input.once("pointerup", completeHandler);
+          } // End if (entity)
+
+          // Exit placement mode regardless of whether placement succeeded
+          this.selectedEntityType = null;
+          this.scene.registry.set("isPlacementModeActive", false);
+          this.clearPaletteCallback();
+        }
+      } else {
+        // Not in placement mode - select or deselect entities
+        if (clickedEntity) {
+          // Select the entity
+          this.selectEntity(clickedEntity);
+
+          // Start entity dragging
+          this.isEntityDragging = true;
+          this.scene.registry.set("isDraggingEntity", true);
+        } else {
+          // Clicking empty space - deselect current entity
+          this.selectEntity(null);
+          this.scene.registry.set("isPlacementModeActive", false);
+        }
+      }
+    });
+
+    // Handle entity dragging and grid panning
+    this.scene.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+      // Skip drags over UI
+      if (this.uiBounds && this.uiBounds.contains(pointer.x, pointer.y)) {
+        return;
+      }
+      // If currently panning, move camera and skip entity dragging
+      if (isPanning && pointer.leftButtonDown()) {
+        const dx = pointer.x - panStartX;
+        const dy = pointer.y - panStartY;
+        this.scene.cameras.main.scrollX -= dx / this.scene.cameras.main.zoom;
+        this.scene.cameras.main.scrollY -= dy / this.scene.cameras.main.zoom;
+        panStartX = pointer.x;
+        panStartY = pointer.y;
+        return;
+      }
+      if (
+        this.isEntityDragging &&
+        this.selectedEntity &&
+        pointer.leftButtonDown()
+      ) {
+        // Get world position (accounting for camera)
+        const worldX = pointer.worldX;
+        const worldY = pointer.worldY;
+
+        // Calculate snap position
+        const snappedX =
+          Math.floor(worldX / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
+        const snappedY =
+          Math.floor(worldY / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2;
+
+        // Update entity position
+        this.selectedEntity.x = snappedX;
+        this.selectedEntity.y = snappedY;
+
+        // Update visual representation based on entity type
+        if (this.selectedEntity.type === "platform") {
+          (this.selectedEntity.gameObject as Platform).setPosition(
+            snappedX,
+            snappedY
+          );
+        } else if (
+          this.selectedEntity.type === "enemy-large" ||
+          this.selectedEntity.type === "enemy-small"
+        ) {
+          (
+            this.selectedEntity.gameObject as EnemyLarge | EnemySmall
+          ).setPosition(snappedX, snappedY);
+        } else if (this.selectedEntity.type === "barrel") {
+          (this.selectedEntity.gameObject as Barrel).setPosition(
+            snappedX,
+            snappedY
+          );
+        } else if (this.selectedEntity.type === "finish-line") {
+          (this.selectedEntity.gameObject as Finish).setPosition(
+            snappedX,
+            snappedY
+          );
+        } else if (
+          this.selectedEntity.type === "crate-small" ||
+          this.selectedEntity.type === "crate-big"
+        ) {
+          (this.selectedEntity.gameObject as Crate).setPosition(
+            snappedX,
+            snappedY
+          );
+        } else {
+          (
+            this.selectedEntity.gameObject as Phaser.GameObjects.Image
+          ).setPosition(snappedX, snappedY);
+        }
+
+        // Update entity data
+        this.updateEntityInLevelData(this.selectedEntity);
+      }
+    });
+
+    // Handle end of entity dragging and panning
+    this.scene.input.on("pointerup", () => {
+      // End panning if active
+      if (isPanning) {
+        isPanning = false;
+        return;
+      }
+      if (this.isEntityDragging && this.selectedEntity) {
+        // Update entity data one last time to ensure all changes are saved
+        this.updateEntityInLevelData(this.selectedEntity);
+
+        // Reset dragging state
+        this.isEntityDragging = false;
+        this.scene.registry.set("isDraggingEntity", false);
+
+        // If this was a new entity being dragged, we're done with it now
+        // The specific one-time handler added during placement will handle this,
+        // but clear the flag here as a fallback.
+        if (this.newEntityDragging) {
+          this.newEntityDragging = false;
+        }
+      }
+    });
+  }
+
+  /**
+   * Sets up keyboard handlers for actions like deletion.
+   */
+  private setupKeyboardHandlers(): void {
+    this.scene.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
+      if (event.key === "Delete" || event.key === "Backspace") {
+        console.log("EDITOR_ENTITY_MANAGER: Delete/Backspace key pressed.");
+        event.preventDefault();
+        if (this.selectedEntity) {
+          console.log(
+            "EDITOR_ENTITY_MANAGER: Selected entity found, attempting removal:",
+            this.selectedEntity
+          );
+          this.removeEntity(this.selectedEntity);
+        } else {
+          console.log(
+            "EDITOR_ENTITY_MANAGER: No entity selected, ignoring delete key."
+          );
+        }
+      }
+    });
+    console.log("EDITOR_ENTITY_MANAGER: Keyboard handlers set up.");
+  }
+
+  /**
+   * Places a new entity of the specified type at the given coordinates
+   */
+  public placeEntity(type: string, x: number, y: number): EditorEntity | null {
+    console.log(
+      `EditorEntityManager.placeEntity called with type: ${type}, x: ${x}, y: ${y}`
+    );
+
+    // Snap to grid
+    const snappedX = Math.floor(x / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
+    const snappedY =
+      Math.floor(y / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2;
+
+    console.log(`Snapped position: x: ${snappedX}, y: ${snappedY}`);
+
+    let entity: EditorEntity | null = null;
+
+    switch (type) {
+      case "player":
+        console.log("Creating player entity");
+        entity = this.createPlayer(snappedX, snappedY);
+        break;
+      case "platform":
+        console.log("Creating platform entity");
+        entity = this.createPlatform(snappedX, snappedY);
+        break;
+      case "enemy-large":
+        console.log("Creating large enemy entity");
+        entity = this.createEnemy(snappedX, snappedY, "enemy-large");
+        break;
+      case "enemy-small":
+        console.log("Creating small enemy entity");
+        entity = this.createEnemy(snappedX, snappedY, "enemy-small");
+        break;
+      case "crate-small":
+        console.log("Creating small crate entity");
+        entity = this.createCrate(snappedX, snappedY, "small");
+        break;
+      case "crate-big":
+        console.log("Creating big crate entity");
+        entity = this.createCrate(snappedX, snappedY, "big");
+        break;
+      case "barrel":
+        console.log("Creating barrel entity");
+        entity = this.createBarrel(snappedX, snappedY);
+        break;
+      case "finish-line":
+        console.log("Creating finish line entity");
+        entity = this.createFinishLine(snappedX, snappedY);
+        break;
+      default:
+        console.error(`Unknown entity type: ${type}`);
+        break;
+    }
+
+    if (entity) {
+      console.log(`Entity created successfully: ${type}`, entity);
+
+      // Emit event for EntityDisplayScene to handle adding the visual
+      this.scene.events.emit(
+        "ADD_ENTITY_TO_DISPLAY",
+        entity.gameObject,
+        entity.type
+      );
+
+      this.entities.push(entity);
+
+      // Temporarily highlight the newly placed entity
+      this.temporarilyHighlightEntity(entity);
+    } else {
+      console.error(`Failed to create entity of type: ${type}`);
+    }
+
+    return entity;
+  }
+
+  /**
+   * Creates a platform entity
+   */
+  private createPlatform(x: number, y: number): EditorEntity {
+    const id = Phaser.Math.RND.uuid();
+
+    // Use the stored platformConfig from setSelectedEntityType or defaults
+    const segmentCount = this._platformConfig?.segmentCount || 5;
+    const isVertical = this._platformConfig?.isVertical || false;
+    const segmentWidth = this._platformConfig?.segmentWidth || 32;
+
+    // Create actual platform instance
+    const platform = new Platform(
+      this.scene,
+      x,
+      y,
+      segmentCount,
+      id,
+      isVertical,
+      segmentWidth
+    );
+
+    // Define the platform data for level storage, including the scene
+    const platformData: PlatformInterface = {
+      scene: this.scene,
+      id: id,
+      x: x,
+      y: y,
+      segmentCount: segmentCount,
+      isVertical: isVertical,
+      segmentWidth: segmentWidth,
+    };
+
+    // Add to level data store
+    this.levelData.platforms.push(platformData);
+
+    // Disable physics collisions in editor mode
+    platform.setCollisionCategory(0); // Prevent interaction
+    platform.setCollidesWith([]);
+    platform.setStatic(true); // Ensure it remains static
+
+    // Make platform interactive for selection
+    platform.setInteractive();
+
+    // Return entity structure for editor management
+    return {
+      type: "platform",
+      x: x,
+      y: y,
+      gameObject: platform,
+      data: platformData,
+    };
+  }
+
+  /**
+   * Creates an enemy entity
+   */
+  private createEnemy(
+    x: number,
+    y: number,
+    type: EnemyInterface["type"]
+  ): EditorEntity {
+    const enemyData: EnemyInterface = {
+      x,
+      y,
+      type,
+    };
+
+    // Add to level data
+    this.levelData.enemies.push(enemyData);
+
+    // Create actual enemy instance
+    let enemyInstance: EnemyLarge | EnemySmall;
+    if (type === "enemy-large") {
+      enemyInstance = new EnemyLarge(this.scene, x, y);
+    } else {
+      enemyInstance = new EnemySmall(this.scene, x, y);
+    }
+
+    // Disable physics collisions in editor mode
+    if (enemyInstance.body) {
+      (enemyInstance.body as MatterJS.BodyType).collisionFilter.group = -1;
+    }
+
+    // Ensure it's interactive for selection
+    enemyInstance.setInteractive();
+
+    // Emit event for display scene
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", enemyInstance, type);
+
+    // Return entity
+    return {
+      type: type,
+      x,
+      y,
+      gameObject: enemyInstance,
+      data: enemyData,
+    };
+  }
+
+  /**
+   * Creates a crate entity
+   */
+  private createCrate(
+    x: number,
+    y: number,
+    type: "small" | "big"
+  ): EditorEntity {
+    const crateData: CrateInterface = {
+      scene: this.scene,
+      x,
+      y,
+      type,
+    };
+
+    // Add to level data
+    this.levelData.crates.push(crateData);
+
+    // Create actual crate instance
+    const crate = new Crate(this.scene, x, y, type);
+
+    // Disable physics collisions in editor mode
+    if (crate.body) {
+      (crate.body as MatterJS.BodyType).collisionFilter.group = -1;
+    }
+
+    // Ensure it's interactive for selection
+    crate.setInteractive();
+
+    // Emit event for display scene
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", crate, `crate-${type}`);
+
+    // Return entity
+    return {
+      type: `crate-${type}`,
+      x,
+      y,
+      gameObject: crate,
+      data: crateData,
+    };
+  }
+
+  /**
+   * Creates a barrel entity
+   */
+  private createBarrel(x: number, y: number): EditorEntity {
+    const barrelData: BarrelInterface = {
+      scene: this.scene,
+      x,
+      y,
+      type: "barrel",
+    };
+
+    // Add to level data
+    this.levelData.barrels.push(barrelData);
+
+    // Create actual barrel instance
+    const barrel = new Barrel(this.scene, x, y);
+
+    // Disable physics collisions in editor mode
+    if (barrel.body) {
+      (barrel.body as MatterJS.BodyType).collisionFilter.group = -1;
+    }
+
+    // Ensure it's interactive for selection
+    barrel.setInteractive();
+
+    // Emit event for display scene
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", barrel, "barrel");
+
+    // Return entity
+    return {
+      type: "barrel",
+      x,
+      y,
+      gameObject: barrel,
+      data: barrelData,
+    };
+  }
+
+  /**
+   * Creates a finish line entity
+   */
+  private createFinishLine(x: number, y: number): EditorEntity {
+    const finishLineData: FinishLineInterface = {
+      scene: this.scene,
+      x,
+      y,
+      type: "finish-line",
+    };
+
+    // Handle case where a finish line already exists
+    if (this.levelData.finishLine) {
+      // Remove existing finish line
+      const existingIndex = this.entities.findIndex(
+        (e) => e.type === "finish-line"
+      );
+      if (existingIndex >= 0) {
+        const existingEntity = this.entities[existingIndex];
+        existingEntity.gameObject.destroy();
+        this.entities.splice(existingIndex, 1);
+      }
+    }
+
+    // Set as the new finish line
+    this.levelData.finishLine = finishLineData;
+
+    // Create actual finish line instance
+    const finish = new Finish(this.scene, x, y);
+
+    // Disable physics collisions in editor mode
+    if (finish.body) {
+      (finish.body as MatterJS.BodyType).collisionFilter.group = -1;
+    }
+
+    // Ensure it's interactive for selection
+    finish.setInteractive();
+
+    // Emit event for display scene
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", finish, "finish-line");
+
+    // Return entity
+    return {
+      type: "finish-line",
+      x,
+      y,
+      gameObject: finish,
+      data: finishLineData,
+    };
+  }
+
+  /**
+   * Gets the entity at the specified position
+   */
+  private getEntityAtPosition(x: number, y: number): EditorEntity | null {
+    // Check if position is within any entity's bounds
+    for (let i = this.entities.length - 1; i >= 0; i--) {
+      const entity = this.entities[i];
+      const gameObject = entity.gameObject;
+
+      if (entity.type === "platform") {
+        // For platforms, we need to check the platform body bounds
+        const platform = gameObject as Platform;
+        const bounds = platform.getBounds();
+        if (bounds.contains(x, y)) {
+          return entity;
+        }
+      } else if (
+        entity.type === "enemy-large" ||
+        entity.type === "enemy-small"
+      ) {
+        // For enemies, check their bounds
+        const enemy = gameObject as EnemyLarge | EnemySmall;
+        const bounds = enemy.getBounds();
+        if (bounds.contains(x, y)) {
+          return entity;
+        }
+      } else if (entity.type === "barrel") {
+        // For barrels
+        const barrel = gameObject as Barrel;
+        const bounds = barrel.getBounds();
+        if (bounds.contains(x, y)) {
+          return entity;
+        }
+      } else if (entity.type === "finish-line") {
+        // For finish line
+        const finish = gameObject as Finish;
+        const bounds = finish.getBounds();
+        if (bounds.contains(x, y)) {
+          return entity;
+        }
+      } else if (entity.type === "crate-small" || entity.type === "crate-big") {
+        // For crates
+        const crate = gameObject as Crate;
+        const bounds = crate.getBounds();
+        if (bounds.contains(x, y)) {
+          return entity;
+        }
+      } else {
+        // For other entities using images
+        const image = gameObject as Phaser.GameObjects.Image;
+        const bounds = image.getBounds();
+        if (bounds.contains(x, y)) {
+          return entity;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Temporarily highlights an entity without selecting it (for visual feedback)
+   */
+  private temporarilyHighlightEntity(entity: EditorEntity): void {
+    // Apply highlight tint
+    if (entity.type === "platform") {
+      const platform = entity.gameObject as Platform;
+      platform.setTint(0x00ffff);
+
+      // Clear tint after a short delay
+      this.scene.time.delayedCall(300, () => {
+        platform.clearTint();
+      });
+    } else if (entity.type === "enemy-large" || entity.type === "enemy-small") {
+      const enemy = entity.gameObject as EnemyLarge | EnemySmall;
+      enemy.setTint(0x00ffff);
+
+      // Clear tint after a short delay
+      this.scene.time.delayedCall(300, () => {
+        enemy.clearTint();
+      });
+    } else if (entity.type === "barrel") {
+      const barrel = entity.gameObject as Barrel;
+      barrel.setTint(0x00ffff);
+
+      // Clear tint after a short delay
+      this.scene.time.delayedCall(300, () => {
+        barrel.clearTint();
+      });
+    } else if (entity.type === "finish-line") {
+      const finish = entity.gameObject as Finish;
+      finish.setTint(0x00ffff);
+
+      // Clear tint after a short delay
+      this.scene.time.delayedCall(300, () => {
+        finish.clearTint();
+      });
+    } else if (entity.type === "crate-small" || entity.type === "crate-big") {
+      const crate = entity.gameObject as Crate;
+      crate.setTint(0x00ffff);
+
+      // Clear tint after a short delay
+      this.scene.time.delayedCall(300, () => {
+        crate.clearTint();
+      });
+    } else {
+      const image = entity.gameObject as Phaser.GameObjects.Image;
+      image.setTint(0x00ffff);
+
+      // Clear tint after a short delay
+      this.scene.time.delayedCall(300, () => {
+        image.clearTint();
+      });
+    }
+  }
+
+  /**
+   * Selects an entity and updates the inspector
+   */
+  public selectEntity(entity: EditorEntity | null): void {
+    // Deselect previously selected entity
+    if (this.selectedEntity) {
+      if (this.selectedEntity.type === "platform") {
+        // For platforms, we use setTint directly on the platform sprite
+        const platform = this.selectedEntity.gameObject as Platform;
+        platform.clearTint();
+      } else if (
+        this.selectedEntity.type === "enemy-large" ||
+        this.selectedEntity.type === "enemy-small"
+      ) {
+        // For enemies, clear tint
+        const enemy = this.selectedEntity.gameObject as EnemyLarge | EnemySmall;
+        enemy.clearTint();
+      } else if (this.selectedEntity.type === "barrel") {
+        const barrel = this.selectedEntity.gameObject as Barrel;
+        barrel.clearTint();
+      } else if (this.selectedEntity.type === "finish-line") {
+        const finish = this.selectedEntity.gameObject as Finish;
+        finish.clearTint();
+      } else if (
+        this.selectedEntity.type === "crate-small" ||
+        this.selectedEntity.type === "crate-big"
+      ) {
+        const crate = this.selectedEntity.gameObject as Crate;
+        crate.clearTint();
+      } else {
+        // For other entities using images
+        (
+          this.selectedEntity.gameObject as Phaser.GameObjects.Image
+        ).clearTint();
+      }
+    }
+
+    this.selectedEntity = entity;
+
+    // Highlight newly selected entity
+    if (entity) {
+      if (entity.type === "platform") {
+        // For platforms, we use setTint directly on the platform sprite
+        const platform = entity.gameObject as Platform;
+        platform.setTint(0x00ffff);
+      } else if (
+        entity.type === "enemy-large" ||
+        entity.type === "enemy-small"
+      ) {
+        // For enemies, set tint
+        const enemy = entity.gameObject as EnemyLarge | EnemySmall;
+        enemy.setTint(0x00ffff);
+      } else if (entity.type === "barrel") {
+        const barrel = entity.gameObject as Barrel;
+        barrel.setTint(0x00ffff);
+      } else if (entity.type === "finish-line") {
+        const finish = entity.gameObject as Finish;
+        finish.setTint(0x00ffff);
+      } else if (entity.type === "crate-small" || entity.type === "crate-big") {
+        const crate = entity.gameObject as Crate;
+        crate.setTint(0x00ffff);
+      } else {
+        // For other entities using images
+        (entity.gameObject as Phaser.GameObjects.Image).setTint(0x00ffff);
+      }
+    }
+  }
+
+  /**
+   * Updates an entity property
+   */
+  public updateEntityProperty(
+    entity: EditorEntity,
+    property: string,
+    value: any
+  ): void {
+    if (!entity) return;
+
+    switch (property) {
+      case "position":
+        // Handle position updates
+        const { x, y } = value;
+        this.updateEntityPosition(entity, x, y);
+        break;
+      case "id":
+        if (entity.type === "platform") {
+          // Get the platform data and original platform object
+          const platformData = entity.data as PlatformInterface;
+          const platform = entity.gameObject as Platform;
+
+          // Update the ID in both the data and the platform object
+          platformData.id = value;
+          platform.id = value;
+
+          this.updateEntityInLevelData(entity);
+        }
+        break;
+      case "orientation":
+        if (entity.type === "platform") {
+          // Get the platform data and original platform object
+          const platformData = entity.data as PlatformInterface;
+          const oldPlatform = entity.gameObject as Platform;
+
+          // Update the orientation property in the data
+          platformData.isVertical = value; // Value is already boolean (true/false)
+
+          // Store position
+          const { x, y } = oldPlatform;
+
+          // Destroy old platform
+          oldPlatform.destroy();
+
+          // Create new platform with updated orientation
+          const newPlatform = new Platform(
+            this.scene,
+            x,
+            y,
+            3, // Fixed segment count
+            `platform-${Date.now()}`, // Ensure unique ID
+            platformData.isVertical // Pass the updated boolean value
+          );
+
+          // Disable physics collisions in editor mode
+          if (newPlatform.body) {
+            (newPlatform.body as MatterJS.BodyType).collisionFilter.group = -1;
+          }
+
+          // Update entity reference
+          entity.gameObject = newPlatform;
+
+          // Select the new platform
+          this.selectEntity(entity);
+
+          this.updateEntityInLevelData(entity);
+        }
+        break;
+      case "enemyType":
+        // Handle enemy type changes (if needed - currently enemies are recreated on type change)
+        if (entity.type === "enemy-large" || entity.type === "enemy-small") {
+          // Get enemy data and current position
+          const enemyData = entity.data as EnemyInterface;
+          const oldEnemy = entity.gameObject as EnemyLarge | EnemySmall;
+          const { x, y } = oldEnemy;
+
+          // Update enemy type in data
+          enemyData.type = value;
+
+          // Destroy old enemy
+          oldEnemy.destroy();
+
+          // Create new enemy with updated type
+          let newEnemy: EnemyLarge | EnemySmall;
+          if (value === "enemy-large") {
+            newEnemy = new EnemyLarge(this.scene, x, y);
+          } else {
+            newEnemy = new EnemySmall(this.scene, x, y);
+          }
+
+          // Disable physics collisions in editor mode
+          if (newEnemy.body) {
+            (newEnemy.body as MatterJS.BodyType).collisionFilter.group = -1;
+          }
+
+          // Ensure it's interactive for selection
+          newEnemy.setInteractive();
+
+          // Update entity reference
+          entity.gameObject = newEnemy;
+          entity.type = value;
+
+          // Select the new enemy
+          this.selectEntity(entity);
+
+          this.updateEntityInLevelData(entity);
+        }
+        break;
+    }
+  }
+
+  /**
+   * Updates entity data in the level data structure
+   */
+  private updateEntityInLevelData(entity: EditorEntity) {
+    if (!entity) return;
+
+    switch (entity.type) {
+      case "platform":
+        const platformIndex = this.levelData.platforms.findIndex(
+          (p) => p === entity.data
+        );
+        if (platformIndex >= 0) {
+          const platformData = entity.data as PlatformInterface;
+          this.levelData.platforms[platformIndex] = {
+            ...platformData,
+            x: entity.x,
+            y: entity.y,
+          };
+        }
+        break;
+      case "enemy-large":
+      case "enemy-small":
+        const enemyIndex = this.levelData.enemies.findIndex(
+          (e) => e === entity.data
+        );
+        if (enemyIndex >= 0) {
+          const enemyData = entity.data as EnemyInterface;
+          this.levelData.enemies[enemyIndex] = {
+            ...enemyData,
+            x: entity.x,
+            y: entity.y,
+          };
+        }
+        break;
+      case "barrel":
+        const barrelIndex = this.levelData.barrels.findIndex(
+          (b) => b === entity.data
+        );
+        if (barrelIndex >= 0) {
+          this.levelData.barrels[barrelIndex] = {
+            scene: this.scene,
+            x: entity.x,
+            y: entity.y,
+            type: "barrel",
+          };
+        }
+        break;
+      case "crate-small":
+      case "crate-big":
+        const crateIndex = this.levelData.crates.findIndex(
+          (c) => c === entity.data
+        );
+        if (crateIndex >= 0) {
+          const crateData = entity.data as CrateInterface;
+          this.levelData.crates[crateIndex] = {
+            ...crateData,
+            x: entity.x,
+            y: entity.y,
+          };
+        }
+        break;
+      case "finish-line":
+        if (this.levelData.finishLine === entity.data) {
+          this.levelData.finishLine = {
+            scene: this.scene,
+            x: entity.x,
+            y: entity.y,
+            type: "finish-line",
+          };
+        }
+        break;
+    }
+  }
+
+  /**
+   * Populates entities from level data
+   */
+  public populateEntitiesFromLevelData(): void {
+    // Create platform entities
+    this.levelData.platforms.forEach((platformData) => {
+      // Create actual platform instance using the Platform class
+      const platform = new Platform(
+        this.scene,
+        platformData.x,
+        platformData.y,
+        3, // Fixed segment count
+        `platform-${Math.random().toString(36).substr(2, 9)}`, // Unique ID
+        platformData.isVertical // Use the loaded isVertical value
+      );
+
+      // Disable physics collisions in editor mode
+      if (platform.body) {
+        (platform.body as MatterJS.BodyType).collisionFilter.group = -1;
+      }
+
+      // Emit event for display scene
+      this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", platform, "platform");
+
+      this.entities.push({
+        type: "platform",
+        x: platformData.x,
+        y: platformData.y,
+        gameObject: platform,
+        data: platformData,
+      });
+    });
+
+    // Create enemy entities
+    this.levelData.enemies.forEach((enemyData) => {
+      let enemyInstance: EnemyLarge | EnemySmall;
+      if (enemyData.type === "enemy-large") {
+        enemyInstance = new EnemyLarge(this.scene, enemyData.x, enemyData.y);
+      } else {
+        enemyInstance = new EnemySmall(this.scene, enemyData.x, enemyData.y);
+      }
+
+      // Disable physics collisions in editor mode
+      if (enemyInstance.body) {
+        (enemyInstance.body as MatterJS.BodyType).collisionFilter.group = -1;
+      }
+
+      // Ensure it's interactive for selection
+      enemyInstance.setInteractive();
+
+      // Emit event for display scene
+      this.scene.events.emit(
+        "ADD_ENTITY_TO_DISPLAY",
+        enemyInstance,
+        enemyData.type
+      );
+
+      this.entities.push({
+        type: enemyData.type, // Use the specific type from data
+        x: enemyData.x,
+        y: enemyData.y,
+        gameObject: enemyInstance,
+        data: enemyData,
+      });
+    });
+
+    // Create barrel entities
+    this.levelData.barrels.forEach((barrelData) => {
+      const barrel = new Barrel(this.scene, barrelData.x, barrelData.y);
+
+      // Disable physics collisions in editor mode
+      if (barrel.body) {
+        (barrel.body as MatterJS.BodyType).collisionFilter.group = -1;
+      }
+
+      // Ensure it's interactive for selection
+      barrel.setInteractive();
+
+      // Emit event for display scene
+      this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", barrel, "barrel");
+
+      this.entities.push({
+        type: "barrel",
+        x: barrelData.x,
+        y: barrelData.y,
+        gameObject: barrel,
+        data: barrelData,
+      });
+    });
+
+    // Create crate entities
+    this.levelData.crates.forEach((crateData) => {
+      const crate = new Crate(
+        this.scene,
+        crateData.x,
+        crateData.y,
+        crateData.type
+      );
+
+      // Disable physics collisions in editor mode
+      if (crate.body) {
+        (crate.body as MatterJS.BodyType).collisionFilter.group = -1;
+      }
+
+      // Ensure it's interactive for selection
+      crate.setInteractive();
+
+      // Emit event for display scene
+      this.scene.events.emit(
+        "ADD_ENTITY_TO_DISPLAY",
+        crate,
+        `crate-${crateData.type}`
+      );
+
+      this.entities.push({
+        type: `crate-${crateData.type}`,
+        x: crateData.x,
+        y: crateData.y,
+        gameObject: crate,
+        data: crateData,
+      });
+    });
+
+    // Create finish line entity if it exists
+    if (this.levelData.finishLine) {
+      const finishLineData = this.levelData.finishLine;
+      const finish = new Finish(this.scene, finishLineData.x, finishLineData.y);
+
+      // Disable physics collisions in editor mode
+      if (finish.body) {
+        (finish.body as MatterJS.BodyType).collisionFilter.group = -1;
+      }
+
+      // Ensure it's interactive for selection
+      finish.setInteractive();
+
+      // Emit event for display scene
+      this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", finish, "finish-line");
+
+      this.entities.push({
+        type: "finish-line",
+        x: finishLineData.x,
+        y: finishLineData.y,
+        gameObject: finish,
+        data: finishLineData,
+      });
+    }
+
+    // Clear display containers - Handled by emitting event
+    this.scene.events.emit("CLEAR_ENTITY_DISPLAY");
+
+    // Clear arrays
+    this.entities = [];
+    this.levelData = LevelDataManager.createEmpty();
+
+    // Deselect any selected entity
+    this.selectEntity(null);
+  }
+
+  /**
+   * Clears all entities
+   */
+  public clearEntities(): void {
+    // Destroy all entity game objects
+    this.entities.forEach((entity) => {
+      entity.gameObject.destroy();
+    });
+
+    // Clear display containers - Handled by emitting event
+    this.scene.events.emit("CLEAR_ENTITY_DISPLAY");
+
+    // Clear arrays
+    this.entities = [];
+    this.levelData = LevelDataManager.createEmpty();
+
+    // Deselect any selected entity
+    this.selectEntity(null);
+  }
+
+  /**
+   * Gets the current level data
+   */
+  public getLevelData(): LevelData {
+    return this.levelData;
+  }
+
+  /**
+   * Sets the level data
+   */
+  public setLevelData(levelData: LevelData): void {
+    this.levelData = levelData;
+  }
+
+  /**
+   * Gets the selected entity
+   */
+  public getSelectedEntity(): EditorEntity | null {
+    return this.selectedEntity;
+  }
+
+  /**
+   * Sets the currently selected entity type from the palette
+   */
+  public setSelectedEntityType(type: string | null, config?: any): void {
+    console.log(
+      "EditorEntityManager.setSelectedEntityType called:",
+      type,
+      config
+    );
+
+    // Deselect if no type provided
+    if (type === null) {
+      this.selectedEntityType = null;
+      this.selectEntity(null);
+      this.scene.registry.set("isPlacementModeActive", false); // Clear placement mode flag
+      return;
+    }
+
+    // Handle platform configuration and creation
+    if (type === "platform" && config) {
+      console.log("Setting platform config:", config);
+      this._platformConfig = { ...config };
+
+      // If x and y coordinates are provided in the config, create the platform immediately
+      if (config.x !== undefined && config.y !== undefined) {
+        console.log("Creating platform at", config.x, config.y);
+
+        // Create the platform
+        const entity = this.placeEntity(type, config.x, config.y);
+
+        // Update selection
+        this.selectEntity(entity);
+
+        // Clear the selected entity type since we've created the entity
+        this.selectedEntityType = null;
+
+        return;
+      }
+    }
+
+    // For platform placement mode without immediate coordinates, enter placement mode
+    // Also applies to non-platform types now - just select the type
+    this.selectedEntityType = type;
+    this.selectEntity(null); // Deselect any currently selected entity
+    this.scene.registry.set("isPlacementModeActive", true); // Signal placement mode is active
+  }
+
+  /**
+   * Update an entity's position with proper tile snapping
+   */
+  private updateEntityPosition(
+    entity: EditorEntity,
+    x: number,
+    y: number
+  ): void {
+    // Apply grid snapping
+    const snappedX = Math.floor(x / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
+    const snappedY =
+      Math.floor(y / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2;
+
+    // Update the entity's stored position
+    entity.x = snappedX;
+    entity.y = snappedY;
+
+    // Update the game object position based on its type
+    if (entity.type === "platform") {
+      (entity.gameObject as Platform).setPosition(snappedX, snappedY);
+    } else if (entity.type === "enemy-large" || entity.type === "enemy-small") {
+      (entity.gameObject as EnemyLarge | EnemySmall).setPosition(
+        snappedX,
+        snappedY
+      );
+    } else {
+      (entity.gameObject as Phaser.GameObjects.Image).setPosition(
+        snappedX,
+        snappedY
+      );
+    }
+
+    // Update the entity in the level data
+    this.updateEntityInLevelData(entity);
+  }
+
+  /**
+   * Removes an entity from the entities list and level data
+   */
+  public removeEntity(entity: EditorEntity): void {
+    if (!entity) return;
+
+    // First remove from the entity list
+    const entityIndex = this.entities.findIndex((e) => e === entity);
+    if (entityIndex >= 0) {
+      // Remove from the array
+      this.entities.splice(entityIndex, 1);
+    }
+
+    // Then remove from level data based on entity type
+    switch (entity.type) {
+      case "platform":
+        const platformIndex = this.levelData.platforms.findIndex(
+          (p) => p === entity.data
+        );
+        if (platformIndex >= 0) {
+          this.levelData.platforms.splice(platformIndex, 1);
+        }
+        break;
+      case "enemy-large":
+      case "enemy-small":
+        const enemyIndex = this.levelData.enemies.findIndex(
+          (e) => e === entity.data
+        );
+        if (enemyIndex >= 0) {
+          this.levelData.enemies.splice(enemyIndex, 1);
+        }
+        break;
+      case "barrel":
+        const barrelIndex = this.levelData.barrels.findIndex(
+          (b) => b === entity.data
+        );
+        if (barrelIndex >= 0) {
+          this.levelData.barrels.splice(barrelIndex, 1);
+        }
+        break;
+      case "crate-small":
+      case "crate-big":
+        const crateIndex = this.levelData.crates.findIndex(
+          (c) => c === entity.data
+        );
+        if (crateIndex >= 0) {
+          this.levelData.crates.splice(crateIndex, 1);
+        }
+        break;
+      case "finish-line":
+        if (this.levelData.finishLine === entity.data) {
+          this.levelData.finishLine = null;
+        }
+        break;
+    }
+
+    // Destroy the game object
+    entity.gameObject.destroy();
+
+    // Emit event for EntityDisplayScene to remove the visual
+    this.scene.events.emit("REMOVE_ENTITY_FROM_DISPLAY", entity.gameObject);
+
+    // If this was the selected entity, deselect it
+    if (this.selectedEntity === entity) {
+      this.selectedEntity = null;
+    }
+  }
+
+  /**
+   * Creates a player entity in editor mode.
+   */
+  private createPlayer(x: number, y: number): EditorEntity {
+    // Create the player instance
+    const player = new Player(this.scene, x, y);
+    // Disable physics collisions in editor mode
+    if (player.body) {
+      (player.body as MatterJS.BodyType).collisionFilter.group = -1;
+    }
+    // Make interactive for selection and dragging
+    player.setInteractive();
+
+    // Emit event for display scene
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", player, "player");
+
+    return {
+      type: "player",
+      x,
+      y,
+      gameObject: player,
+      data: { x, y } as any,
+    };
+  }
+
+  /**
+   * Sets the UI bounding rectangle to skip pointer events over UI.
+   */
+  public setUIBounds(bounds: Phaser.Geom.Rectangle): void {
+    this.uiBounds = bounds;
+  }
+}

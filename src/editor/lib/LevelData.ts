@@ -6,10 +6,10 @@ import { PlatformInterface } from "../../entities/Platforms/Platform";
 
 // Serialized types without circular references like 'scene'
 export interface SerializedPlatform {
+  id: string;
   x: number;
   y: number;
   segmentCount: number;
-  id: string;
   isVertical: boolean;
 }
 
@@ -37,11 +37,11 @@ export interface SerializedFinishLine {
 
 // Types for level data
 export interface LevelData {
-  platforms: PlatformInterface[];
-  enemies: EnemyInterface[];
-  barrels: BarrelInterface[];
-  crates: CrateInterface[];
-  finishLine: FinishLineInterface | null;
+  platforms: SerializedPlatform[];
+  enemies: SerializedEnemy[];
+  barrels: SerializedBarrel[];
+  crates: SerializedCrate[];
+  finishLine: SerializedFinishLine | null;
 }
 
 // Serializable version of LevelData
@@ -74,10 +74,10 @@ export class LevelDataManager {
     // Convert level data to serializable format
     const serializedData: SerializedLevelData = {
       platforms: levelData.platforms.map((p) => ({
+        id: p.id,
         x: p.x,
         y: p.y,
         segmentCount: p.segmentCount,
-        id: p.id,
         isVertical: p.isVertical,
       })),
       enemies: levelData.enemies.map((e) => ({

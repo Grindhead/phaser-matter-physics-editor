@@ -3,12 +3,18 @@ import { EditorEntity } from "../ui/Inspector";
 import { Platform, PlatformInterface } from "../../entities/Platforms/Platform";
 import { EditorEventBus } from "./EditorEventBus";
 import { EditorEvents } from "./EditorEventTypes";
-import { LevelData } from "./LevelData";
+import {
+  LevelData,
+  SerializedPlatform,
+  SerializedEnemy,
+  SerializedBarrel,
+  SerializedCrate,
+  SerializedFinishLine,
+} from "./LevelData";
 import { EnemyInterface } from "../../entities/Enemies/EnemyBase";
 import { BarrelInterface } from "../../entities/Barrel/Barrel";
 import { CrateInterface } from "../../entities/Crate/Crate";
 import { FinishLineInterface } from "../../entities/Finish/Finish";
-import { SerializedPlatform } from "./SerializedPlatform";
 
 /**
  * Responsible for updating entity properties in the editor
@@ -293,7 +299,7 @@ export class EntityUpdater {
    * Updates an enemy entity in the level data
    */
   private updateEnemyInLevelData(entity: EditorEntity): void {
-    // Type guard for enemy data - Check type property, as ID might not exist on interface
+    // Type guard for enemy data - Check type property
     if (
       !entity.data ||
       typeof (entity.data as EnemyInterface).type !== "string"
@@ -304,28 +310,28 @@ export class EntityUpdater {
       );
       return;
     }
-    const enemyData = entity.data as EnemyInterface;
-    const enemyType = entity.type; // Use entity.type which should be 'enemy-large' or 'enemy-small'
+    // Use entity.type for the specific 'enemy-large'/'enemy-small' string
+    const enemyType = entity.type as "enemy-large" | "enemy-small";
 
-    // Find the enemy in the level data - Assume position is unique enough for now if ID is missing
-    // A better approach would be to ensure consistent IDs
+    // Find the enemy index in the level data array using position
     const enemyIndex = this.levelData.enemies.findIndex(
-      (e) => e.x === enemyData.x && e.y === enemyData.y
+      (e) => e.x === entity.x && e.y === entity.y // Match by original position stored in data if needed, or current entity pos?
+      // Let's assume we update based on current entity position for now.
     );
 
+    // Create the serialized data object
+    const serializedData: SerializedEnemy = {
+      x: entity.x,
+      y: entity.y,
+      type: enemyType,
+    };
+
     if (enemyIndex !== -1) {
-      // Update existing enemy
-      this.levelData.enemies[enemyIndex].x = entity.x;
-      this.levelData.enemies[enemyIndex].y = entity.y;
-      this.levelData.enemies[enemyIndex].type = enemyType; // Assign 'enemy-large' or 'enemy-small'
+      // Update existing enemy data in the array
+      this.levelData.enemies[enemyIndex] = serializedData;
     } else {
-      // Add new enemy
-      this.levelData.enemies.push({
-        // id: enemyId, // ID might not exist on interface
-        x: entity.x,
-        y: entity.y,
-        type: enemyType, // Assign 'enemy-large' or 'enemy-small'
-      });
+      // Add new enemy data to the array
+      this.levelData.enemies.push(serializedData);
     }
   }
 
@@ -333,7 +339,7 @@ export class EntityUpdater {
    * Updates a barrel entity in the level data
    */
   private updateBarrelInLevelData(entity: EditorEntity): void {
-    // Type guard for barrel data - Check x/y, as ID might not exist
+    // Type guard for barrel data
     if (
       !entity.data ||
       typeof (entity.data as BarrelInterface).x !== "number" ||
@@ -345,24 +351,24 @@ export class EntityUpdater {
       );
       return;
     }
-    const barrelData = entity.data as BarrelInterface;
 
-    // Find the barrel in the level data - Assume position is unique enough for now if ID is missing
+    // Find the barrel index in the level data array using position
     const barrelIndex = this.levelData.barrels.findIndex(
-      (b) => b.x === barrelData.x && b.y === barrelData.y
+      (b) => b.x === entity.x && b.y === entity.y
     );
 
+    // Create the serialized data object
+    const serializedData: SerializedBarrel = {
+      x: entity.x,
+      y: entity.y,
+    };
+
     if (barrelIndex !== -1) {
-      // Update existing barrel
-      this.levelData.barrels[barrelIndex].x = entity.x;
-      this.levelData.barrels[barrelIndex].y = entity.y;
+      // Update existing barrel data in the array
+      this.levelData.barrels[barrelIndex] = serializedData;
     } else {
-      // Add new barrel
-      this.levelData.barrels.push({
-        // id: barrelId, // ID might not exist on interface
-        x: entity.x,
-        y: entity.y,
-      });
+      // Add new barrel data to the array
+      this.levelData.barrels.push(serializedData);
     }
   }
 
@@ -373,7 +379,8 @@ export class EntityUpdater {
     // Type guard for finish line data
     if (
       !entity.data ||
-      typeof (entity.data as FinishLineInterface).id === "undefined"
+      typeof (entity.data as FinishLineInterface).x !== "number" ||
+      typeof (entity.data as FinishLineInterface).y !== "number"
     ) {
       console.error(
         "Cannot update finish line in level data: Invalid entity.data for finish line",
@@ -381,21 +388,15 @@ export class EntityUpdater {
       );
       return;
     }
-    const finishData = entity.data as FinishLineInterface;
-    const finishId = finishData.id;
 
-    // Since there's only one finish line, we just update or create it
-    if (this.levelData.finishLine) {
-      this.levelData.finishLine.x = entity.x;
-      this.levelData.finishLine.y = entity.y;
-      this.levelData.finishLine.id = finishId;
-    } else {
-      this.levelData.finishLine = {
-        id: finishId,
-        x: entity.x,
-        y: entity.y,
-      };
-    }
+    // Create the serialized data object - ID is not part of serialized format
+    const serializedData: SerializedFinishLine = {
+      x: entity.x,
+      y: entity.y,
+    };
+
+    // Since there's only one finish line, we just assign it
+    this.levelData.finishLine = serializedData;
   }
 
   /**
@@ -405,8 +406,9 @@ export class EntityUpdater {
     // Type guard for crate data
     if (
       !entity.data ||
-      typeof (entity.data as CrateInterface).id === "undefined" ||
-      typeof (entity.data as CrateInterface).type === "undefined"
+      typeof (entity.data as CrateInterface).type !== "string" ||
+      typeof (entity.data as CrateInterface).x !== "number" ||
+      typeof (entity.data as CrateInterface).y !== "number"
     ) {
       console.error(
         "Cannot update crate in level data: Invalid entity.data for crate",
@@ -415,25 +417,26 @@ export class EntityUpdater {
       return;
     }
     const crateData = entity.data as CrateInterface;
-    const crateId = crateData.id;
-    const crateType = crateData.type; // Get type from data
+    const crateType = crateData.type as "small" | "big"; // Get type from data
 
-    // Find the crate in the level data
-    const crate = this.levelData.crates.find((c) => c.id === crateId);
+    // Find the crate index in the level data array using position
+    const crateIndex = this.levelData.crates.findIndex(
+      (c) => c.x === entity.x && c.y === entity.y
+    );
 
-    if (crate) {
-      // Update existing crate
-      crate.x = entity.x;
-      crate.y = entity.y;
-      crate.type = crateType;
+    // Create the serialized data object
+    const serializedData: SerializedCrate = {
+      x: entity.x,
+      y: entity.y,
+      type: crateType,
+    };
+
+    if (crateIndex !== -1) {
+      // Update existing crate data in the array
+      this.levelData.crates[crateIndex] = serializedData;
     } else {
-      // Add new crate
-      this.levelData.crates.push({
-        id: crateId,
-        x: entity.x,
-        y: entity.y,
-        type: crateType,
-      });
+      // Add new crate data to the array
+      this.levelData.crates.push(serializedData);
     }
   }
 }

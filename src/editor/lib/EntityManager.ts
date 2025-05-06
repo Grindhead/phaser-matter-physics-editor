@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import { TILE_WIDTH, TILE_HEIGHT } from "../../lib/constants"; // Ensure constants are imported
 import { EditorEntity } from "../ui/Inspector";
 import { LevelData, LevelDataManager } from "./LevelData";
 import { EditorEventBus } from "./EditorEventBus";
@@ -32,6 +33,7 @@ export class EntityManager {
   // State tracking
   private selectedEntityType: string | null = null;
   private placementConfig: any = null;
+  private placementPreview: Phaser.GameObjects.Rectangle | null = null;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -202,6 +204,9 @@ export class EntityManager {
             // Exit placement mode after successful placement
             this.selectedEntityType = null;
             this.scene.registry.set("isPlacementModeActive", false);
+            console.log(
+              "[ENTITY MANAGER] Placement mode deactivated after placement."
+            );
             this.placementConfig = null; // Reset config here too
 
             // Select the entity but don't start dragging automatically
@@ -217,10 +222,10 @@ export class EntityManager {
         // --- END PLACEMENT LOGIC ---
       } else {
         // --- SELECTION LOGIC ---
-        // console.log( // REMOVE
-        //  "EntityManager: Input handler - Not in placement mode, attempting selection."
-        // );
-        // Call the selector's handler
+        // If not in placement mode, attempt selection
+        console.log(
+          "[ENTITY MANAGER] Click occurred while NOT in placement mode. Attempting selection."
+        );
         this.selector.handleSelectionClick(pointer);
         // --- END SELECTION LOGIC ---
       }
@@ -241,6 +246,9 @@ export class EntityManager {
     // console.log(`EntityManager: Placement mode activated for ${type}`); // REMOVE
     // console.log(`   Registry value \'isPlacementModeActive\': ${this.scene.registry.get("isPlacementModeActive")}`); // REMOVE
 
+    // Create preview if applicable (e.g., for platform)
+    this.createPlacementPreview(type, config);
+
     // Deselect any current entity
     this.selector.selectEntity(null);
   }
@@ -257,6 +265,7 @@ export class EntityManager {
     this.selectedEntityType = null;
     this.placementConfig = null;
     this.scene.registry.set("isPlacementModeActive", false);
+    this.destroyPlacementPreview();
   }
 
   /**
@@ -606,6 +615,131 @@ export class EntityManager {
     // Use a string constant directly instead of accessing a missing property
     this.eventBus.emit("PALETTE_SELECTION_CLEARED");
   }
+
+  // Renamed from setupInputHandlers internal logic to public method
+  public handleCanvasClick(pointer: Phaser.Input.Pointer): void {
+    // Check if we are in placement mode
+    const isPlacementModeActive = this.scene.registry.get(
+      "isPlacementModeActive"
+    );
+
+    if (isPlacementModeActive && this.selectedEntityType) {
+      // --- PLACEMENT LOGIC ---
+      // console.log( `EntityManager: Input handler - In Placement Mode ...`);
+
+      // Skip if spacebar is held (for camera panning)
+      const spaceKey = this.scene.input.keyboard?.addKey(
+        Phaser.Input.Keyboard.KeyCodes.SPACE
+      );
+      if (spaceKey && spaceKey.isDown) {
+        // console.log("EntityManager: Input handler - Space key held, skipping placement");
+        return;
+      }
+
+      // console.log(`EntityManager: Placing entity ...`);
+
+      try {
+        // Place entity at world position
+        const entity = this.placeEntity(
+          this.selectedEntityType,
+          pointer.worldX,
+          pointer.worldY,
+          this.placementConfig // Pass stored config
+        );
+
+        if (entity) {
+          // console.log("EntityManager: Entity created successfully via canvas click");
+          this.eventBus.emit(EditorEvents.ENTITY_PLACED, entity);
+          this.selectedEntityType = null;
+          this.scene.registry.set("isPlacementModeActive", false);
+          this.placementConfig = null;
+          this.destroyPlacementPreview(); // ADDED: Destroy preview on successful placement
+          this.selector.selectEntity(entity);
+        } else {
+          // console.log(`EntityManager: Failed to create entity ...`);
+        }
+      } catch (error) {
+        console.error("Error placing entity from canvas click:", error);
+        this.destroyPlacementPreview(); // ADDED: Destroy preview even on error
+      }
+      // --- END PLACEMENT LOGIC ---
+    } else {
+      // --- SELECTION LOGIC ---
+      // console.log("EntityManager: Canvas click ignored - Not in placement mode ...");
+      this.destroyPlacementPreview(); // ADDED: Destroy preview if clicking while not placing
+      this.selector.handleSelectionClick(pointer); // Call the selector's handler
+    }
+  }
+
+  // --- NEW PREVIEW METHODS ---
+
+  private createPlacementPreview(type: string, config?: any): void {
+    // Destroy any existing preview first
+    this.destroyPlacementPreview();
+
+    let previewWidth = TILE_WIDTH;
+    let previewHeight = TILE_HEIGHT;
+    const previewColor = 0x00ff88; // Greenish tint
+    const previewAlpha = 0.5;
+
+    // Customize preview for platforms
+    if (type === "platform" && config) {
+      const segmentWidth = config.segmentWidth || 32;
+      const segmentCount = config.segmentCount || 1;
+      const isVertical = config.isVertical || false;
+      previewWidth = isVertical ? segmentWidth : segmentWidth * segmentCount;
+      previewHeight = isVertical ? segmentWidth * segmentCount : segmentWidth;
+    }
+    // Add cases for other entity types if needed
+
+    this.placementPreview = this.scene.add.rectangle(
+      -1000,
+      -1000, // Position off-screen initially
+      previewWidth,
+      previewHeight,
+      previewColor,
+      previewAlpha
+    );
+    this.placementPreview.setOrigin(0.5, 0.5);
+    this.placementPreview.setDepth(900); // Ensure it's visible but below UI
+    this.placementPreview.setVisible(false); // Start invisible
+
+    console.log(
+      `[EntityManager] Created ${type} preview size ${previewWidth}x${previewHeight}`
+    );
+  }
+
+  public updatePreviewPosition(worldX: number, worldY: number): void {
+    if (
+      !this.placementPreview ||
+      !this.scene.registry.get("isPlacementModeActive")
+    ) {
+      // If preview doesn't exist or we're not in placement mode, ensure it's hidden/gone
+      this.destroyPlacementPreview();
+      return;
+    }
+
+    // Calculate snapped position (same logic as placement)
+    const snappedX =
+      Math.floor(worldX / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
+    const snappedY =
+      Math.floor(worldY / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2;
+
+    this.placementPreview.setPosition(snappedX, snappedY);
+    if (!this.placementPreview.visible) {
+      this.placementPreview.setVisible(true);
+    }
+  }
+
+  public destroyPlacementPreview(): void {
+    if (this.placementPreview) {
+      console.log("[EntityManager] Destroying placement preview.");
+      this.placementPreview.destroy();
+      this.placementPreview = null;
+    }
+  }
+
+  // --- END NEW PREVIEW METHODS ---
 
   /**
    * Clean up all components and resources

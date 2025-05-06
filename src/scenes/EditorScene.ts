@@ -66,6 +66,26 @@ export class EditorScene extends Scene {
     // Ensure the UI Scene renders on top of the Entity Display Scene
     this.scene.bringToTop("EditorUIScene");
 
+    // --- ADD Pointer Move Listener for Preview ---
+    this.input.on(
+      "pointermove",
+      (pointer: Phaser.Input.Pointer) => {
+        if (this.entityManager) {
+          if (this.registry.get("isPlacementModeActive")) {
+            this.entityManager.updatePreviewPosition(
+              pointer.worldX,
+              pointer.worldY
+            );
+          } else {
+            // If not in placement mode, ensure any lingering preview is destroyed
+            this.entityManager.destroyPlacementPreview();
+          }
+        }
+      },
+      this
+    );
+    // --- END Pointer Move Listener ---
+
     console.log("Level Editor create() finished initial setup.");
   }
 

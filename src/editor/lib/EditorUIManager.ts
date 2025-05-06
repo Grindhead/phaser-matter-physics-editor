@@ -86,6 +86,9 @@ export class EditorUIManager {
           } else {
             // Placement mode ended, re-enable palette
             this.palette.enable();
+            // Also destroy preview when placement mode ends
+            const editorScene = this.scene.scene.get("EditorScene") as any;
+            editorScene?.entityManager?.destroyPlacementPreview(); // Get EntityManager via scene
           }
         }
       }

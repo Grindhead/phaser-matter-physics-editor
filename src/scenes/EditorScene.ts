@@ -7,6 +7,7 @@ import { EditorUIManager } from "../editor/lib/EditorUIManager";
 import { EntityManager } from "../editor/lib/EntityManager";
 import { EditorEventBus } from "../editor/lib/EditorEventBus";
 import { EditorEvents } from "../editor/lib/EditorEventTypes";
+import { CameraPanManager } from "../editor/lib/input/CameraPanManager";
 
 export class EditorScene extends Scene {
   // Components
@@ -14,6 +15,7 @@ export class EditorScene extends Scene {
   private levelHandler!: EditorLevelHandler;
   // Grid renderer
   private grid!: EditorGrid;
+  private cameraPanManager!: CameraPanManager;
   // UI bounds for input handling
   private uiBounds!: Phaser.Geom.Rectangle;
 
@@ -103,6 +105,16 @@ export class EditorScene extends Scene {
 
     // Initialize level handler with entity manager
     this.levelHandler = new EditorLevelHandler(this.entityManager);
+
+    // Initialize CameraPanManager AFTER grid is created
+    if (this.grid) {
+      this.cameraPanManager = new CameraPanManager(this, this.grid);
+      console.log("EditorScene: CameraPanManager initialized.");
+    } else {
+      console.error(
+        "EditorScene: Grid not available for CameraPanManager initialization."
+      );
+    }
 
     // Setup file input for level loading
     uiManager.setupFileInput((file: File) => {

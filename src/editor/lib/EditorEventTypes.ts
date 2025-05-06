@@ -35,9 +35,6 @@ export enum EditorEventTypes {
   LEVEL_CLEARED = "LEVEL_CLEARED",
 
   // Camera events
-  CAMERA_PAN_START = "CAMERA_PAN_START",
-  CAMERA_PAN = "CAMERA_PAN",
-  CAMERA_PAN_END = "CAMERA_PAN_END",
   CAMERA_ZOOM = "CAMERA_ZOOM",
 }
 
@@ -79,9 +76,6 @@ export const EditorEvents = {
   DRAGGING: "DRAGGING",
 
   // Camera events
-  CAMERA_PAN_START: "CAMERA_PAN_START",
-  CAMERA_PAN_END: "CAMERA_PAN_END",
-  CAMERA_PANNING: "CAMERA_PANNING",
   CAMERA_ZOOM: "CAMERA_ZOOM",
 };
 
@@ -142,13 +136,6 @@ export interface DragPayload {
   entity: EditorEntity;
   x: number;
   y: number;
-}
-
-export interface CameraPanPayload {
-  x: number;
-  y: number;
-  dx: number;
-  dy: number;
 }
 
 export interface CameraZoomPayload {

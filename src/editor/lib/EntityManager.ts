@@ -8,7 +8,6 @@ import { EntityCreator } from "./EntityCreator";
 import { EntitySelector } from "./EntitySelector";
 import { EntityDragHandler } from "./EntityDragHandler";
 import { EntityUpdater } from "./EntityUpdater";
-import { CameraPanManager } from "./CameraPanManager";
 import { KeyboardManager } from "./KeyboardManager";
 
 /**
@@ -27,13 +26,12 @@ export class EntityManager {
   private selector: EntitySelector;
   private updater: EntityUpdater;
   private dragHandler: EntityDragHandler;
-  private cameraPanManager: CameraPanManager;
   private keyboardManager: KeyboardManager;
 
   // State tracking
   private selectedEntityType: string | null = null;
   private placementConfig: any = null;
-  private placementPreview: Phaser.GameObjects.Rectangle | null = null;
+  private placementPreview: EditorEntity | null = null;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -54,7 +52,6 @@ export class EntityManager {
       this.selector,
       this.updater
     );
-    this.cameraPanManager = new CameraPanManager(this.scene);
     this.keyboardManager = new KeyboardManager(this.scene);
 
     // Set up event listeners
@@ -599,7 +596,6 @@ export class EntityManager {
     this.uiBounds = bounds;
     this.selector.setUIBounds(bounds);
     this.dragHandler.setUIBounds(bounds);
-    this.cameraPanManager.setUIBounds(bounds);
   }
 
   /**
@@ -666,69 +662,74 @@ export class EntityManager {
 
   // --- NEW PREVIEW METHODS ---
 
-  private createPlacementPreview(type: string, config?: any): void {
-    // Destroy any existing preview first
-    this.destroyPlacementPreview();
-
-    let previewWidth = TILE_WIDTH;
-    let previewHeight = TILE_HEIGHT;
-    const previewColor = 0x00ff88; // Greenish tint
-    const previewAlpha = 0.5;
-
-    // Customize preview for platforms
-    if (type === "platform" && config) {
-      const segmentWidth = config.segmentWidth || 32;
-      const segmentCount = config.segmentCount || 1;
-      const isVertical = config.isVertical || false;
-      previewWidth = isVertical ? segmentWidth : segmentWidth * segmentCount;
-      previewHeight = isVertical ? segmentWidth * segmentCount : segmentWidth;
-    }
-    // Add cases for other entity types if needed
-
-    this.placementPreview = this.scene.add.rectangle(
-      -1000,
-      -1000, // Position off-screen initially
-      previewWidth,
-      previewHeight,
-      previewColor,
-      previewAlpha
-    );
-    this.placementPreview.setOrigin(0.5, 0.5);
-    this.placementPreview.setDepth(900); // Ensure it's visible but below UI
-    this.placementPreview.setVisible(false); // Start invisible
-
-    console.log(
-      `[EntityManager] Created ${type} preview size ${previewWidth}x${previewHeight}`
-    );
-  }
-
   public updatePreviewPosition(worldX: number, worldY: number): void {
-    if (
-      !this.placementPreview ||
-      !this.scene.registry.get("isPlacementModeActive")
-    ) {
-      // If preview doesn't exist or we're not in placement mode, ensure it's hidden/gone
-      this.destroyPlacementPreview();
-      return;
+    if (!this.placementPreview) {
+      if (this.selectedEntityType) {
+        this.createPlacementPreview(
+          this.selectedEntityType,
+          this.placementConfig
+        );
+      } else {
+        console.warn(
+          "EntityManager.updatePreviewPosition: No selectedEntityType to create preview for."
+        );
+        return;
+      }
     }
 
-    // Calculate snapped position (same logic as placement)
-    const snappedX =
-      Math.floor(worldX / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
-    const snappedY =
-      Math.floor(worldY / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2;
+    if (this.placementPreview && this.placementPreview.gameObject) {
+      // Snap to grid
+      const snappedX =
+        Math.floor(worldX / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
+      const snappedY =
+        Math.floor(worldY / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2;
 
-    this.placementPreview.setPosition(snappedX, snappedY);
-    if (!this.placementPreview.visible) {
-      this.placementPreview.setVisible(true);
+      (this.placementPreview.gameObject as any).setPosition(snappedX, snappedY);
+      // Ensure it's visible if it was hidden
+      if (!(this.placementPreview.gameObject as any).visible) {
+        (this.placementPreview.gameObject as any).setVisible(true);
+      }
     }
   }
 
   public destroyPlacementPreview(): void {
-    if (this.placementPreview) {
-      console.log("[EntityManager] Destroying placement preview.");
-      this.placementPreview.destroy();
+    if (this.placementPreview && this.placementPreview.gameObject) {
+      (this.placementPreview.gameObject as any).destroy();
       this.placementPreview = null;
+      // console.log("EntityManager: Placement preview destroyed."); // Can be noisy
+    }
+  }
+
+  private createPlacementPreview(type: string, config?: any): void {
+    if (this.placementPreview && this.placementPreview.gameObject) {
+      (this.placementPreview.gameObject as any).destroy();
+      this.placementPreview = null;
+    }
+
+    const previewEntity = this.creator.createEntity(type, 0, 0, config);
+
+    if (previewEntity && previewEntity.gameObject) {
+      this.placementPreview = previewEntity;
+      // Make the preview semi-transparent and ensure it's on top
+      (this.placementPreview.gameObject as any).setAlpha(0.7);
+      (this.placementPreview.gameObject as any).setDepth(1001); // Ensure preview is on top
+      (this.placementPreview.gameObject as any).setVisible(false); // Initially hidden
+
+      // For physics bodies, disable them in the preview state
+      if ((this.placementPreview.gameObject as any).body) {
+        const body = (this.placementPreview.gameObject as any)
+          .body as MatterJS.BodyType;
+        body.isSensor = true;
+        body.isStatic = true; // Make it static so it's not affected by gravity/forces
+      }
+
+      // console.log(
+      //   `EntityManager: Created actual entity preview for ${type}.`
+      // );
+    } else {
+      console.error(
+        `EntityManager.createPlacementPreview: Failed to create preview entity for type: ${type}`
+      );
     }
   }
 
@@ -738,7 +739,7 @@ export class EntityManager {
    * Clean up all components and resources
    */
   public destroy(): void {
-    // Clean up all event listeners - need to remove both prefixed and non-prefixed
+    // Remove event listeners
     this.eventBus.off(
       EditorEvents.ENTITY_SELECT,
       this.handleEntityTypeSelection,
@@ -749,7 +750,6 @@ export class EntityManager {
       this.handleEntityTypeSelection,
       this
     );
-
     this.eventBus.off(
       EditorEvents.ENTITY_SELECTED,
       this.handleEntitySelected,
@@ -760,7 +760,6 @@ export class EntityManager {
       this.handleEntitySelected,
       this
     );
-
     this.eventBus.off(
       EditorEvents.ENTITY_DESELECTED,
       this.handleEntityDeselected,
@@ -771,14 +770,12 @@ export class EntityManager {
       this.handleEntityDeselected,
       this
     );
-
     this.eventBus.off(EditorEvents.PLACE_ENTITY, this.handlePlaceEntity, this);
     this.eventBus.off(
       `EB_${EditorEvents.PLACE_ENTITY}`,
       this.handlePlaceEntity,
       this
     );
-
     this.eventBus.off(
       EditorEvents.PROPERTY_CHANGE,
       this.handlePropertyChange,
@@ -789,7 +786,6 @@ export class EntityManager {
       this.handlePropertyChange,
       this
     );
-
     this.eventBus.off(
       EditorEvents.REMOVE_ENTITY,
       this.handleRemoveEntity,
@@ -800,14 +796,12 @@ export class EntityManager {
       this.handleRemoveEntity,
       this
     );
-
     this.eventBus.off(EditorEvents.LEVEL_LOADED, this.handleLevelLoaded, this);
     this.eventBus.off(
       `EB_${EditorEvents.LEVEL_LOADED}`,
       this.handleLevelLoaded,
       this
     );
-
     this.eventBus.off(
       EditorEvents.LEVEL_CLEARED,
       this.handleLevelCleared,
@@ -819,12 +813,33 @@ export class EntityManager {
       this
     );
 
-    // Destroy all entities
-    this.clearEntities();
+    // Clean up components
+    if (this.selector && typeof this.selector.destroy === "function") {
+      this.selector.destroy();
+    }
+    if (this.dragHandler && typeof this.dragHandler.destroy === "function") {
+      this.dragHandler.destroy();
+    }
+    if (
+      this.keyboardManager &&
+      typeof this.keyboardManager.destroy === "function"
+    ) {
+      this.keyboardManager.destroy();
+    }
 
-    // Destroy all components
-    this.dragHandler.destroy();
-    this.cameraPanManager.destroy();
-    this.keyboardManager.destroy();
+    // Clear entities array
+    this.entities = [];
+
+    // Destroy placement preview if it exists
+    this.destroyPlacementPreview();
+
+    // Unregister input handlers
+    // Note: The original callback for pointerdown in setupInputHandlers is an anonymous function.
+    // To correctly 'off' it, we'd need a reference to that exact function.
+    // This might be a pre-existing issue or handled differently (e.g. scene shutdown handles it).
+    // For now, attempting to remove with the method name might not work if the original registration used an arrow function directly.
+    // this.scene.input.off("pointerdown", this.setupInputHandlers, this); // This line was commented out in a previous version, keeping it commented.
+
+    console.log("EntityManager destroyed");
   }
 }

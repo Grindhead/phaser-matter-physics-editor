@@ -1,7 +1,6 @@
 import { Scene } from "phaser";
 import Phaser from "phaser";
 import { EditorEventBus } from "../EditorEventBus";
-import { EditorEvents, CameraPanPayload } from "../EditorEventTypes";
 import { EditorGrid } from "../EditorGrid";
 
 /**
@@ -53,6 +52,20 @@ export class CameraPanManager {
         this.stopPanning();
       }
     });
+
+    // Handle Spacebar press for cursor change
+    this.spaceKey.on("down", () => {
+      if (!this.isPanning) {
+        this.scene.input.setDefaultCursor("grab");
+      }
+    });
+
+    // Handle Spacebar release for cursor change
+    this.spaceKey.on("up", () => {
+      if (!this.isPanning) {
+        this.scene.input.setDefaultCursor("default");
+      }
+    });
   }
 
   /**
@@ -65,15 +78,7 @@ export class CameraPanManager {
 
     // Update the registry flag to prevent other input operations
     this.scene.registry.set("isCameraPanning", true);
-
-    // Emit panning started event
-    const payload: CameraPanPayload = {
-      x,
-      y,
-      dx: 0,
-      dy: 0,
-    };
-    this.eventBus.emit(EditorEvents.CAMERA_PAN_START, payload);
+    this.scene.input.setDefaultCursor("grabbing");
   }
 
   /**
@@ -93,15 +98,6 @@ export class CameraPanManager {
 
     // Update the grid
     this.grid.resize();
-
-    // Emit panning event
-    const payload: CameraPanPayload = {
-      x,
-      y,
-      dx,
-      dy,
-    };
-    this.eventBus.emit(EditorEvents.CAMERA_PANNING, payload);
   }
 
   /**
@@ -113,14 +109,12 @@ export class CameraPanManager {
     // Update the registry flag
     this.scene.registry.set("isCameraPanning", false);
 
-    // Emit panning ended event
-    const payload: CameraPanPayload = {
-      x: this.panLastX,
-      y: this.panLastY,
-      dx: 0,
-      dy: 0,
-    };
-    this.eventBus.emit(EditorEvents.CAMERA_PAN_END, payload);
+    // Set cursor based on space key state
+    if (this.spaceKey.isDown) {
+      this.scene.input.setDefaultCursor("grab");
+    } else {
+      this.scene.input.setDefaultCursor("default");
+    }
   }
 
   /**

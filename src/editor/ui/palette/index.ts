@@ -188,13 +188,13 @@ export class Palette {
   public enable(): void {
     this.enabled = true;
     // Optional: visually indicate enabled state (e.g., change alpha)
-    this.container.setAlpha(1);
+    // this.container.setAlpha(1); // Removed: No alpha change on enable
   }
 
   public disable(): void {
     this.enabled = false;
     this.clearSelection(); // Deselect button when disabled
     // Optional: visually indicate disabled state
-    this.container.setAlpha(0.5);
+    // this.container.setAlpha(0.5); // Removed: No alpha change on disable
   }
 }

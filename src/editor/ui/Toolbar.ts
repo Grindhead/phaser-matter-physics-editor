@@ -106,6 +106,9 @@ export class Toolbar {
       buttonBg.setOrigin(0, 0);
       buttonContainer.add(buttonBg);
 
+      // Store original color on the background object for later retrieval
+      buttonBg.setData("originalBgColor", bgColor);
+
       // Create button text
       const text = this.scene.add.text(
         buttonWidth / 2,
@@ -137,11 +140,6 @@ export class Toolbar {
         setTimeout(() => {
           // Call the onClick handler
           button.onClick();
-
-          // Reset the button state after a short delay
-          setTimeout(() => {
-            buttonBg.setFillStyle(bgColor);
-          }, 200);
         }, 10);
       });
 
@@ -152,7 +150,9 @@ export class Toolbar {
       buttonBg.on("pointerout", () => {
         // Only reset if this isn't the active button
         if (this.activeButton !== button.id) {
-          buttonBg.setFillStyle(bgColor);
+          buttonBg.setFillStyle(
+            buttonBg.getData("originalBgColor") || 0x444444
+          ); // Use stored color
         }
       });
 
@@ -185,5 +185,23 @@ export class Toolbar {
     });
 
     return fileInput;
+  }
+
+  public clearActiveButton(): void {
+    if (this.activeButton && this.buttons[this.activeButton]) {
+      const buttonContainer = this.buttons[this.activeButton];
+      const buttonBg = buttonContainer.list.find(
+        (item) => item instanceof Phaser.GameObjects.Rectangle
+      ) as Phaser.GameObjects.Rectangle | undefined;
+
+      if (buttonBg) {
+        const originalBgColor = buttonBg.getData("originalBgColor") || 0x444444; // Retrieve stored color
+        console.log(
+          `[Toolbar] Clearing active button state for: ${this.activeButton}`
+        );
+        buttonBg.setFillStyle(originalBgColor);
+      }
+    }
+    this.activeButton = null;
   }
 }

@@ -145,91 +145,102 @@ export class EntityManager {
   private setupInputHandlers(): void {
     // Set up pointer down handler for entity placement AND selection triggering
     this.scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      // --- UNCOMMENTING LOGIC BELOW ---
-      // /* // Remove start comment
-      // Only handle left clicks
-      if (!pointer.leftButtonDown()) {
-        // console.log("EntityManager: Input handler - Not left click, skipping"); // Can be noisy
-        return;
-      }
-
-      // Skip if over UI
-      if (this.uiBounds && this.uiBounds.contains(pointer.x, pointer.y)) {
-        // console.log("EntityManager: Input handler - Over UI bounds, skipping"); // Can be noisy
-        return;
-      }
-
-      // Check if placement mode is active
-      const isPlacementModeActive = this.scene.registry.get(
-        "isPlacementModeActive"
-      );
-
-      if (isPlacementModeActive && this.selectedEntityType) {
-        // --- PLACEMENT LOGIC ---
-        // console.log( // REMOVE
-        //  `EntityManager: Input handler - In Placement Mode for ${this.selectedEntityType}. Config:`,
-        //  this.placementConfig
-        // );
-
-        // Skip if spacebar is held (for camera panning)
-        const spaceKey = this.scene.input.keyboard?.addKey(
-          Phaser.Input.Keyboard.KeyCodes.SPACE
-        );
-        if (spaceKey && spaceKey.isDown) {
-          // console.log(
-          //   "EntityManager: Input handler - Space key held, skipping placement"
-          // );
+      console.log("%%%%% ENTITY MANAGER POINTER DOWN LISTENER FIRED %%%%%");
+      try {
+        // --- UNCOMMENTING LOGIC BELOW ---
+        // /* // Remove start comment
+        // Only handle left clicks
+        if (!pointer.leftButtonDown()) {
+          // console.log("EntityManager: Input handler - Not left click, skipping"); // Can be noisy
           return;
         }
 
-        // console.log(
-        //   `EntityManager: Placing entity of type ${this.selectedEntityType} at (${pointer.worldX}, ${pointer.worldY})`
-        // );
-
-        try {
-          // Place entity at world position
-          const entity = this.placeEntity(
-            this.selectedEntityType,
-            pointer.worldX,
-            pointer.worldY,
-            this.placementConfig // Pass stored config
-          );
-
-          if (entity) {
-            // console.log("EntityManager: Entity created successfully");
-
-            // Emit entity placed event
-            this.eventBus.emit(EditorEvents.ENTITY_PLACED, entity);
-
-            // Exit placement mode after successful placement
-            this.selectedEntityType = null;
-            this.scene.registry.set("isPlacementModeActive", false);
-            console.log(
-              "[ENTITY MANAGER] Placement mode deactivated after placement."
-            );
-            this.placementConfig = null; // Reset config here too
-
-            // Select the entity but don't start dragging automatically
-            this.selector.selectEntity(entity);
-          } else {
-            // console.log(
-            //   `EntityManager: Failed to create entity of type ${this.selectedEntityType}`
-            // );
-          }
-        } catch (error) {
-          // console.error("Error placing entity:", error);
+        // Skip if over UI
+        if (this.uiBounds && this.uiBounds.contains(pointer.x, pointer.y)) {
+          // console.log("EntityManager: Input handler - Over UI bounds, skipping"); // Can be noisy
+          return;
         }
-        // --- END PLACEMENT LOGIC ---
-      } else {
-        // --- SELECTION LOGIC ---
-        // If not in placement mode, attempt selection
-        console.log(
-          "[ENTITY MANAGER] Click occurred while NOT in placement mode. Attempting selection."
+
+        // Check if placement mode is active
+        const isPlacementModeActive = this.scene.registry.get(
+          "isPlacementModeActive"
         );
-        this.selector.handleSelectionClick(pointer);
-        // --- END SELECTION LOGIC ---
+        console.log(
+          `[handleCanvasClick] Checking placement mode. isPlacementModeActive = ${isPlacementModeActive}, selectedEntityType = ${this.selectedEntityType}`
+        );
+
+        if (isPlacementModeActive && this.selectedEntityType) {
+          // --- PLACEMENT LOGIC ---
+          // console.log( // REMOVE
+          //  `EntityManager: Input handler - In Placement Mode for ${this.selectedEntityType}. Config:`,
+          //  this.placementConfig
+          // );
+
+          // Skip if spacebar is held (for camera panning)
+          const spaceKey = this.scene.input.keyboard?.addKey(
+            Phaser.Input.Keyboard.KeyCodes.SPACE
+          );
+          if (spaceKey && spaceKey.isDown) {
+            // console.log(
+            //   "EntityManager: Input handler - Space key held, skipping placement"
+            // );
+            return;
+          }
+
+          // console.log(
+          //   `EntityManager: Placing entity of type ${this.selectedEntityType} at (${pointer.worldX}, ${pointer.worldY})`
+          // );
+
+          try {
+            // Place entity at world position
+            const entity = this.placeEntity(
+              this.selectedEntityType,
+              pointer.worldX,
+              pointer.worldY,
+              this.placementConfig // Pass stored config
+            );
+
+            if (entity) {
+              // console.log("EntityManager: Entity created successfully via canvas click");
+              this.eventBus.emit(EditorEvents.ENTITY_PLACED, entity);
+              this.selectedEntityType = null;
+              console.log(
+                `[EntityManager] Setting isPlacementModeActive: false (in handleCanvasClick placement success)`
+              ); // Log BEFORE
+              this.scene.registry.set("isPlacementModeActive", false);
+              console.log(
+                `   New registry value: ${this.scene.registry.get(
+                  "isPlacementModeActive"
+                )}`
+              ); // Log AFTER
+              this.placementConfig = null;
+              this.destroyPlacementPreview(); // ADDED: Destroy preview on successful placement
+
+              // Deselect after placement (instead of selecting the new one)
+              this.selector.selectEntity(null);
+            } else {
+              // console.log(`EntityManager: Failed to create entity ...`);
+            }
+          } catch (error) {
+            console.error("Error during placeEntity call:", error);
+            this.destroyPlacementPreview(); // Destroy preview even on error
+          }
+          // --- END PLACEMENT LOGIC ---
+        } else {
+          // --- SELECTION LOGIC ---
+          console.log(
+            "[ENTITY MANAGER] Click occurred while NOT in placement mode. Attempting selection."
+          );
+          this.destroyPlacementPreview(); // ADDED: Destroy preview if clicking while not placing
+          this.selector.handleSelectionClick(pointer); // Call the selector's handler
+        }
+        // */ // Remove end comment
+      } catch (error) {
+        console.error(
+          "%%%%% ERROR IN ENTITY MANAGER POINTER DOWN HANDLER %%%%%",
+          error
+        );
       }
-      // */ // Remove end comment
     });
   }
 
@@ -242,9 +253,15 @@ export class EntityManager {
     // console.log(`EntityManager: Entity type selected: ${type} with config:`, config); // REMOVE
     this.selectedEntityType = type;
     this.placementConfig = config; // Store the config
+    console.log(
+      `[EntityManager] Setting isPlacementModeActive: true (in handleEntityTypeSelection)`
+    ); // Log BEFORE
     this.scene.registry.set("isPlacementModeActive", true);
-    // console.log(`EntityManager: Placement mode activated for ${type}`); // REMOVE
-    // console.log(`   Registry value \'isPlacementModeActive\': ${this.scene.registry.get("isPlacementModeActive")}`); // REMOVE
+    console.log(
+      `   New registry value: ${this.scene.registry.get(
+        "isPlacementModeActive"
+      )}`
+    ); // Log AFTER
 
     // Create preview if applicable (e.g., for platform)
     this.createPlacementPreview(type, config);
@@ -264,7 +281,15 @@ export class EntityManager {
     // Reset placement mode and config
     this.selectedEntityType = null;
     this.placementConfig = null;
+    console.log(
+      `[EntityManager] Setting isPlacementModeActive: false (in handleEntitySelected)`
+    ); // Log BEFORE
     this.scene.registry.set("isPlacementModeActive", false);
+    console.log(
+      `   New registry value: ${this.scene.registry.get(
+        "isPlacementModeActive"
+      )}`
+    ); // Log AFTER
     this.destroyPlacementPreview();
   }
 
@@ -598,11 +623,24 @@ export class EntityManager {
    */
   public setSelectedEntityType(type: string | null, config?: any): void {
     this.selectedEntityType = type;
+    const newState = !!type; // true if type is truthy, false otherwise
+    console.log(
+      `[EntityManager] Setting isPlacementModeActive: ${newState} (in setSelectedEntityType)`
+    ); // Log BEFORE
+    this.scene.registry.set("isPlacementModeActive", newState);
+    console.log(
+      `   New registry value: ${this.scene.registry.get(
+        "isPlacementModeActive"
+      )}`
+    ); // Log AFTER
 
-    if (type) {
-      this.scene.registry.set("isPlacementModeActive", true);
+    // Potentially create/destroy preview based on type being set/unset
+    if (newState) {
+      this.placementConfig = config; // Assume config is passed if type is set
+      this.createPlacementPreview(type!, config); // type asserted as non-null due to newState check
     } else {
-      this.scene.registry.set("isPlacementModeActive", false);
+      this.placementConfig = null;
+      this.destroyPlacementPreview();
     }
   }
 
@@ -610,65 +648,20 @@ export class EntityManager {
    * Clears the palette selection
    */
   public clearPaletteSelection(): void {
+    console.log("[EntityManager] clearPaletteSelection called"); // Log entry
     this.selectedEntityType = null;
+    this.placementConfig = null;
+    console.log(
+      `[EntityManager] Setting isPlacementModeActive: false (in clearPaletteSelection)`
+    ); // Log BEFORE
     this.scene.registry.set("isPlacementModeActive", false);
-    // Use a string constant directly instead of accessing a missing property
+    console.log(
+      `   New registry value: ${this.scene.registry.get(
+        "isPlacementModeActive"
+      )}`
+    ); // Log AFTER
+    this.destroyPlacementPreview();
     this.eventBus.emit("PALETTE_SELECTION_CLEARED");
-  }
-
-  // Renamed from setupInputHandlers internal logic to public method
-  public handleCanvasClick(pointer: Phaser.Input.Pointer): void {
-    // Check if we are in placement mode
-    const isPlacementModeActive = this.scene.registry.get(
-      "isPlacementModeActive"
-    );
-
-    if (isPlacementModeActive && this.selectedEntityType) {
-      // --- PLACEMENT LOGIC ---
-      // console.log( `EntityManager: Input handler - In Placement Mode ...`);
-
-      // Skip if spacebar is held (for camera panning)
-      const spaceKey = this.scene.input.keyboard?.addKey(
-        Phaser.Input.Keyboard.KeyCodes.SPACE
-      );
-      if (spaceKey && spaceKey.isDown) {
-        // console.log("EntityManager: Input handler - Space key held, skipping placement");
-        return;
-      }
-
-      // console.log(`EntityManager: Placing entity ...`);
-
-      try {
-        // Place entity at world position
-        const entity = this.placeEntity(
-          this.selectedEntityType,
-          pointer.worldX,
-          pointer.worldY,
-          this.placementConfig // Pass stored config
-        );
-
-        if (entity) {
-          // console.log("EntityManager: Entity created successfully via canvas click");
-          this.eventBus.emit(EditorEvents.ENTITY_PLACED, entity);
-          this.selectedEntityType = null;
-          this.scene.registry.set("isPlacementModeActive", false);
-          this.placementConfig = null;
-          this.destroyPlacementPreview(); // ADDED: Destroy preview on successful placement
-          this.selector.selectEntity(entity);
-        } else {
-          // console.log(`EntityManager: Failed to create entity ...`);
-        }
-      } catch (error) {
-        console.error("Error placing entity from canvas click:", error);
-        this.destroyPlacementPreview(); // ADDED: Destroy preview even on error
-      }
-      // --- END PLACEMENT LOGIC ---
-    } else {
-      // --- SELECTION LOGIC ---
-      // console.log("EntityManager: Canvas click ignored - Not in placement mode ...");
-      this.destroyPlacementPreview(); // ADDED: Destroy preview if clicking while not placing
-      this.selector.handleSelectionClick(pointer); // Call the selector's handler
-    }
   }
 
   // --- NEW PREVIEW METHODS ---

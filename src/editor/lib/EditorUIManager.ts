@@ -78,18 +78,16 @@ export class EditorUIManager {
         console.log(
           `EditorUIManager: isPlacementModeActive changed to: ${value}`
         );
-        if (this.palette) {
-          if (value === true) {
-            // This case might be redundant if handleEntityTypeSelect already disables it,
-            // but good for safety if placement mode is set externally.
-            this.palette.disable();
-          } else {
-            // Placement mode ended, re-enable palette
-            this.palette.enable();
-            // Also destroy preview when placement mode ends
-            const editorScene = this.scene.scene.get("EditorScene") as any;
-            editorScene?.entityManager?.destroyPlacementPreview(); // Get EntityManager via scene
-          }
+        if (value === true) {
+          // Entering placement mode
+          if (this.palette) this.palette.disable();
+        } else {
+          // Exiting placement mode
+          if (this.palette) this.palette.enable();
+          if (this.toolbar) this.toolbar.clearActiveButton();
+          // Destroy preview (if applicable, managed by EntityManager now)
+          const editorScene = this.scene.scene.get("EditorScene") as any;
+          editorScene?.entityManager?.destroyPlacementPreview();
         }
       }
     );

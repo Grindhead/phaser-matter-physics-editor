@@ -76,8 +76,8 @@ function createTextureFromContainer(
     key: TEXTURE_ATLAS,
     frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.LEFT].prefix,
     // Position origin (0.5, 0.5) at (segmentWidth/2, segmentWidth/2)
-    x: segmentWidth / 2 + 2,
-    y: segmentWidth / 2,
+    x: segmentWidth / 2 + 0,
+    y: segmentWidth / 2 + 0,
     add: false,
   });
 
@@ -90,8 +90,8 @@ function createTextureFromContainer(
       key: TEXTURE_ATLAS,
       frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.MIDDLE].prefix,
       // Position origin (0.5, 0.5) at (segmentWidth * i + segmentWidth/2, segmentWidth/2)
-      x: segmentWidth * i + segmentWidth / 2,
-      y: segmentWidth / 2 + 1,
+      x: segmentWidth * i + segmentWidth / 2 + 0,
+      y: segmentWidth / 2 + 0,
       add: false,
     });
 
@@ -103,8 +103,8 @@ function createTextureFromContainer(
     key: TEXTURE_ATLAS,
     frame: PLATFORM_ANIMATIONS[PLATFORM_ANIMATION_KEYS.RIGHT].prefix,
     // Position origin (0.5, 0.5) at (totalWidth - segmentWidth/2, segmentWidth/2)
-    x: totalWidth - segmentWidth / 2 - 2,
-    y: segmentWidth / 2,
+    x: totalWidth - segmentWidth / 2 + 0,
+    y: segmentWidth / 2 + 0,
     add: false,
   });
 
@@ -122,8 +122,8 @@ function createTextureFromContainer(
     false
   );
 
-  renderTexture.width += 4;
-  renderTexture.height += 4;
+  renderTexture.width += 0;
+  renderTexture.height += 0;
 
   if (isVertical) {
     // For vertical platforms, we rotate the container before drawing

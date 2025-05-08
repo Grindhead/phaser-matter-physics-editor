@@ -1,14 +1,11 @@
 import Phaser from "phaser";
-import { Platform } from "../../entities/Terrain/Platform"; // Assuming path is correct
-import { EnemyLarge } from "../../entities/Enemies/EnemyLarge"; // Assuming path is correct
-import { EnemySmall } from "../../entities/Enemies/EnemySmall"; // Assuming path is correct
-import { CrateSmall } from "../../entities/Items/CrateSmall"; // Assuming path is correct
-import { CrateBig } from "../../entities/Items/CrateBig"; // Assuming path is correct
-import { Barrel } from "../../entities/Items/Barrel"; // Assuming path is correct
-import { FinishLine } from "../../entities/Items/FinishLine"; // Assuming path is correct
+import { Platform } from "../../entities/Platforms/Platform";
+import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
+import { EnemySmall } from "../../entities/Enemies/EnemySmall";
+import { Barrel } from "../../entities/Barrel/Barrel";
+import { Finish } from "../../entities/Finish/Finish";
+import { Crate } from "../../entities/Crate/Crate";
 
-// Define interfaces for the structure of the JSON data
-// These separate the saved data structure from the runtime class structure
 export interface SerializedPlatform {
   id: string; // Keep ID if needed for future reference
   x: number;
@@ -53,12 +50,9 @@ type PlaceableEntity =
   | Platform
   | EnemyLarge
   | EnemySmall
-  | CrateSmall
-  | CrateBig
   | Barrel
-  | FinishLine
-  | any;
-
+  | Finish
+  | Crate;
 export class LevelDataManager {
   private scene: Phaser.Scene;
 

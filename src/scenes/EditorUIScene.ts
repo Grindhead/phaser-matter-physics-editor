@@ -15,44 +15,46 @@ export class EditorUIScene extends Phaser.Scene {
 
   create(): void {
     const editorScene = this.scene.get("EditorScene") as Phaser.Scene;
-    this.uiManager = new EditorUIManager(
-      this,
+
+    // Pass `this.events` as the event emitter to EditorUIManager
+    this.uiManager = new EditorUIManager(this, this.events);
+
+    // Listen for events from EditorUIManager and relay them to EditorScene
+    this.events.on(
+      "ENTITY_TYPE_SELECT_REQUEST",
       (type: string, config?: any) => {
-        console.log(`EditorUIScene: Entity select callback for type: ${type}`);
         editorScene.events.emit("UI_ENTITY_SELECT", type, config);
-      },
-      (entity: EditorEntity, property: string, value: any) => {
-        console.log(`EditorUIScene: Property change callback for ${property}`);
-        editorScene.events.emit("UI_PROPERTY_CHANGE", entity, property, value);
-      },
-      () => {
-        console.log("EditorUIScene: Save callback");
-        editorScene.events.emit("UI_SAVE");
-      },
-      () => {
-        console.log("EditorUIScene: Load callback");
-        editorScene.events.emit("UI_LOAD");
-      },
-      () => {
-        console.log("EditorUIScene: Clear callback");
-        editorScene.events.emit("UI_CLEAR");
-      },
-      (entity: EditorEntity) => {
-        console.log("EditorUIScene: Remove entity callback");
-        editorScene.events.emit("UI_REMOVE_ENTITY", entity);
       }
     );
+
+    // Note: PROPERTY_CHANGE_REQUEST is handled directly by Inspector, no need to relay from here if not used.
+    // If EditorScene needs it, a listener can be added.
+
+    this.events.on("SAVE_REQUEST", () => {
+      editorScene.events.emit("UI_SAVE");
+    });
+
+    this.events.on("LOAD_REQUEST", () => {
+      editorScene.events.emit("UI_LOAD");
+    });
+
+    this.events.on("CLEAR_REQUEST", () => {
+      editorScene.events.emit("UI_CLEAR");
+    });
+
+    this.events.on("REMOVE_ENTITY_REQUEST", (entity: EditorEntity) => {
+      editorScene.events.emit("UI_REMOVE_ENTITY", entity);
+    });
+
+    // The setupFileInput now takes a callback that will be used by the UIManager's toolbar directly.
+    // If we wanted to use an event for this too, UIManager's setupFileInput would need to change.
+    // For now, keeping as is, assuming direct callback is fine for file input.
     this.uiManager.setupFileInput((file: File) => {
       editorScene.events.emit("UI_FILE_LOAD", file);
     });
 
     // Emit event to signal UI Manager is ready
     this.events.emit("uiManagerReady", this.uiManager);
-
-    // Bring this UI scene to the top after a short delay -- No longer needed, launch order handles it
-    // this.time.delayedCall(10, () => {
-    //   this.scene.bringToTop();
-    // });
   }
 
   /**

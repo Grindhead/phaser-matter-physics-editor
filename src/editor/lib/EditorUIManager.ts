@@ -1,12 +1,12 @@
-import { Scene } from "phaser";
+import { Scene, Events } from "phaser";
 import { Palette } from "../ui/palette";
 import { Inspector, EditorEntity } from "../ui/Inspector";
 import { Toolbar } from "../ui/Toolbar";
 import { PlatformTool } from "../tools/PlatformTool";
-import { Platform } from "../../entities/Platforms/Platform";
 
 export class EditorUIManager {
   private scene: Scene;
+  private eventEmitter: Events.EventEmitter;
   private palette: Palette;
   private inspector: Inspector | null = null;
   private toolbar: Toolbar | null = null;
@@ -15,48 +15,17 @@ export class EditorUIManager {
   private selectedEntity: EditorEntity | null = null;
   private activeTool: any = null; // Track the active tool
 
-  // Callbacks
-  private onEntityTypeSelect: (type: string, config?: any) => void;
-  private onPropertyChange: (
-    entity: EditorEntity,
-    property: string,
-    value: any
-  ) => void;
-  private onSave: () => void;
-  private onLoad: () => void;
-  private onClear: () => void;
-  private onRemoveEntity: ((entity: EditorEntity) => void) | null = null;
-
   // Flag to track if activation is in progress
   private isActivatingPlatformTool = false;
 
-  constructor(
-    scene: Scene,
-    onEntityTypeSelect: (type: string, config?: any) => void,
-    onPropertyChange: (
-      entity: EditorEntity,
-      property: string,
-      value: any
-    ) => void,
-    onSave: () => void,
-    onLoad: () => void,
-    onClear: () => void,
-    onRemoveEntity?: (entity: EditorEntity) => void
-  ) {
+  constructor(scene: Scene, eventEmitter: Events.EventEmitter) {
     this.scene = scene;
-    this.onEntityTypeSelect = onEntityTypeSelect;
-    this.onPropertyChange = onPropertyChange;
-    this.onSave = onSave;
-    this.onLoad = onLoad;
-    this.onClear = onClear;
-    this.onRemoveEntity = onRemoveEntity || null;
+    this.eventEmitter = eventEmitter;
 
     // Create platform tool
     this.platformTool = new PlatformTool(scene, (config: any) => {
       console.log("EditorUIManager: Platform placement configured:", config);
-      // Emit the standard entity select event
-      // This will be picked up by EditorScene and forwarded to EntityManager
-      this.onEntityTypeSelect("platform", config);
+      this.eventEmitter.emit("ENTITY_TYPE_SELECT_REQUEST", "platform", config);
     });
 
     this.createUI();
@@ -127,7 +96,7 @@ export class EditorUIManager {
 
         // For other entity types, deactivate platform tool and pass to callback
         this.platformTool?.deactivate();
-        this.onEntityTypeSelect(type, config);
+        this.eventEmitter.emit("ENTITY_TYPE_SELECT_REQUEST", type, config);
       }
     );
 
@@ -135,13 +104,18 @@ export class EditorUIManager {
     this.inspector = new Inspector(
       this.scene,
       { x: this.scene.scale.width - 210, y: 10, width: 200 },
-      this.onPropertyChange,
+      (entity: EditorEntity, property: string, value: any) => {
+        this.eventEmitter.emit(
+          "PROPERTY_CHANGE_REQUEST",
+          entity,
+          property,
+          value
+        );
+      },
       // Pass the delete callback to allow entities to be deleted from the inspector
       (entity: EditorEntity) => {
-        if (this.onRemoveEntity) {
-          this.onRemoveEntity(entity);
-          this.selectedEntity = null;
-        }
+        this.eventEmitter.emit("REMOVE_ENTITY_REQUEST", entity);
+        this.selectedEntity = null;
       }
     );
 
@@ -160,9 +134,21 @@ export class EditorUIManager {
           textColor: "#ffffff",
         },
       },
-      { id: "save", label: "Save", onClick: this.onSave },
-      { id: "load", label: "Load", onClick: this.onLoad },
-      { id: "clear", label: "Clear", onClick: this.onClear },
+      {
+        id: "save",
+        label: "Save",
+        onClick: () => this.eventEmitter.emit("SAVE_REQUEST"),
+      },
+      {
+        id: "load",
+        label: "Load",
+        onClick: () => this.eventEmitter.emit("LOAD_REQUEST"),
+      },
+      {
+        id: "clear",
+        label: "Clear",
+        onClick: () => this.eventEmitter.emit("CLEAR_REQUEST"),
+      },
     ];
 
     this.toolbar = new Toolbar(
@@ -236,15 +222,17 @@ export class EditorUIManager {
   public setRemoveEntityCallback(
     callback: (entity: EditorEntity) => void
   ): void {
-    this.onRemoveEntity = callback;
+    console.warn(
+      "setRemoveEntityCallback is deprecated. Use event emitter for REMOVE_ENTITY_REQUEST."
+    );
   }
 
   /**
    * Removes the currently selected entity
    */
   public removeSelectedEntity(): void {
-    if (this.selectedEntity && this.onRemoveEntity) {
-      this.onRemoveEntity(this.selectedEntity);
+    if (this.selectedEntity) {
+      this.eventEmitter.emit("REMOVE_ENTITY_REQUEST", this.selectedEntity);
       this.selectedEntity = null;
     }
   }
@@ -322,12 +310,12 @@ export class EditorUIManager {
       // Add delete key for removing selected entity
       const deleteKey = this.scene.input.keyboard.addKey("DELETE");
       deleteKey.on("down", () => {
-        if (this.selectedEntity && this.onRemoveEntity) {
+        if (this.selectedEntity) {
           console.log(
             "Delete key pressed - removing selected entity:",
             this.selectedEntity.type
           );
-          this.onRemoveEntity(this.selectedEntity);
+          this.eventEmitter.emit("REMOVE_ENTITY_REQUEST", this.selectedEntity);
           this.selectedEntity = null;
         }
       });

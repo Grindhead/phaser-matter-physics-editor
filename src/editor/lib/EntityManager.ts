@@ -1,3 +1,5 @@
+console.log("%%%%%%% EntityManager.ts FILE LOADED - VERSION Y %%%%%%%");
+
 import { Scene } from "phaser";
 import { TILE_WIDTH, TILE_HEIGHT } from "../../lib/constants"; // Ensure constants are imported
 import { EditorEntity } from "../ui/Inspector";
@@ -486,15 +488,24 @@ export class EntityManager {
    * @param levelData The level data to load
    */
   private handleLevelLoaded(levelData: LevelData): void {
-    // Clear existing entities
-    this.clearEntities();
+    console.log("EntityManager: Level loaded event received.", levelData);
 
-    // Set the new level data
-    this.levelData = levelData;
-    this.updater.setLevelData(levelData);
+    // Protective check: If levelData is null or undefined, treat as a clear/empty level.
+    if (!levelData) {
+      console.warn(
+        "EntityManager: handleLevelLoaded received null or undefined levelData. Clearing entities and using empty level."
+      );
+      this.clearEntities();
+      this.levelData = LevelDataManager.createEmpty(); // Ensure a valid empty state
+      this.updater.setLevelData(this.levelData);
+      this.populateEntitiesFromLevelData(); // This should now be safe with empty data
+      return;
+    }
 
-    // Create entities from level data
-    this.populateEntitiesFromLevelData();
+    this.clearEntities(); // Clears existing entities
+    this.levelData = levelData; // Assigns the new level data
+    this.updater.setLevelData(this.levelData); // Update for the updater component
+    this.populateEntitiesFromLevelData(); // Populate entities from the new data
   }
 
   /**
@@ -531,8 +542,60 @@ export class EntityManager {
    * Populates entities from level data
    */
   private populateEntitiesFromLevelData(): void {
+    console.log(
+      "%%%%%%% HELLO FROM INSIDE POPULATE ENTITIES - VERSION X %%%%%%%"
+    ); // For tracking
+
+    // Ensure levelData itself exists
+    if (!this.levelData) {
+      console.warn(
+        "POPULATE: this.levelData is undefined or null. Skipping population."
+      );
+      return;
+    }
+    try {
+      console.log(
+        "POPULATE: this.levelData IS defined. Value:",
+        JSON.stringify(this.levelData)
+      );
+    } catch (e) {
+      console.warn(
+        "POPULATE: Could not stringify this.levelData. It might be circular or very complex.",
+        this.levelData
+      );
+    }
+
     // Create platforms
-    this.levelData.platforms.forEach((platform) => {
+    console.log(
+      "POPULATE: Checking this.levelData.platforms. Value:",
+      this.levelData.platforms
+    );
+    console.log(
+      "POPULATE: Result of Array.isArray(this.levelData.platforms):",
+      Array.isArray(this.levelData.platforms)
+    );
+
+    const platforms = Array.isArray(this.levelData.platforms)
+      ? this.levelData.platforms
+      : [];
+    console.log(
+      "POPULATE: 'platforms' local variable assigned. Value:",
+      platforms
+    );
+    console.log(
+      "POPULATE: typeof 'platforms' local variable:",
+      typeof platforms
+    );
+
+    if (typeof platforms.forEach !== "function") {
+      console.error(
+        "POPULATE: CRITICAL! 'platforms' variable does not have a forEach method. Value:",
+        platforms
+      );
+      return; // Avoid the TypeError
+    }
+
+    platforms.forEach((platform) => {
       const entity = this.creator.createEntity(
         "platform",
         platform.x,
@@ -547,7 +610,10 @@ export class EntityManager {
     });
 
     // Create enemies
-    this.levelData.enemies.forEach((enemy) => {
+    const enemies = Array.isArray(this.levelData.enemies)
+      ? this.levelData.enemies
+      : [];
+    enemies.forEach((enemy) => {
       // Check if type exists and use a direct string match
       const entityType = enemy.type?.includes("large")
         ? "enemy-large"
@@ -558,22 +624,31 @@ export class EntityManager {
     });
 
     // Create barrels
-    this.levelData.barrels.forEach((barrel) => {
+    const barrels = Array.isArray(this.levelData.barrels)
+      ? this.levelData.barrels
+      : [];
+    barrels.forEach((barrel) => {
       const entity = this.creator.createEntity("barrel", barrel.x, barrel.y);
 
       if (entity) this.entities.push(entity);
     });
 
     // Create crates
-    this.levelData.crates.forEach((crate) => {
+    const crates = Array.isArray(this.levelData.crates)
+      ? this.levelData.crates
+      : [];
+    crates.forEach((crate) => {
       const entityType = `crate-${crate.type || "small"}`;
       const entity = this.creator.createEntity(entityType, crate.x, crate.y);
 
       if (entity) this.entities.push(entity);
     });
 
-    // Create finish line if exists
-    if (this.levelData.finishLine) {
+    // Create finish line if exists and is an object
+    if (
+      this.levelData.finishLine &&
+      typeof this.levelData.finishLine === "object"
+    ) {
       const finishLine = this.levelData.finishLine;
       const entity = this.creator.createEntity(
         "finish-line",

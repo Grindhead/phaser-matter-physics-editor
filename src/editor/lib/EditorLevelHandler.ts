@@ -74,7 +74,12 @@ export class EditorLevelHandler {
    * @param file The file to load
    */
   public handleFileLoad(file: File): void {
-    if (!file) return;
+    if (!file) {
+      console.warn(
+        "EditorLevelHandler.handleFileLoad called with no file or an invalid File object at startup."
+      );
+      return;
+    }
 
     try {
       const reader = new FileReader();
@@ -84,13 +89,13 @@ export class EditorLevelHandler {
           const json = e.target?.result as string;
           if (!json) throw new Error("Failed to read file");
 
-          const levelData = JSON.parse(json);
+          // Use LevelDataManager.deserialize for robust parsing and structure enforcement
+          const levelData = LevelDataManager.deserialize(json);
 
-          // Validate level data
-          if (!this.validateLevelData(levelData)) {
-            throw new Error("Invalid level data format");
-          }
-
+          console.log(
+            "EditorLevelHandler: File processed, about to emit LEVEL_LOADED with:",
+            levelData
+          );
           // Emit level loaded event
           this.eventBus.emit(EditorEvents.LEVEL_LOADED, levelData);
 

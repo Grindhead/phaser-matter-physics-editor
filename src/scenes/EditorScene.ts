@@ -116,11 +116,6 @@ export class EditorScene extends Scene {
       );
     }
 
-    // Setup file input for level loading
-    uiManager.setupFileInput((file: File) => {
-      this.events.emit(EditorEvents.FILE_LOAD, file);
-    });
-
     // Setup event handlers
     this.setupEditorEventHandlers();
 

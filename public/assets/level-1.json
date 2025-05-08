@@ -1,0 +1,23 @@
+{
+  "platforms": [],
+  "enemies": [],
+  "barrels": [],
+  "crates": [
+    {
+      "x": 516,
+      "y": 300,
+      "type": "big"
+    },
+    {
+      "x": 492,
+      "y": 228,
+      "type": "small"
+    },
+    {
+      "x": 396,
+      "y": 372,
+      "type": "big"
+    }
+  ],
+  "finishLine": null
+}

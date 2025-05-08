@@ -69,6 +69,7 @@ export const EditorEvents = {
 
   // UI events
   UI_MANAGER_READY: "UI_MANAGER_READY",
+  PALETTE_SELECTION_CLEARED: "PALETTE_SELECTION_CLEARED",
 
   // Drag & drop events
   DRAG_START: "DRAG_START",

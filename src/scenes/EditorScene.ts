@@ -3,7 +3,6 @@ import { TEXTURE_ATLAS, PHYSICS } from "../lib/constants";
 import { EditorGrid } from "../editor/lib/EditorGrid";
 import { EditorLevelHandler } from "../editor/lib/EditorLevelHandler";
 import { setupAnimations } from "../lib/level-generation/createAnimations";
-import { EditorUIManager } from "../editor/lib/EditorUIManager";
 import { EntityManager } from "../editor/lib/EntityManager";
 import { EditorEventBus } from "../editor/lib/EditorEventBus";
 import { EditorEvents } from "../editor/lib/EditorEventTypes";
@@ -15,7 +14,6 @@ export class EditorScene extends Scene {
   private levelHandler!: EditorLevelHandler;
   // Grid renderer
   private grid!: EditorGrid;
-  private cameraPanManager!: CameraPanManager;
   // UI bounds for input handling
   private uiBounds!: Phaser.Geom.Rectangle;
 
@@ -57,10 +55,10 @@ export class EditorScene extends Scene {
     // Listen for the UI Manager to be ready
     uiScene.events.once(
       "uiManagerReady",
-      (uiManager: EditorUIManager) => {
+      () => {
         console.log("EditorScene: uiManagerReady event received.");
         // Initialize managers after UI manager is ready
-        this.initializeManagers(uiManager);
+        this.initializeManagers();
       },
       this
     );
@@ -94,7 +92,7 @@ export class EditorScene extends Scene {
   /**
    * Initializes EntityManager and LevelHandler once the UIManager is ready.
    */
-  private initializeManagers(uiManager: EditorUIManager): void {
+  private initializeManagers(): void {
     console.log("EditorScene: Initializing managers...");
 
     // Initialize the entity manager
@@ -107,14 +105,9 @@ export class EditorScene extends Scene {
     this.levelHandler = new EditorLevelHandler(this.entityManager);
 
     // Initialize CameraPanManager AFTER grid is created
-    if (this.grid) {
-      this.cameraPanManager = new CameraPanManager(this, this.grid);
-      console.log("EditorScene: CameraPanManager initialized.");
-    } else {
-      console.error(
-        "EditorScene: Grid not available for CameraPanManager initialization."
-      );
-    }
+
+    new CameraPanManager(this, this.grid);
+    console.log("EditorScene: CameraPanManager initialized.");
 
     // Setup event handlers
     this.setupEditorEventHandlers();

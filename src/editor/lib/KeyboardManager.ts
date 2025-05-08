@@ -63,10 +63,10 @@ export class KeyboardManager {
     this.escapeKey.on("down", this.handleEscapeKey, this);
 
     // Ctrl+S handler - Save level
-    this.sKey.on("down", () => {
+    this.sKey.on("down", (event: KeyboardEvent) => {
       if (this.ctrlKey.isDown) {
         // Prevent browser's save dialog from appearing
-        this.scene.input.keyboard!.preventDefault = true;
+        event.preventDefault();
 
         // Emit save event
         this.eventBus.emit(EditorEvents.SAVE);
@@ -74,10 +74,10 @@ export class KeyboardManager {
     });
 
     // Ctrl+O handler - Open level
-    this.oKey.on("down", () => {
+    this.oKey.on("down", (event: KeyboardEvent) => {
       if (this.ctrlKey.isDown) {
         // Prevent browser's open dialog from appearing
-        this.scene.input.keyboard!.preventDefault = true;
+        event.preventDefault();
 
         // Emit load event
         this.eventBus.emit(EditorEvents.LOAD);

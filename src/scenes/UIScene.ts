@@ -18,7 +18,7 @@ export class UIScene extends Phaser.Scene {
     super(SCENES.UI_SCENE);
   }
 
-  create(): void {
+  init(): void {
     console.log("UIScene created");
     // Create the Debug Panel instance within this scene
     // Position top-right: x = screen width - padding, y = padding
@@ -85,6 +85,7 @@ export class UIScene extends Phaser.Scene {
   }
 
   public showContinueButton(): void {
+    console.log("UIScene: showContinueButton");
     this.overlayButton.visible = true;
   }
 

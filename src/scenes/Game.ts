@@ -47,7 +47,7 @@ export class Game extends Scene {
   private barrels: Barrel[] = [];
   private crates: Crate[] = [];
   private platforms: Platform[] = [];
-  private cameraManager: CameraManager;
+  private cameraManager: CameraManager | null = null;
   private parallaxManager: ParallaxManager;
   private totalBarrelsGenerated: number = 0;
   private culledBarrelsCount: number = 0;
@@ -75,9 +75,7 @@ export class Game extends Scene {
 
     this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
-    if (!this.scene.isActive(SCENES.UI_SCENE)) {
-      this.scene.launch(SCENES.UI_SCENE);
-    }
+    this.scene.launch(SCENES.UI_SCENE);
   }
 
   /**
@@ -106,11 +104,8 @@ export class Game extends Scene {
 
     this.loadLevelEntities(levelKey);
 
-    if (this.cameraManager) {
-      this.cameraManager.resetCamera(this.player);
-    } else {
-      this.cameraManager = new CameraManager(this, this.player);
-    }
+    this.cameraManager = new CameraManager(this, this.player);
+
     this.setupCollisions();
 
     this.restartTriggered = false;
@@ -436,7 +431,7 @@ export class Game extends Scene {
     this.matter.world.enabled = false;
     this.enemies.forEach((enemy) => enemy.handleGameOver());
 
-    this.cameraManager.handleZoomIn();
+    this.cameraManager!.handleZoomIn();
 
     this.gameState = GAME_STATE.GAME_OVER;
   }
@@ -513,7 +508,11 @@ export class Game extends Scene {
       addLevel();
     }
 
-    this.events.emit("showContinueButton");
+    this.time.delayedCall(2500, () => {
+      this.events.emit("showContinueButton");
+    });
+
+    this.cameraManager!.handleZoomIn();
 
     console.log("Level Complete!");
   }
@@ -524,8 +523,7 @@ export class Game extends Scene {
   public restartLevel(): void {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
-    this.scene.stop(SCENES.GAME);
-    this.scene.start(SCENES.GAME);
+    this.scene.restart();
   }
 
   private destroyCurrentEntities(isFullShutdown: boolean): void {
@@ -640,6 +638,8 @@ export class Game extends Scene {
       this.overlayButton.destroy();
       this.overlayButton = undefined;
     }
+
+    this.cameraManager!.destroy();
 
     if (this.matter.world) {
       this.matter.world.off("collisionstart", this.handleCollisionStart);

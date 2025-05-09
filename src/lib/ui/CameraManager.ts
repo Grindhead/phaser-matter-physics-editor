@@ -50,17 +50,7 @@ export class CameraManager {
     });
   }
 
-  /**
-   * Resets the camera to its initial state, following the player with base zoom.
-   * @param player The player instance for the camera to follow.
-   */
-  public resetCamera(player: Player): void {
-    this.camera.stopFollow(); // Stop following any previous target
-    this.camera.startFollow(player, true, 0.5, 0.5); // Follow the new player instance
-    this.camera.setLerp(0.5, 0.5);
-    this.camera.setZoom(BASE_ZOOM); // Reset to base zoom
-    // Re-apply bounds if necessary, though setupCamera calls setupBounds.
-    // this.setupBounds();
-    console.log("[CameraManager] Camera reset and following player.");
+  destroy(): void {
+    this.camera.destroy();
   }
 }

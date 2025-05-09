@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { setupAnimations } from "../lib/level-generation/createAnimations";
+import { setupAnimations } from "../lib/helpers/createAnimations";
 
 /**
  * A scene dedicated solely to rendering the entity GameObjects

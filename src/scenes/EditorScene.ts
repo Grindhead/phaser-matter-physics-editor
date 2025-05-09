@@ -2,11 +2,11 @@ import { Scene } from "phaser";
 import { TEXTURE_ATLAS, PHYSICS } from "../lib/constants";
 import { EditorGrid } from "../editor/lib/EditorGrid";
 import { EditorLevelHandler } from "../editor/lib/EditorLevelHandler";
-import { setupAnimations } from "../lib/level-generation/createAnimations";
 import { EntityManager } from "../editor/lib/EntityManager";
 import { EditorEventBus } from "../editor/lib/EditorEventBus";
 import { EditorEvents } from "../editor/lib/EditorEventTypes";
 import { CameraPanManager } from "../editor/lib/input/CameraPanManager";
+import { setupAnimations } from "../lib/helpers/createAnimations";
 
 export class EditorScene extends Scene {
   // Components

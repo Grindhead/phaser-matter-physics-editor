@@ -1,6 +1,6 @@
 import { Scene } from "phaser";
 import { MAX_LEVELS, PHYSICS, SCENES, TEXTURE_ATLAS } from "../lib/constants";
-import { setupAnimations } from "../lib/level-generation/createAnimations";
+import { setupAnimations } from "../lib/helpers/createAnimations";
 
 export class Preloader extends Scene {
   private loadingText: Phaser.GameObjects.Text | null = null;

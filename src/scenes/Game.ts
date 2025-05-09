@@ -62,25 +62,6 @@ export class Game extends Scene {
     super(SCENES.GAME);
   }
 
-  /**
-   * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
-   */
-  create(data: { levelKey?: string }): void {
-    this.restartTriggered = false;
-    this.parallaxManager = new ParallaxManager(this);
-    this.setupWorldBounds();
-
-    const levelKeyToLoad = data.levelKey || "level-1";
-
-    this.initGame(levelKeyToLoad);
-    this.startGame();
-    this.createDebugUI();
-    this.setupRestartKeys();
-    if (this.sys.game.device.input.touch) {
-      this.createMobileControls();
-    }
-  }
-
   private createDebugUI(): void {
     if (this.debugGraphics) {
       this.debugGraphics.destroy();
@@ -111,6 +92,7 @@ export class Game extends Scene {
    * Initializes game objects and collision handlers using procedural generation.
    */
   private initGame(levelKey: string): void {
+    console.log("initGame", levelKey);
     resetCoins();
     resetTotalCoinsInLevel();
 
@@ -142,7 +124,7 @@ export class Game extends Scene {
 
     playerStartX = levelData.player!.x;
     playerStartY = levelData.player!.y;
-
+    console.log("playerStartX", playerStartX);
     this.player = new Player(this, playerStartX, playerStartY);
     this.player.setVelocity(0, 0);
 
@@ -547,7 +529,7 @@ export class Game extends Scene {
   public restartLevel(): void {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
-
+    this.scene.stop(SCENES.GAME);
     this.scene.start(SCENES.GAME);
   }
 
@@ -692,7 +674,19 @@ export class Game extends Scene {
    * Scene lifecycle method called when the scene starts
    * @param data - Any data passed from another scene
    */
-  init(data: { physicsDebug?: boolean; levelKey?: string }): void {
-    this.initialPhysicsDebugState = !!data.physicsDebug;
+  init(): void {
+    this.restartTriggered = false;
+    this.parallaxManager = new ParallaxManager(this);
+    this.setupWorldBounds();
+
+    const levelKeyToLoad = "level-" + getLevel();
+
+    this.initGame(levelKeyToLoad);
+    this.startGame();
+    this.createDebugUI();
+    this.setupRestartKeys();
+    if (this.sys.game.device.input.touch) {
+      this.createMobileControls();
+    }
   }
 }

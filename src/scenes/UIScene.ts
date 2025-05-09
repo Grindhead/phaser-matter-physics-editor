@@ -19,7 +19,7 @@ export class UIScene extends Phaser.Scene {
   }
 
   create(): void {
-    console.log("DebugUIScene created");
+    console.log("UIScene created");
     // Create the Debug Panel instance within this scene
     // Position top-right: x = screen width - padding, y = padding
     const padding = 10;
@@ -68,6 +68,8 @@ export class UIScene extends Phaser.Scene {
         this.levelUI.destroy();
         this.coinUI.destroy();
       });
+
+      gameScene.events.on("showContinueButton", this.showContinueButton, this);
     }
 
     // Setup Q key listener within this scene

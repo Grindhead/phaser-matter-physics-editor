@@ -536,30 +536,9 @@ export class Game extends Scene {
       addLevel();
     }
 
-    this.showContinueButton();
+    this.events.emit("showContinueButton");
+
     console.log("Level Complete!");
-  }
-
-  /**
-   * Shows the continue button after level completion
-   */
-  private showContinueButton(): void {
-    this.scene.get(SCENES.UI_SCENE)?.events.emit("showContinue");
-
-    if (!this.overlayButton) {
-      this.overlayButton = this.add
-        .image(
-          this.cameras.main.centerX,
-          this.cameras.main.centerY,
-          TEXTURE_ATLAS,
-          "ui/continue.png"
-        )
-        .setInteractive()
-        .setDepth(10000)
-        .on("pointerup", () => {
-          this.restartLevel();
-        });
-    }
   }
 
   /**

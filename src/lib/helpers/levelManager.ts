@@ -1,5 +1,5 @@
 // LevelManager.ts
-let level: number = 0;
+let level: number = 1;
 
 /**
  * Returns the current level count

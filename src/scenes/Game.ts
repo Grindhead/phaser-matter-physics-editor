@@ -175,8 +175,6 @@ export class Game extends Scene {
 
     createDeathZones(this, this.platforms);
 
-    this.respawnCrates();
-
     console.log(`Level ${levelKey} restarted.`);
   }
 
@@ -441,9 +439,6 @@ export class Game extends Scene {
     this.cameraManager.handleZoomIn();
 
     this.gameState = GAME_STATE.GAME_OVER;
-    this.time.delayedCall(1500, () => {
-      this.restartLevel();
-    });
   }
 
   private createMobileControls() {
@@ -531,16 +526,6 @@ export class Game extends Scene {
     this.restartTriggered = true;
     this.scene.stop(SCENES.GAME);
     this.scene.start(SCENES.GAME);
-  }
-
-  private respawnCrates(): void {
-    this.crates.forEach((crate) => crate.destroy());
-    this.crates = [];
-
-    this.originalCratePositions.forEach((pos) => {
-      const crateType = pos.type as "small" | "big";
-      this.crates.push(new Crate(this, pos.x, pos.y, crateType));
-    });
   }
 
   private destroyCurrentEntities(isFullShutdown: boolean): void {

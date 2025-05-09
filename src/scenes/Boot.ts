@@ -8,7 +8,6 @@ export class Boot extends Scene {
 
   create() {
     console.log("Boot: create");
-    console.log("hello photonstorm");
     this.scene.start(SCENES.PRELOADER);
   }
 }

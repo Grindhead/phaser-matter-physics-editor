@@ -15,7 +15,7 @@ export class UIScene extends Phaser.Scene {
   private overlayButton: Phaser.GameObjects.Image;
 
   constructor() {
-    super(SCENES.DEBUG_UI);
+    super(SCENES.UI_SCENE);
   }
 
   create(): void {

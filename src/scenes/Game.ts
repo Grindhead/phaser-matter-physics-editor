@@ -28,6 +28,7 @@ import { ParallaxManager } from "../lib/parralax/ParallaxManager";
 import { createDeathZones } from "../lib/level-generation/createDeathZones";
 import { LevelData } from "../editor/lib/LevelData";
 import { EnemyInterface } from "../entities/Enemies/EnemyBase";
+import { addLevel } from "../lib/helpers/levelManager";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -90,8 +91,8 @@ export class Game extends Scene {
 
     this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
-    if (!this.scene.isActive(SCENES.DEBUG_UI)) {
-      this.scene.launch(SCENES.DEBUG_UI);
+    if (!this.scene.isActive(SCENES.UI_SCENE)) {
+      this.scene.launch(SCENES.UI_SCENE);
     }
   }
 
@@ -109,7 +110,6 @@ export class Game extends Scene {
   private initGame(levelKey: string): void {
     resetCoins();
     resetTotalCoinsInLevel();
-    this.registry.set("score", 0);
 
     this.platforms = [];
     this.enemies = [];
@@ -121,52 +121,26 @@ export class Game extends Scene {
 
     this.loadLevelEntities(levelKey);
 
-    if (!this.player) {
-      console.error(
-        "Player not created after loading level entities! Creating default."
-      );
-      this.player = new Player(this, 100, 100);
-    }
-    this.player.setVelocity(0, 0);
-
     if (this.cameraManager) {
       this.cameraManager.resetCamera(this.player);
     } else {
       this.cameraManager = new CameraManager(this, this.player);
     }
     this.setupCollisions();
+
+    this.restartTriggered = false;
   }
 
   private loadLevelEntities(levelKey: string): void {
     const levelData = this.cache.json.get(levelKey) as LevelData;
-    if (!levelData) {
-      console.error(
-        `Level data not found for key: ${levelKey}. Make sure it's loaded in Preloader.`
-      );
-      if (!this.player) {
-        this.player = new Player(this, 100, 200);
-      }
-      this.player.setPosition(100, 200);
-      this.player.setVelocity(0, 0);
-      return;
-    }
 
-    if (levelData.player) {
-      if (this.player) {
-        this.player.setPosition(levelData.player.x, levelData.player.y);
-      } else {
-        this.player = new Player(this, levelData.player.x, levelData.player.y);
-      }
-    } else {
-      console.error(
-        "Player data missing in level JSON! Creating default player."
-      );
-      if (this.player) {
-        this.player.setPosition(100, 200);
-      } else {
-        this.player = new Player(this, 100, 200);
-      }
-    }
+    let playerStartX: number;
+    let playerStartY: number;
+
+    playerStartX = levelData.player!.x;
+    playerStartY = levelData.player!.y;
+
+    this.player = new Player(this, playerStartX, playerStartY);
     this.player.setVelocity(0, 0);
 
     levelData.platforms.forEach((platformData: PlatformInterface) => {
@@ -239,28 +213,8 @@ export class Game extends Scene {
 
     createDeathZones(this, this.platforms);
 
-    this.registry.set("currentLevelKey", levelKey);
-
-    if (this.player) {
-      this.player.setVelocity(0, 0);
-    } else {
-      console.error(
-        "Player not available after loadLevelEntities during restartLevel. Creating fallback."
-      );
-      this.player = new Player(this, 100, 100);
-    }
-
     this.respawnCrates();
 
-    if (this.cameraManager) {
-      this.cameraManager.resetCamera(this.player);
-    } else {
-      this.cameraManager = new CameraManager(this, this.player);
-    }
-
-    this.startGame();
-    this.restartTriggered = false;
-    this.game.events.emit("levelRestarted");
     console.log(`Level ${levelKey} restarted.`);
   }
 
@@ -602,106 +556,43 @@ export class Game extends Scene {
     if (this.player) {
       this.player.finishLevel();
     }
-    const currentLevelKey = this.registry.get("currentLevelKey") || "level-1";
-    this.showContinueButton(currentLevelKey, true);
+
+    addLevel();
+
+    this.showContinueButton();
     console.log("Level Complete!");
   }
 
   /**
    * Shows the continue button after level completion
    */
-  private showContinueButton(
-    levelKeyForRestart: string,
-    isLevelVictory: boolean
-  ): void {
-    this.scene
-      .get(SCENES.DEBUG_UI)
-      ?.events.emit("showContinue", { levelKeyForRestart, isLevelVictory });
+  private showContinueButton(): void {
+    this.scene.get(SCENES.UI_SCENE)?.events.emit("showContinue");
 
     if (!this.overlayButton) {
-      const buttonText = isLevelVictory
-        ? "Level Complete! Click to Continue"
-        : "Game Over! Click to Restart";
       this.overlayButton = this.add
         .image(
           this.cameras.main.centerX,
           this.cameras.main.centerY,
           TEXTURE_ATLAS,
-          "buttonFrame"
+          "ui/continue.png"
         )
         .setInteractive()
         .setDepth(10000)
         .on("pointerup", () => {
-          this.restartLevel(levelKeyForRestart);
+          this.restartLevel();
         });
-      this.add
-        .text(
-          this.cameras.main.centerX,
-          this.cameras.main.centerY,
-          buttonText,
-          { fontSize: "32px", color: "#fff", backgroundColor: "#000" }
-        )
-        .setOrigin(0.5)
-        .setDepth(10001);
     }
   }
 
   /**
    * Restarts the current level or advances to the next level.
    */
-  public restartLevel(levelKey?: string): void {
+  public restartLevel(): void {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
 
-    this.gameState = GAME_STATE.WAITING_TO_START;
-    this.matter.world.enabled = false;
-    this.physicsEnabled = false;
-
-    if (this.overlayButton) {
-      this.overlayButton.destroy();
-      this.overlayButton = undefined;
-      this.children.list
-        .filter(
-          (c) =>
-            (c.type === "Text" &&
-              (c as Phaser.GameObjects.Text).text.includes(
-                "Click to Continue"
-              )) ||
-            (c as Phaser.GameObjects.Text).text.includes("Click to Restart")
-        )
-        .forEach((t) => t.destroy());
-    }
-
-    this.destroyCurrentEntities(false);
-
-    const keyToLoad =
-      levelKey || this.registry.get("currentLevelKey") || "level1";
-    this.registry.set("currentLevelKey", keyToLoad);
-    this.registry.set("score", 0);
-
-    this.loadLevelEntities(keyToLoad);
-
-    if (this.player) {
-      this.player.setVelocity(0, 0);
-    } else {
-      console.error(
-        "Player not available after loadLevelEntities during restartLevel. Creating fallback."
-      );
-      this.player = new Player(this, 100, 100);
-    }
-
-    this.respawnCrates();
-
-    if (this.cameraManager) {
-      this.cameraManager.resetCamera(this.player);
-    } else {
-      this.cameraManager = new CameraManager(this, this.player);
-    }
-
-    this.startGame();
-    this.restartTriggered = false;
-    this.game.events.emit("levelRestarted");
-    console.log(`Level ${keyToLoad} restarted.`);
+    this.scene.start(SCENES.GAME);
   }
 
   private respawnCrates(): void {
@@ -826,16 +717,6 @@ export class Game extends Scene {
       this.overlayButton.destroy();
       this.overlayButton = undefined;
     }
-    this.children.list
-      .filter(
-        (c) =>
-          (c.type === "Text" &&
-            (c as Phaser.GameObjects.Text).text.includes(
-              "Click to Continue"
-            )) ||
-          (c as Phaser.GameObjects.Text).text.includes("Click to Restart")
-      )
-      .forEach((t) => t.destroy());
 
     if (this.matter.world) {
       this.matter.world.off("collisionstart", this.handleCollisionStart);
@@ -857,6 +738,5 @@ export class Game extends Scene {
    */
   init(data: { physicsDebug?: boolean; levelKey?: string }): void {
     this.initialPhysicsDebugState = !!data.physicsDebug;
-    this.registry.set("currentLevelKey", data.levelKey || "level-1");
   }
 }

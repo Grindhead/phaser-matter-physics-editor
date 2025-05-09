@@ -3,7 +3,7 @@ export const SCENES = {
   PRELOADER: "Preloader",
   MAIN_MENU: "MainMenu",
   GAME: "Game",
-  DEBUG_UI: "DebugUIScene",
+  UI_SCENE: "UIScene",
   GAME_OVER: "GameOver",
 } as const;
 

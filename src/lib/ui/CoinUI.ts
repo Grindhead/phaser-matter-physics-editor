@@ -33,9 +33,6 @@ export class CoinUI {
   /** Reposition text on resize */
   private handleResize(): void {
     this.text.setPosition(PADDING, PADDING);
-    // We could also scale font size here if needed:
-    // const scale = Math.min(this.scene.scale.displayScale.x, this.scene.scale.displayScale.y);
-    // this.text.setFontSize(36 * scale);
   }
 
   /**

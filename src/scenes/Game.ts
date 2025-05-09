@@ -5,6 +5,7 @@ import {
   WORLD_HEIGHT,
   WORLD_WIDTH,
   TEXTURE_ATLAS,
+  MAX_LEVELS,
 } from "../lib/constants";
 import { Player } from "../entities/Player/Player";
 import { Platform, PlatformInterface } from "../entities/Platforms/Platform";
@@ -20,15 +21,18 @@ import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
 import { isBarrelBody } from "../lib/helpers/isBarrelBody";
-import { resetCoins, resetTotalCoinsInLevel } from "../lib/helpers/coinManager";
+import {
+  addCoins,
+  resetCoins,
+  resetTotalCoinsInLevel,
+} from "../lib/helpers/coinManager";
 import { CameraManager } from "../lib/ui/CameraManager";
 import { GameStateType, LoadedEntity } from "../lib/types";
-import { LevelCoinPlacer } from "../lib/level-generation/LevelGenerator";
 import { ParallaxManager } from "../lib/parralax/ParallaxManager";
 import { createDeathZones } from "../lib/level-generation/createDeathZones";
 import { LevelData } from "../editor/lib/LevelData";
 import { EnemyInterface } from "../entities/Enemies/EnemyBase";
-import { addLevel } from "../lib/helpers/levelManager";
+import { addLevel, getLevel } from "../lib/helpers/levelManager";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -44,7 +48,6 @@ export class Game extends Scene {
   private crates: Crate[] = [];
   private platforms: Platform[] = [];
   private cameraManager: CameraManager;
-  private levelCoinPlacer: LevelCoinPlacer;
   private parallaxManager: ParallaxManager;
   private totalBarrelsGenerated: number = 0;
   private culledBarrelsCount: number = 0;
@@ -183,29 +186,6 @@ export class Game extends Scene {
     if (levelData.finishLine) {
       new Finish(this, levelData.finishLine.x, levelData.finishLine.y);
     }
-
-    if (!this.levelCoinPlacer) {
-      this.levelCoinPlacer = new LevelCoinPlacer(this);
-    }
-
-    const entitiesForCoinPlacer: LoadedEntity[] = [
-      ...this.enemies.map((e) => ({
-        x: e.x,
-        y: e.y,
-        type: e instanceof EnemyLarge ? "enemy-large" : "enemy-small",
-        getBounds: () => e.getBounds(),
-      })),
-      ...this.crates.map((c) => ({
-        x: c.x,
-        y: c.y,
-        type: c.type as "small" | "big",
-        getBounds: () => c.getBounds(),
-      })),
-    ];
-    this.allCoinsInLevel = this.levelCoinPlacer.placeCoinsOnLoadedLevel(
-      this.platforms,
-      entitiesForCoinPlacer
-    );
 
     if (this.parallaxManager) {
       this.parallaxManager.initialize();
@@ -390,11 +370,7 @@ export class Game extends Scene {
     const coin = body.gameObject as Coin;
     if (coin && coin.active && coin.body) {
       coin.collect();
-      if (this.player instanceof Player) {
-        const currentScore = this.registry.get("score") || 0;
-        this.registry.set("score", currentScore + 1);
-        this.player.setRecentCoinCollection();
-      }
+      addCoins(1);
     }
   }
 
@@ -551,13 +527,14 @@ export class Game extends Scene {
    */
   private handleLevelComplete(): void {
     this.gameState = GAME_STATE.LEVEL_COMPLETE;
-    this.matter.world.enabled = false;
-    this.physicsEnabled = false;
+
     if (this.player) {
       this.player.finishLevel();
     }
 
-    addLevel();
+    if (getLevel() < MAX_LEVELS) {
+      addLevel();
+    }
 
     this.showContinueButton();
     console.log("Level Complete!");

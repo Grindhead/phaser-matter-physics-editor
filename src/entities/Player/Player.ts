@@ -40,9 +40,6 @@ export class Player
   private isNearLeftEdge = false;
   private isNearRightEdge = false;
   private currentPlatformBounds: { left: number; right: number } | null = null;
-  private coinCollectionTimer?: Phaser.Time.TimerEvent;
-  private coinCollectedDuringLanding = false; // Track coin collection during landing
-  private landingAnimationEventEmitted = false; // Track if landing animation complete event was emitted
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const shapes = scene.cache.json.get(PHYSICS);
@@ -78,7 +75,6 @@ export class Player
     this.isNearLeftEdge = false;
     this.isNearRightEdge = false;
     this.currentPlatformBounds = null;
-    this.coinCollectedDuringLanding = false;
     scene.add.existing(this);
   }
 
@@ -136,8 +132,8 @@ export class Player
     }
 
     if (
-      !this.isLevelComplete &&
-      this.anims.currentAnim?.key !== PLAYER_ANIMATION_KEYS.DUCK_BLAST
+      this.anims.currentAnim?.key !== PLAYER_ANIMATION_KEYS.DUCK_BLAST &&
+      !this.isLevelComplete
     ) {
       if (this.leftIsDown) {
         this.setVelocity(-WALK_VELOCITY, this.body!.velocity.y);
@@ -161,7 +157,6 @@ export class Player
         });
         return; // Exit update after jump
       }
-      // --- Modified Jump Logic --- END
     }
 
     // Prioritize running animation when player is moving and level is not complete
@@ -171,6 +166,11 @@ export class Player
       !this.isLevelComplete
     ) {
       this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
+      return;
+    }
+
+    if (this.isGrounded && this.isLevelComplete) {
+      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND);
       return;
     }
 
@@ -289,29 +289,21 @@ export class Player
       this.currentPlatformBounds = null;
 
       // Only create FXLand effect if the coin wasn't collected during THIS landing
-      // We use our landing flag to track this specific landing event
-      if (!this.coinCollectedDuringLanding) {
-        // Play landing effect
-        new FXLand(this.scene, this.x, this.getBounds().bottom);
-      }
+
+      // Play landing effect
+      new FXLand(this.scene, this.x, this.getBounds().bottom);
 
       // Play landing animation after barrel jump, level completion, or when falling from a height
       if (
         !this.isPlayingLandAnimation &&
-        (this.recentlyExitedBarrel || this.isLevelComplete) &&
-        !this.coinCollectedDuringLanding // Only check coins collected during THIS landing
+        (this.recentlyExitedBarrel || this.isLevelComplete)
       ) {
         this.isPlayingLandAnimation = true;
         this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, true);
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
           this.isPlayingLandAnimation = false;
           // If level is complete, keep the final frame of DUCK_LAND animation and emit completion
-          if (this.isLevelComplete) {
-            if (!this.landingAnimationEventEmitted) {
-              this.landingAnimationEventEmitted = true;
-              this.emit("landingAnimationComplete");
-            }
-          } else if (this.isGrounded) {
+          if (this.isGrounded && !this.isLevelComplete) {
             if (this.leftIsDown || this.rightIsDown) {
               this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_RUN);
             } else {
@@ -325,9 +317,6 @@ export class Player
           this.recentlyExitedBarrel = false;
         }
       }
-
-      // Reset coin collection during landing flag after handling the landing
-      this.coinCollectedDuringLanding = false;
     }
   }
 
@@ -385,9 +374,6 @@ export class Player
         } else {
           this.groundContacts.delete(otherBody);
         }
-      } else {
-        // Collision is on the side or bottom of the vertical wall - NOT ground
-        // Do nothing here, don't add to groundContacts
       }
     }
   }
@@ -475,57 +461,7 @@ export class Player
 
   public finishLevel() {
     this.isLevelComplete = true;
-    this.landingAnimationEventEmitted = false;
     this.setVelocityX(0);
-    if (this.isInBarrel) {
-      this.exitBarrel();
-    }
-
-    // If already grounded, initiate cool landing animation
-    if (
-      this.isGrounded &&
-      !this.isPlayingLandAnimation &&
-      !this.coinCollectedDuringLanding
-    ) {
-      this.isPlayingLandAnimation = true;
-      // Use regular landing animation until cool landing animation assets are available
-      this.playAnimation(PLAYER_ANIMATION_KEYS.DUCK_LAND, true);
-      this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-        this.isPlayingLandAnimation = false;
-        // Keep the final frame of the landing animation
-        if (!this.landingAnimationEventEmitted) {
-          this.landingAnimationEventEmitted = true;
-          this.emit("landingAnimationComplete");
-        }
-      });
-    } else if (!this.isGrounded) {
-      // Player is in the air, wait for them to land first
-      this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-        if (this.isGrounded && this.isPlayingLandAnimation) {
-          // Wait for landing animation to complete
-          this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-            if (!this.landingAnimationEventEmitted) {
-              this.landingAnimationEventEmitted = true;
-              this.emit("landingAnimationComplete");
-            }
-          });
-        } else {
-          // If we somehow didn't get a landing animation, still continue
-          if (!this.landingAnimationEventEmitted) {
-            this.landingAnimationEventEmitted = true;
-            this.emit("landingAnimationComplete");
-          }
-        }
-      });
-    } else {
-      // Edge case: already grounded but something prevented landing animation
-      this.scene.time.delayedCall(100, () => {
-        if (!this.landingAnimationEventEmitted) {
-          this.landingAnimationEventEmitted = true;
-          this.emit("landingAnimationComplete");
-        }
-      });
-    }
   }
 
   public kill() {
@@ -537,24 +473,5 @@ export class Player
     this.setVelocityX(0);
     this.setVelocityY(0);
     this.setStatic(true);
-  }
-
-  /**
-   * Indicates that the player has just collected a coin.
-   * Will flag that a coin was collected during landing if this happens during a landing.
-   * The flag automatically resets after the landing is processed.
-   */
-  public setRecentCoinCollection(): void {
-    // Set flag for coin collection during landing
-    // If the player has landed or is in the process of landing,
-    // flag that a coin was collected during this landing event
-    if (!this.isGrounded && this.groundContacts.size > 0) {
-      this.coinCollectedDuringLanding = true;
-    }
-
-    // Clear any existing reset timer
-    if (this.coinCollectionTimer) {
-      this.scene.time.removeEvent(this.coinCollectionTimer);
-    }
   }
 }

@@ -27,7 +27,7 @@ import {
   resetTotalCoinsInLevel,
 } from "../lib/helpers/coinManager";
 import { CameraManager } from "../lib/ui/CameraManager";
-import { GameStateType, LoadedEntity } from "../lib/types";
+import { GameStateType } from "../lib/types";
 import { ParallaxManager } from "../lib/parralax/ParallaxManager";
 import { createDeathZones } from "../lib/level-generation/createDeathZones";
 import { LevelData } from "../editor/lib/LevelData";

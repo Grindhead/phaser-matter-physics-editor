@@ -39,7 +39,12 @@ export class Finish
       return;
     }
 
-    this.play(FINISH_ANIMATIONS[FINISH_ANIMATION_KEYS.FINISH_IDLE].prefix);
+    this.play(FINISH_ANIMATION_KEYS.FINISH_ACTIVATED);
+
+    this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.play(FINISH_ANIMATION_KEYS.FINISH_ACTIVE);
+    });
+
     this.isActivated = true;
   }
 }

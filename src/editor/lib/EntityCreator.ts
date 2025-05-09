@@ -9,19 +9,15 @@ import { Finish, FinishLineInterface } from "../../entities/Finish/Finish";
 import { Crate, CrateInterface } from "../../entities/Crate/Crate";
 import { Player } from "../../entities/Player/Player";
 import { TILE_WIDTH, TILE_HEIGHT } from "../../lib/constants";
-import { EditorEventBus } from "./EditorEventBus";
-import { EditorEvents } from "./EditorEventTypes";
 
 /**
  * Factory class responsible for creating different types of editor entities
  */
 export class EntityCreator {
   private scene: Scene;
-  private eventBus: EditorEventBus;
 
   constructor(scene: Scene) {
     this.scene = scene;
-    this.eventBus = EditorEventBus.getInstance();
   }
 
   /**

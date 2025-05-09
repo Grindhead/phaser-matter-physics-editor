@@ -5,11 +5,14 @@ import { PHYSICS_ENTITIES } from "../../lib/constants";
 
 export class EnemyLarge extends EnemyBase {
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, {
-      shapeKey: PHYSICS_ENTITIES.ENEMY,
-      animKey: ENEMY_ANIMATIONS[ENEMY_ANIMATION_KEYS.ENEMY_IDLE].prefix,
-      scale: 1,
-      type: "enemy-large",
-    });
+    super(
+      scene,
+      x,
+      y,
+      PHYSICS_ENTITIES.ENEMY,
+      ENEMY_ANIMATIONS[ENEMY_ANIMATION_KEYS.ENEMY_IDLE].prefix,
+      1,
+      "enemy-large"
+    );
   }
 }

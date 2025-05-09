@@ -1,42 +1,33 @@
-import { Scene } from "phaser";
+import { Scene, Geom } from "phaser";
 import {
   GAME_STATE,
   SCENES,
-  TEXTURE_ATLAS,
   WORLD_HEIGHT,
   WORLD_WIDTH,
+  TEXTURE_ATLAS,
 } from "../lib/constants";
 import { Player } from "../entities/Player/Player";
+import { Platform, PlatformInterface } from "../entities/Platforms/Platform";
 import { EnemyLarge } from "../entities/Enemies/EnemyLarge";
 import { EnemySmall } from "../entities/Enemies/EnemySmall";
-import { Coin } from "../entities/Coin/Coin";
+import { Crate, CrateInterface } from "../entities/Crate/Crate";
+import { Barrel, BarrelInterface } from "../entities/Barrel/Barrel";
 import { Finish } from "../entities/Finish/Finish";
+import { Coin } from "../entities/Coin/Coin";
 import { isCoinBody } from "../lib/helpers/isCoinBody";
 import { isPlayerBody } from "../lib/helpers/isPlayerBody";
 import { isFinishBody } from "../lib/helpers/isFinishBody";
 import { isEnemyBody } from "../lib/helpers/isEnemyBody";
 import { isFallSensorBody } from "../lib/helpers/isFallSensor";
 import { isBarrelBody } from "../lib/helpers/isBarrelBody";
-import {
-  getCoins,
-  setCoins,
-  resetCoins,
-  resetTotalCoinsInLevel,
-} from "../lib/helpers/coinManager";
-import {
-  addLevel,
-  getLevel,
-  setLevel,
-  resetLevel,
-} from "../lib/helpers/levelManager";
+import { resetCoins, resetTotalCoinsInLevel } from "../lib/helpers/coinManager";
 import { CameraManager } from "../lib/ui/CameraManager";
-import { GameStateType } from "../lib/types";
-import { Geom } from "phaser";
-import { Barrel } from "../entities/Barrel/Barrel";
-import { LevelGenerator } from "../lib/level-generation/LevelGenerator";
+import { GameStateType, LoadedEntity } from "../lib/types";
+import { LevelCoinPlacer } from "../lib/level-generation/LevelGenerator";
 import { ParallaxManager } from "../lib/parralax/ParallaxManager";
-import { UIScene } from "./UIScene";
 import { createDeathZones } from "../lib/level-generation/createDeathZones";
+import { LevelData } from "../editor/lib/LevelData";
+import { EnemyInterface } from "../entities/Enemies/EnemyBase";
 
 /**
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
@@ -49,16 +40,19 @@ export class Game extends Scene {
   private gameState: GameStateType = GAME_STATE.WAITING_TO_START;
   private enemies: (EnemyLarge | EnemySmall)[] = [];
   private barrels: Barrel[] = [];
+  private crates: Crate[] = [];
+  private platforms: Platform[] = [];
   private cameraManager: CameraManager;
-  private levelGenerator: LevelGenerator;
+  private levelCoinPlacer: LevelCoinPlacer;
   private parallaxManager: ParallaxManager;
   private totalBarrelsGenerated: number = 0;
   private culledBarrelsCount: number = 0;
-  private physicsDebugActive: boolean = false; // Track the state
-  private debugGraphics: Phaser.GameObjects.Graphics; // Graphics object for debug drawing
-  private initialPhysicsDebugState: boolean = false; // Store state passed via init
-  private restartKeys: Phaser.Input.Keyboard.Key[] = []; // Keys for restarting
-  private originalCratePositions: { x: number; y: number; type: string }[] = []; // Store original crate positions
+  private physicsDebugActive: boolean = false;
+  private debugGraphics: Phaser.GameObjects.Graphics;
+  private initialPhysicsDebugState: boolean = false;
+  private restartKeys: Phaser.Input.Keyboard.Key[] = [];
+  private originalCratePositions: { x: number; y: number; type: string }[] = [];
+  private allCoinsInLevel: Coin[] = [];
 
   constructor() {
     super(SCENES.GAME);
@@ -67,38 +61,33 @@ export class Game extends Scene {
   /**
    * Scene lifecycle hook. Initializes world, entities, and displays start overlay.
    */
-  create(): void {
+  create(data: { levelKey?: string }): void {
     this.restartTriggered = false;
     this.parallaxManager = new ParallaxManager(this);
     this.setupWorldBounds();
-    this.initGame();
-    this.startGame(); // Start the game immediately
 
+    const levelKeyToLoad = data.levelKey || "level-1";
+
+    this.initGame(levelKeyToLoad);
+    this.startGame();
     this.createDebugUI();
-
-    // Setup keyboard controls for restart
     this.setupRestartKeys();
-
-    // Check for touch support AND non-desktop OS to identify mobile/tablet (real or emulated)
-    const isMobileEnvironment = this.sys.game.device.input.touch;
-    if (isMobileEnvironment) {
+    if (this.sys.game.device.input.touch) {
       this.createMobileControls();
     }
   }
 
   private createDebugUI(): void {
     if (this.debugGraphics) {
-      this.debugGraphics.destroy(); // Destroy previous instance if any
+      this.debugGraphics.destroy();
     }
     this.debugGraphics = this.add.graphics().setAlpha(1).setDepth(9999);
     this.matter.world.debugGraphic = this.debugGraphics;
 
-    // Use the initial state received from init()
     this.matter.world.drawDebug = this.initialPhysicsDebugState;
     this.physicsDebugActive = this.initialPhysicsDebugState;
-    this.debugGraphics.setVisible(this.initialPhysicsDebugState); // Set visibility accordingly
+    this.debugGraphics.setVisible(this.initialPhysicsDebugState);
 
-    // Listen for the event from DebugUIScene
     this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
     if (!this.scene.isActive(SCENES.DEBUG_UI)) {
@@ -117,58 +106,162 @@ export class Game extends Scene {
   /**
    * Initializes game objects and collision handlers using procedural generation.
    */
-  private initGame(): void {
+  private initGame(levelKey: string): void {
     resetCoins();
     resetTotalCoinsInLevel();
-    resetLevel();
-    if (getLevel() === 0) {
-      setLevel(1);
-    }
+    this.registry.set("score", 0);
+
+    this.platforms = [];
     this.enemies = [];
+    this.crates = [];
     this.barrels = [];
+    this.originalCratePositions = [];
 
-    this.generateLevelEntities();
+    this.destroyCurrentEntities(false);
 
-    this.setupCollisions();
+    this.loadLevelEntities(levelKey);
+
     if (!this.player) {
-      throw new Error("Player not created during level generation!");
+      console.error(
+        "Player not created after loading level entities! Creating default."
+      );
+      this.player = new Player(this, 100, 100);
     }
-    this.cameraManager = new CameraManager(this, this.player);
+    this.player.setVelocity(0, 0);
+
+    if (this.cameraManager) {
+      this.cameraManager.resetCamera(this.player);
+    } else {
+      this.cameraManager = new CameraManager(this, this.player);
+    }
+    this.setupCollisions();
   }
 
-  /**
-   * Uses LevelGenerator to create the entities for the current level.
-   */
-  private generateLevelEntities(): void {
-    // Pass the scene, debug graphics object, and current debug state to the generator
-    this.levelGenerator = new LevelGenerator(
-      this,
-      this.debugGraphics,
-      this.physicsDebugActive
-    );
-    this.player = this.levelGenerator.generateLevel();
-    this.enemies = this.levelGenerator.getEnemies();
-    this.barrels = this.levelGenerator.getBarrels();
-    // Store the total count
-    this.totalBarrelsGenerated = this.barrels.length;
+  private loadLevelEntities(levelKey: string): void {
+    const levelData = this.cache.json.get(levelKey) as LevelData;
+    if (!levelData) {
+      console.error(
+        `Level data not found for key: ${levelKey}. Make sure it's loaded in Preloader.`
+      );
+      if (!this.player) {
+        this.player = new Player(this, 100, 200);
+      }
+      this.player.setPosition(100, 200);
+      this.player.setVelocity(0, 0);
+      return;
+    }
 
-    // Save the original crate positions for respawning
-    this.originalCratePositions = [];
-    this.levelGenerator.getCrates().forEach((crate) => {
+    if (levelData.player) {
+      if (this.player) {
+        this.player.setPosition(levelData.player.x, levelData.player.y);
+      } else {
+        this.player = new Player(this, levelData.player.x, levelData.player.y);
+      }
+    } else {
+      console.error(
+        "Player data missing in level JSON! Creating default player."
+      );
+      if (this.player) {
+        this.player.setPosition(100, 200);
+      } else {
+        this.player = new Player(this, 100, 200);
+      }
+    }
+    this.player.setVelocity(0, 0);
+
+    levelData.platforms.forEach((platformData: PlatformInterface) => {
+      const platform = new Platform(
+        this,
+        platformData.x,
+        platformData.y,
+        platformData.segmentCount,
+        platformData.id || `platform-${this.platforms.length}`,
+        platformData.isVertical
+      );
+      this.platforms.push(platform);
+    });
+
+    levelData.enemies.forEach((enemyData: EnemyInterface) => {
+      let enemy;
+      if (enemyData.type === "enemy-large") {
+        enemy = new EnemyLarge(this, enemyData.x, enemyData.y);
+      } else {
+        enemy = new EnemySmall(this, enemyData.x, enemyData.y);
+      }
+      this.enemies.push(enemy);
+    });
+
+    levelData.crates.forEach((crateData: CrateInterface) => {
+      const crate = new Crate(this, crateData.x, crateData.y, crateData.type);
+      this.crates.push(crate);
       this.originalCratePositions.push({
-        x: crate.x,
-        y: crate.y,
-        type: crate.type,
+        x: crateData.x,
+        y: crateData.y,
+        type: crateData.type,
       });
     });
 
-    // Initialize parallax background layers with the calculated level width
+    levelData.barrels.forEach((barrelData: BarrelInterface) => {
+      const barrel = new Barrel(this, barrelData.x, barrelData.y);
+      this.barrels.push(barrel);
+    });
+
+    if (levelData.finishLine) {
+      new Finish(this, levelData.finishLine.x, levelData.finishLine.y);
+    }
+
+    if (!this.levelCoinPlacer) {
+      this.levelCoinPlacer = new LevelCoinPlacer(this);
+    }
+
+    const entitiesForCoinPlacer: LoadedEntity[] = [
+      ...this.enemies.map((e) => ({
+        x: e.x,
+        y: e.y,
+        type: e instanceof EnemyLarge ? "enemy-large" : "enemy-small",
+        getBounds: () => e.getBounds(),
+      })),
+      ...this.crates.map((c) => ({
+        x: c.x,
+        y: c.y,
+        type: c.type as "small" | "big",
+        getBounds: () => c.getBounds(),
+      })),
+    ];
+    this.allCoinsInLevel = this.levelCoinPlacer.placeCoinsOnLoadedLevel(
+      this.platforms,
+      entitiesForCoinPlacer
+    );
+
     if (this.parallaxManager) {
       this.parallaxManager.initialize();
     }
 
-    // Create multiple death zones instead of a single one
-    createDeathZones(this, this.levelGenerator.getPlatforms());
+    createDeathZones(this, this.platforms);
+
+    this.registry.set("currentLevelKey", levelKey);
+
+    if (this.player) {
+      this.player.setVelocity(0, 0);
+    } else {
+      console.error(
+        "Player not available after loadLevelEntities during restartLevel. Creating fallback."
+      );
+      this.player = new Player(this, 100, 100);
+    }
+
+    this.respawnCrates();
+
+    if (this.cameraManager) {
+      this.cameraManager.resetCamera(this.player);
+    } else {
+      this.cameraManager = new CameraManager(this, this.player);
+    }
+
+    this.startGame();
+    this.restartTriggered = false;
+    this.game.events.emit("levelRestarted");
+    console.log(`Level ${levelKey} restarted.`);
   }
 
   /**
@@ -199,7 +292,7 @@ export class Game extends Scene {
   private handleCollisionStart = ({
     pairs,
   }: Phaser.Physics.Matter.Events.CollisionStartEvent): void => {
-    if (!this.physicsEnabled) return; // Ignore collisions before game starts
+    if (!this.physicsEnabled) return;
 
     for (const { bodyA, bodyB } of pairs) {
       if (this.checkFallSensorCollision(bodyA, bodyB)) return;
@@ -217,7 +310,6 @@ export class Game extends Scene {
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
-    // Check if player hit a fall sensor (death zone)
     if (
       (isFallSensorBody(bodyA) && isPlayerBody(bodyB)) ||
       (isFallSensorBody(bodyB) && isPlayerBody(bodyA))
@@ -226,7 +318,6 @@ export class Game extends Scene {
       return true;
     }
 
-    // Check if a crate hit a fall sensor (should be destroyed)
     const isCrateA =
       bodyA.label &&
       (bodyA.label === "crate-small" || bodyA.label === "crate-big");
@@ -238,17 +329,14 @@ export class Game extends Scene {
       (isFallSensorBody(bodyA) && isCrateB) ||
       (isFallSensorBody(bodyB) && isCrateA)
     ) {
-      // Get the crate game object
       const crateBody = isCrateA ? bodyA : bodyB;
       if (crateBody && crateBody.gameObject) {
-        // Remove the crate from the world
         const gameObject = crateBody.gameObject;
         if (gameObject) {
           gameObject.destroy();
         }
 
-        // Remove from the crates array
-        const crates = this.levelGenerator.getCrates();
+        const crates = this.crates;
         if (crates) {
           const crateIndex = crates.findIndex(
             (crate) => crate === crateBody.gameObject
@@ -345,14 +433,12 @@ export class Game extends Scene {
    * @param body - The Matter body of the coin to collect.
    */
   private collectCoin(body: MatterJS.BodyType): void {
-    const coinSprite = body.gameObject as Coin;
-    if (coinSprite) {
-      this.levelGenerator.removeCoin(coinSprite); // Remove from generator's list
-      coinSprite.collect(); // Play animation and schedule destroy
-      setCoins(getCoins() + 1);
-
-      // Prevent landing animation if coin is collected during landing
+    const coin = body.gameObject as Coin;
+    if (coin && coin.active && coin.body) {
+      coin.collect();
       if (this.player instanceof Player) {
+        const currentScore = this.registry.get("score") || 0;
+        this.registry.set("score", currentScore + 1);
         this.player.setRecentCoinCollection();
       }
     }
@@ -366,28 +452,25 @@ export class Game extends Scene {
 
     if (!this.physicsEnabled) return;
 
-    // Update main game elements
     this.player.update();
 
     this.enemies.forEach((enemy) => enemy.update());
 
-    // --- Culling Logic ---
     const cam = this.cameras.main;
     const cullBounds = new Geom.Rectangle(
-      cam.worldView.x - 100, // Add buffer
+      cam.worldView.x - 100,
       cam.worldView.y - 100,
       cam.worldView.width + 200,
       cam.worldView.height + 200
     );
 
-    // Initialize culling counters
     let culledCoins = 0;
     let culledEnemies = 0;
 
-    this.levelGenerator.getCoins().forEach((coin: Coin) => {
-      const visible = Geom.Rectangle.Overlaps(cullBounds, coin.getBounds());
-      coin.setVisible(visible);
-      coin.setActive(visible); // Also disable updates if not visible
+    this.crates.forEach((crate) => {
+      const visible = Geom.Rectangle.Overlaps(cullBounds, crate.getBounds());
+      crate.setVisible(visible);
+      crate.setActive(visible);
       if (!visible) {
         culledCoins++;
       }
@@ -396,18 +479,17 @@ export class Game extends Scene {
     this.enemies.forEach((enemy) => {
       const visible = Geom.Rectangle.Overlaps(cullBounds, enemy.getBounds());
       enemy.setVisible(visible);
-      enemy.setActive(visible); // Disable physics/updates
+      enemy.setActive(visible);
       if (!visible) {
         culledEnemies++;
       }
     });
 
-    // Reset culled barrel count each frame
     this.culledBarrelsCount = 0;
     this.barrels.forEach((barrel) => {
       const visible = Geom.Rectangle.Overlaps(cullBounds, barrel.getBounds());
       barrel.setVisible(visible);
-      barrel.setActive(visible); // Disable physics/updates
+      barrel.setActive(visible);
       if (!visible) {
         this.culledBarrelsCount++;
       } else {
@@ -420,12 +502,12 @@ export class Game extends Scene {
         x: Math.round(this.player.x),
         y: Math.round(this.player.y),
       },
-      Platforms: this.levelGenerator.getPlatforms().length,
+      Platforms: this.platforms.length,
       Enemies: this.enemies.length,
       CulledEnemies: culledEnemies,
-      Coins: this.levelGenerator.getCoins().length,
+      Coins: this.crates.length,
       CulledCoins: culledCoins,
-      Crates: this.levelGenerator.getCrates().length,
+      Crates: this.crates.length,
       Barrels: this.totalBarrelsGenerated,
       CulledBarrels: this.culledBarrelsCount,
     };
@@ -441,19 +523,20 @@ export class Game extends Scene {
 
     this.player.kill();
     this.physicsEnabled = false;
+    this.matter.world.enabled = false;
     this.enemies.forEach((enemy) => enemy.handleGameOver());
 
     this.cameraManager.handleZoomIn();
 
-    // Restart immediately without delay
     this.gameState = GAME_STATE.GAME_OVER;
-    this.restartLevel();
+    this.time.delayedCall(1500, () => {
+      this.restartLevel();
+    });
   }
 
   private createMobileControls() {
     const yPos = 800;
 
-    // Left Button
     this.createMobileButton(
       100,
       yPos,
@@ -464,7 +547,6 @@ export class Game extends Scene {
       }
     );
 
-    // Right Button
     this.createMobileButton(
       300,
       yPos,
@@ -475,14 +557,13 @@ export class Game extends Scene {
       }
     );
 
-    // Jump Button (Bottom Right)
     this.createMobileButton(
       1100,
       yPos,
       () => (this.player.upIsDown = true),
       () => (this.player.upIsDown = false),
       {
-        angle: 90, // Point up
+        angle: 90,
       }
     );
   }
@@ -515,70 +596,148 @@ export class Game extends Scene {
    * Triggers level complete state, displays UI, and disables physics.
    */
   private handleLevelComplete(): void {
-    if (this.gameState !== GAME_STATE.PLAYING) return;
-
     this.gameState = GAME_STATE.LEVEL_COMPLETE;
-    this.player.finishLevel();
-    addLevel(1);
-    this.enemies.forEach((enemy) => enemy.handleGameOver());
-    this.cameraManager.handleZoomIn();
-
-    // Wait for player to complete landing animation before showing continue button
-    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      this.showContinueButton();
-    });
+    this.matter.world.enabled = false;
+    this.physicsEnabled = false;
+    if (this.player) {
+      this.player.finishLevel();
+    }
+    const currentLevelKey = this.registry.get("currentLevelKey") || "level-1";
+    this.showContinueButton(currentLevelKey, true);
+    console.log("Level Complete!");
   }
 
   /**
    * Shows the continue button after level completion
    */
-  private showContinueButton(): void {
-    console.log("level complete");
+  private showContinueButton(
+    levelKeyForRestart: string,
+    isLevelVictory: boolean
+  ): void {
+    this.scene
+      .get(SCENES.DEBUG_UI)
+      ?.events.emit("showContinue", { levelKeyForRestart, isLevelVictory });
 
-    const gameScene = this.scene.get(SCENES.DEBUG_UI);
-    (gameScene as UIScene).showContinueButton();
+    if (!this.overlayButton) {
+      const buttonText = isLevelVictory
+        ? "Level Complete! Click to Continue"
+        : "Game Over! Click to Restart";
+      this.overlayButton = this.add
+        .image(
+          this.cameras.main.centerX,
+          this.cameras.main.centerY,
+          TEXTURE_ATLAS,
+          "buttonFrame"
+        )
+        .setInteractive()
+        .setDepth(10000)
+        .on("pointerup", () => {
+          this.restartLevel(levelKeyForRestart);
+        });
+      this.add
+        .text(
+          this.cameras.main.centerX,
+          this.cameras.main.centerY,
+          buttonText,
+          { fontSize: "32px", color: "#fff", backgroundColor: "#000" }
+        )
+        .setOrigin(0.5)
+        .setDepth(10001);
+    }
   }
 
   /**
    * Restarts the current level or advances to the next level.
    */
-  public restartLevel(): void {
+  public restartLevel(levelKey?: string): void {
     if (this.restartTriggered) return;
     this.restartTriggered = true;
 
-    // Clean up UI if any exists
+    this.gameState = GAME_STATE.WAITING_TO_START;
+    this.matter.world.enabled = false;
+    this.physicsEnabled = false;
+
     if (this.overlayButton) {
-      this.overlayButton.off("pointerup");
       this.overlayButton.destroy();
       this.overlayButton = undefined;
+      this.children.list
+        .filter(
+          (c) =>
+            (c.type === "Text" &&
+              (c as Phaser.GameObjects.Text).text.includes(
+                "Click to Continue"
+              )) ||
+            (c as Phaser.GameObjects.Text).text.includes("Click to Restart")
+        )
+        .forEach((t) => t.destroy());
     }
 
-    // Handle level complete case
-    if (this.gameState === GAME_STATE.LEVEL_COMPLETE) {
-      addLevel(); // Increment level counter
-      this.scene.restart({ keepPhysicsDebug: this.physicsDebugActive });
-      return;
+    this.destroyCurrentEntities(false);
+
+    const keyToLoad =
+      levelKey || this.registry.get("currentLevelKey") || "level1";
+    this.registry.set("currentLevelKey", keyToLoad);
+    this.registry.set("score", 0);
+
+    this.loadLevelEntities(keyToLoad);
+
+    if (this.player) {
+      this.player.setVelocity(0, 0);
+    } else {
+      console.error(
+        "Player not available after loadLevelEntities during restartLevel. Creating fallback."
+      );
+      this.player = new Player(this, 100, 100);
     }
 
-    // Handle game over case
-    if (this.gameState === GAME_STATE.GAME_OVER) {
-      // Manually respawn all crates that were destroyed
-      this.respawnCrates();
+    this.respawnCrates();
+
+    if (this.cameraManager) {
+      this.cameraManager.resetCamera(this.player);
+    } else {
+      this.cameraManager = new CameraManager(this, this.player);
     }
 
-    // Restart the scene, preserving debug state
-    this.scene.restart({ keepPhysicsDebug: this.physicsDebugActive });
+    this.startGame();
+    this.restartTriggered = false;
+    this.game.events.emit("levelRestarted");
+    console.log(`Level ${keyToLoad} restarted.`);
   }
 
-  /**
-   * Recreates all crates at their original positions
-   */
   private respawnCrates(): void {
-    // Use the LevelGenerator to respawn crates at their original positions
-    if (this.levelGenerator && this.originalCratePositions.length > 0) {
-      console.log(`Respawning ${this.originalCratePositions.length} crates`);
-      this.levelGenerator.respawnCrates(this.originalCratePositions);
+    this.crates.forEach((crate) => crate.destroy());
+    this.crates = [];
+
+    this.originalCratePositions.forEach((pos) => {
+      const crateType = pos.type as "small" | "big";
+      this.crates.push(new Crate(this, pos.x, pos.y, crateType));
+    });
+  }
+
+  private destroyCurrentEntities(isFullShutdown: boolean): void {
+    if (this.player && isFullShutdown) {
+      this.player.destroy();
     }
+
+    this.platforms.forEach((p) => p.destroy());
+    this.platforms = [];
+    this.enemies.forEach((e) => e.destroy());
+    this.enemies = [];
+    this.crates.forEach((c) => c.destroy());
+    this.crates = [];
+    this.barrels.forEach((b) => b.destroy());
+    this.barrels = [];
+    this.allCoinsInLevel.forEach((c) => c.destroy());
+    this.allCoinsInLevel = [];
+
+    this.children.list
+      .filter((child) => child instanceof Finish)
+      .forEach((child) => child.destroy());
+
+    resetCoins();
+    resetTotalCoinsInLevel();
+
+    this.originalCratePositions = [];
   }
 
   /**
@@ -592,7 +751,6 @@ export class Game extends Scene {
     bodyA: MatterJS.BodyType,
     bodyB: MatterJS.BodyType
   ): boolean {
-    // Reverted to original logic to fix unrelated linter error
     let playerBody: MatterJS.BodyType | null = null;
     let barrelBody: MatterJS.BodyType | null = null;
 
@@ -605,7 +763,6 @@ export class Game extends Scene {
     }
 
     if (playerBody && barrelBody) {
-      // Get the corresponding Barrel sprite
       const barrelSprite = barrelBody.gameObject as Barrel;
       if (
         barrelSprite &&
@@ -614,22 +771,20 @@ export class Game extends Scene {
       ) {
         console.log("[Game] Player collided with barrel", barrelSprite);
         this.player.enterBarrel(barrelSprite);
-        return true; // Collision handled
+        return true;
       }
     }
 
-    return false; // No relevant collision
+    return false;
   }
 
   /**
    * Sets up keyboard keys to handle game restart
    */
   private setupRestartKeys(): void {
-    // Clean up previous keys if any
     this.restartKeys.forEach((key) => key.removeAllListeners());
     this.restartKeys = [];
 
-    // Add Space and Enter keys for restart
     const spaceKey = this.input.keyboard!.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE
     );
@@ -640,7 +795,6 @@ export class Game extends Scene {
     spaceKey.on("down", () => this.restartLevel());
     enterKey.on("down", () => this.restartLevel());
 
-    // Store keys for cleanup
     this.restartKeys.push(spaceKey, enterKey);
   }
 
@@ -648,44 +802,61 @@ export class Game extends Scene {
    * Called when the scene shuts down
    */
   shutdown(): void {
-    // Clean up event listeners
-    if (this.restartKeys) {
-      this.restartKeys.forEach((key) => {
-        if (key) key.removeAllListeners();
-      });
-      this.restartKeys = [];
+    console.log("Game scene shutting down...");
+    this.game.events.off("togglePhysicsDebug", this.togglePhysicsDebug, this);
+
+    if (this.parallaxManager) {
+      this.parallaxManager.destroy();
     }
 
-    if (this.game && this.game.events) {
-      this.game.events.off("togglePhysicsDebug", this.togglePhysicsDebug, this);
+    this.destroyCurrentEntities(true);
+
+    if (this.player && this.player.scene) {
+      this.player.destroy();
     }
 
-    // Clean up Matter.js event listeners
-    if (this.matter && this.matter.world) {
-      this.matter.world.off("collisionstart", this.handleCollisionStart);
+    this.restartKeys.forEach((key) => key.destroy());
+    this.restartKeys = [];
+
+    if (this.debugGraphics) {
+      this.debugGraphics.destroy();
     }
 
-    // Clean up any other scene-specific resources
     if (this.overlayButton) {
-      this.overlayButton.off("pointerup");
       this.overlayButton.destroy();
       this.overlayButton = undefined;
     }
+    this.children.list
+      .filter(
+        (c) =>
+          (c.type === "Text" &&
+            (c as Phaser.GameObjects.Text).text.includes(
+              "Click to Continue"
+            )) ||
+          (c as Phaser.GameObjects.Text).text.includes("Click to Restart")
+      )
+      .forEach((t) => t.destroy());
+
+    if (this.matter.world) {
+      this.matter.world.off("collisionstart", this.handleCollisionStart);
+    }
+
+    this.registry.remove("currentLevelKey");
+    this.registry.remove("score");
+
+    this.gameState = GAME_STATE.WAITING_TO_START;
+    this.physicsEnabled = false;
+    this.restartTriggered = false;
+
+    console.log("Game scene shutdown complete.");
   }
 
   /**
    * Scene lifecycle method called when the scene starts
    * @param data - Any data passed from another scene
    */
-  init(data: any): void {
-    // If restarting after game over and we have original crate positions stored,
-    // they will be used in generateLevelEntities when the level is created
-
-    // Initialize physics debug state from passed data
-    if (data && data.keepPhysicsDebug !== undefined) {
-      this.initialPhysicsDebugState = data.keepPhysicsDebug;
-    } else {
-      this.initialPhysicsDebugState = false;
-    }
+  init(data: { physicsDebug?: boolean; levelKey?: string }): void {
+    this.initialPhysicsDebugState = !!data.physicsDebug;
+    this.registry.set("currentLevelKey", data.levelKey || "level-1");
   }
 }

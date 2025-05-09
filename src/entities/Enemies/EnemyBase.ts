@@ -1,16 +1,9 @@
-// EnemyBase.ts
 import { isGroundBody } from "../../lib/helpers/isGroundBody";
 import { PHYSICS, TEXTURE_ATLAS } from "../../lib/constants";
 
 export interface EnemyInterface {
   x: number;
   y: number;
-  type: "enemy-large" | "enemy-small";
-}
-
-export interface EnemyConfig {
-  shapeKey: string;
-  animKey: string;
   scale?: number;
   type: "enemy-large" | "enemy-small";
 }
@@ -23,6 +16,8 @@ export abstract class EnemyBase
   private direction: 1 | -1 = 1;
   private platformBounds?: { left: number; right: number };
   public type: "enemy-large" | "enemy-small";
+  public shapeKey: string;
+  public animKey: string;
 
   // Shared cache by ground‐body ID
   private static platformCache = new Map<
@@ -34,13 +29,18 @@ export abstract class EnemyBase
     scene: Phaser.Scene,
     x: number,
     y: number,
-    { shapeKey, animKey, scale = 1, type }: EnemyConfig
+    shapeKey: string,
+    animKey: string,
+    scale = 1,
+    type: "enemy-large" | "enemy-small"
   ) {
     const shapes = scene.cache.json.get(PHYSICS);
     super(scene.matter.world, x, y, TEXTURE_ATLAS, animKey, {
       shape: shapes[shapeKey],
     });
 
+    this.shapeKey = shapeKey;
+    this.animKey = animKey;
     this.speed = Phaser.Math.Between(1, 1.3);
     if (scale !== 1) this.setScale(scale);
     this.type = type;

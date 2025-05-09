@@ -7,10 +7,8 @@ import {
 } from "../../lib/constants";
 import { BARREL_ANIMATION_KEYS, BARREL_ANIMATIONS } from "./barrelAnimations";
 export interface BarrelInterface {
-  scene: Phaser.Scene;
   x: number;
   y: number;
-  type: string;
 }
 export class Barrel
   extends Phaser.Physics.Matter.Sprite

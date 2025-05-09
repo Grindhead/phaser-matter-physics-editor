@@ -1,47 +1,19 @@
-import Phaser from "phaser";
-import { Platform } from "../../entities/Platforms/Platform";
+import { Platform, PlatformInterface } from "../../entities/Platforms/Platform";
 import { EnemyLarge } from "../../entities/Enemies/EnemyLarge";
 import { EnemySmall } from "../../entities/Enemies/EnemySmall";
-import { Barrel } from "../../entities/Barrel/Barrel";
-import { Finish } from "../../entities/Finish/Finish";
-import { Crate } from "../../entities/Crate/Crate";
-
-export interface SerializedPlatform {
-  id: string; // Keep ID if needed for future reference
-  x: number;
-  y: number;
-  segmentCount: number;
-  isVertical: boolean;
-}
-
-export interface SerializedEnemy {
-  x: number;
-  y: number;
-  type: "enemy-large" | "enemy-small"; // Specify allowed enemy types
-}
-
-export interface SerializedCrate {
-  x: number;
-  y: number;
-  type: "small" | "big"; // Specify allowed crate types
-}
-
-export interface SerializedBarrel {
-  x: number;
-  y: number;
-}
-
-export interface SerializedFinishLine {
-  x: number;
-  y: number;
-}
+import { Barrel, BarrelInterface } from "../../entities/Barrel/Barrel";
+import { Finish, FinishLineInterface } from "../../entities/Finish/Finish";
+import { Crate, CrateInterface } from "../../entities/Crate/Crate";
+import { Player, PlayerInterface } from "../../entities/Player/Player";
+import { EnemyInterface } from "../../entities/Enemies/EnemyBase";
 
 export interface SerializedLevel {
-  platforms?: SerializedPlatform[];
-  enemies?: SerializedEnemy[];
-  crates?: SerializedCrate[];
-  barrels?: SerializedBarrel[];
-  finishLine?: SerializedFinishLine;
+  platforms?: PlatformInterface[];
+  enemies?: EnemyInterface[];
+  crates?: CrateInterface[];
+  barrels?: BarrelInterface[];
+  finishLine?: FinishLineInterface;
+  player?: PlayerInterface;
 }
 
 // Define a type for the entities that can be placed and saved
@@ -52,14 +24,9 @@ type PlaceableEntity =
   | EnemySmall
   | Barrel
   | Finish
-  | Crate;
+  | Crate
+  | Player;
 export class LevelDataManager {
-  private scene: Phaser.Scene;
-
-  constructor(scene: Phaser.Scene) {
-    this.scene = scene;
-  }
-
   // Updated saveLevel to accept layer lists
   saveLevel(
     platformList: PlaceableEntity[],
@@ -72,6 +39,7 @@ export class LevelDataManager {
       crates: [],
       barrels: [],
       finishLine: undefined, // Use undefined initially
+      player: undefined, // Added player
     };
 
     // Combine lists and process entities
@@ -124,6 +92,15 @@ export class LevelDataManager {
           } else {
             console.warn(
               "Multiple finish lines detected, only saving the first one."
+            );
+          }
+          break;
+        case "player": // Added case for player
+          if (!levelData.player) {
+            levelData.player = { x: x, y: y };
+          } else {
+            console.warn(
+              "Multiple players detected, only saving the first one."
             );
           }
           break;

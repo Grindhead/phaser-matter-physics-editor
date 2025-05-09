@@ -3,56 +3,19 @@ import { CrateInterface } from "../../entities/Crate/Crate";
 import { EnemyInterface } from "../../entities/Enemies/EnemyBase";
 import { FinishLineInterface } from "../../entities/Finish/Finish";
 import { PlatformInterface } from "../../entities/Platforms/Platform";
+import { PlayerInterface } from "../../entities/Player/Player";
 
 // Serialized types without circular references like 'scene'
-export interface SerializedPlatform {
-  id: string;
-  x: number;
-  y: number;
-  segmentCount: number;
-  isVertical: boolean;
-}
-
-export interface SerializedEnemy {
-  x: number;
-  y: number;
-  type: "enemy-large" | "enemy-small";
-}
-
-export interface SerializedCrate {
-  x: number;
-  y: number;
-  type: "small" | "big";
-}
-
-export interface SerializedBarrel {
-  x: number;
-  y: number;
-}
-
-export interface SerializedFinishLine {
-  x: number;
-  y: number;
-}
 
 // Types for level data
 export interface LevelData {
-  platforms: SerializedPlatform[];
-  enemies: SerializedEnemy[];
-  barrels: SerializedBarrel[];
-  crates: SerializedCrate[];
-  finishLine: SerializedFinishLine | null;
+  platforms: PlatformInterface[];
+  enemies: EnemyInterface[];
+  barrels: BarrelInterface[];
+  crates: CrateInterface[];
+  finishLine: FinishLineInterface | null;
+  player?: PlayerInterface | null; // Added player property
 }
-
-// Serializable version of LevelData
-export interface SerializedLevelData {
-  platforms: SerializedPlatform[];
-  enemies: SerializedEnemy[];
-  barrels: SerializedBarrel[];
-  crates: SerializedCrate[];
-  finishLine: SerializedFinishLine | null;
-}
-
 export class LevelDataManager {
   /**
    * Create a new empty level data object
@@ -64,6 +27,7 @@ export class LevelDataManager {
       barrels: [],
       crates: [],
       finishLine: null,
+      player: null, // Initialize player as null
     };
   }
 
@@ -72,7 +36,7 @@ export class LevelDataManager {
    */
   static serialize(levelData: LevelData): string {
     // Convert level data to serializable format
-    const serializedData: SerializedLevelData = {
+    const serializedData: LevelData = {
       platforms: levelData.platforms.map((p) => ({
         id: p.id,
         x: p.x,
@@ -100,6 +64,12 @@ export class LevelDataManager {
             y: levelData.finishLine.y,
           }
         : null,
+      player: levelData.player // Add player to serialized data
+        ? {
+            x: levelData.player.x,
+            y: levelData.player.y,
+          }
+        : null,
     };
 
     return JSON.stringify(serializedData, null, 2);
@@ -110,11 +80,7 @@ export class LevelDataManager {
    */
   static deserialize(jsonString: string): LevelData {
     try {
-      const data = JSON.parse(jsonString) as SerializedLevelData;
-
-      // The actual PlatformInterface, CrateInterface, etc. will be reconstructed
-      // with the scene property when the entities are loaded in the editor.
-      // Here we're just returning the data structures with the needed properties.
+      const data = JSON.parse(jsonString) as LevelData;
 
       return {
         platforms: data.platforms || [],
@@ -122,6 +88,7 @@ export class LevelDataManager {
         barrels: data.barrels || [],
         crates: data.crates || [],
         finishLine: data.finishLine || null,
+        player: data.player || null, // Add player to deserialized data
       } as unknown as LevelData; // Type assertion since scene will be added later
     } catch (error) {
       console.error("Error deserializing level data:", error);

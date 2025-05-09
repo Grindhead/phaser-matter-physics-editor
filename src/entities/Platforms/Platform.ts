@@ -1,13 +1,7 @@
-import {
-  PHYSICS,
-  PHYSICS_ENTITIES,
-  TILE_HEIGHT,
-  TILE_WIDTH,
-} from "../../lib/constants";
+import { PHYSICS, PHYSICS_ENTITIES } from "../../lib/constants";
 import { buildPlatform } from "../../lib/level-generation/platformBuilder";
 
 export interface PlatformInterface {
-  scene: Phaser.Scene;
   x: number;
   y: number;
   segmentCount: number;

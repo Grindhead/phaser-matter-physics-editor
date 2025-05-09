@@ -12,7 +12,15 @@ const BARREL_LAUNCH_VELOCITY = 14;
 const EDGE_DETECTION_DISTANCE = 15; // Distance from edge to trigger wobble
 const VERTICAL_COLLISION_NORMAL_THRESHOLD = 0.8; // Min Y normal component to count as top/bottom collision
 
-export class Player extends Phaser.Physics.Matter.Sprite {
+export interface PlayerInterface {
+  x: number;
+  y: number;
+}
+
+export class Player
+  extends Phaser.Physics.Matter.Sprite
+  implements PlayerInterface
+{
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<string, Phaser.Input.Keyboard.Key>;
   private isGrounded = false;

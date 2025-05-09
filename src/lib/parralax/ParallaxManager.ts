@@ -116,4 +116,23 @@ export class ParallaxManager {
     this.middleLayer.update();
     this.foregroundLayer.update();
   }
+
+  /**
+   * Destroys all parallax layers and cleans up references.
+   */
+  public destroy(): void {
+    if (this.backgroundLayer) {
+      this.backgroundLayer.destroy();
+      // this.backgroundLayer = null; // Setting to null is optional, depends on GC and reuse patterns
+    }
+    if (this.middleLayer) {
+      this.middleLayer.destroy();
+      // this.middleLayer = null;
+    }
+    if (this.foregroundLayer) {
+      this.foregroundLayer.destroy();
+      // this.foregroundLayer = null;
+    }
+    console.log("[ParallaxManager] Parallax layers destroyed.");
+  }
 }

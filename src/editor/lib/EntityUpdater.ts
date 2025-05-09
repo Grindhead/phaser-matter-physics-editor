@@ -5,16 +5,16 @@ import { EditorEventBus } from "./EditorEventBus";
 import { EditorEvents } from "./EditorEventTypes";
 import {
   LevelData,
-  SerializedPlatform,
-  SerializedEnemy,
-  SerializedBarrel,
-  SerializedCrate,
-  SerializedFinishLine,
+  // PlatformInterface is likely already imported or handled, verify if still needed from here
+  // Remove other interfaces from here as they are not exported by LevelData.ts
 } from "./LevelData";
+
+// Restore direct imports for entity interfaces
 import { EnemyInterface } from "../../entities/Enemies/EnemyBase";
 import { BarrelInterface } from "../../entities/Barrel/Barrel";
 import { CrateInterface } from "../../entities/Crate/Crate";
 import { FinishLineInterface } from "../../entities/Finish/Finish";
+import { PlayerInterface } from "../../entities/Player/Player"; // Added for player type safety
 
 /**
  * Responsible for updating entity properties in the editor
@@ -243,9 +243,23 @@ export class EntityUpdater {
         break;
       case "player":
         // Player position is handled separately in level data
-        console.debug(
-          "Player position updated in editor (not saved in level data)"
-        );
+        // Update: Actually save player data to levelData
+        if (typeof entity.x === "number" && typeof entity.y === "number") {
+          this.levelData.player = {
+            x: entity.x,
+            y: entity.y,
+            // scene and other non-serializable properties are intentionally omitted
+            // Add other PlayerInterface properties here if they are meant to be saved
+            // and are available on 'entity' or 'entity.data'
+          } as PlayerInterface; // Explicit cast if this.levelData.player allows PlayerInterface | null
+        } else {
+          // If player entity exists but position is somehow invalid, set to null.
+          this.levelData.player = null;
+          console.warn(
+            "Player entity found but position data is invalid. Player will be null in save data.",
+            entity
+          );
+        }
         break;
       default:
         console.warn(
@@ -278,7 +292,7 @@ export class EntityUpdater {
     );
 
     // Create the object matching the *serialized* format
-    const serializedData: SerializedPlatform = {
+    const serializedData: PlatformInterface = {
       id: platformId,
       x: entity.x,
       y: entity.y,
@@ -320,7 +334,7 @@ export class EntityUpdater {
     );
 
     // Create the serialized data object
-    const serializedData: SerializedEnemy = {
+    const serializedData: EnemyInterface = {
       x: entity.x,
       y: entity.y,
       type: enemyType,
@@ -358,7 +372,7 @@ export class EntityUpdater {
     );
 
     // Create the serialized data object
-    const serializedData: SerializedBarrel = {
+    const serializedData: BarrelInterface = {
       x: entity.x,
       y: entity.y,
     };
@@ -390,7 +404,7 @@ export class EntityUpdater {
     }
 
     // Create the serialized data object - ID is not part of serialized format
-    const serializedData: SerializedFinishLine = {
+    const serializedData: FinishLineInterface = {
       x: entity.x,
       y: entity.y,
     };
@@ -421,11 +435,11 @@ export class EntityUpdater {
 
     // Find the crate index in the level data array using position
     const crateIndex = this.levelData.crates.findIndex(
-      (c) => c.x === entity.x && c.y === entity.y
+      (c) => c.x === entity.x && c.y === entity.y && c.type === crateType
     );
 
     // Create the serialized data object
-    const serializedData: SerializedCrate = {
+    const serializedData: CrateInterface = {
       x: entity.x,
       y: entity.y,
       type: crateType,

@@ -9,7 +9,6 @@ import {
 } from "./crateSmallAnimations";
 
 export interface CrateInterface {
-  scene: Phaser.Scene;
   x: number;
   y: number;
   type: "small" | "big";

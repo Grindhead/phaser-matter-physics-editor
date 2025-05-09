@@ -1,11 +1,5 @@
 import { Scene } from "phaser";
-import { PHYSICS, SCENES, TEXTURE_ATLAS } from "../lib/constants";
-import { createAnimations } from "../lib/helpers/createAnimations";
-import { PLAYER_ANIMATIONS } from "../entities/Player/playerAnimations";
-import { COIN_ANIMATIONS } from "../entities/Coin/coinAnimations";
-import { FINISH_ANIMATIONS } from "../entities/Finish/finishAnimations";
-import { FX_ANIMATIONS } from "../entities/fx-land/fxAnimations";
-import { BARREL_ANIMATIONS } from "../entities/Barrel/barrelAnimations";
+import { MAX_LEVELS, PHYSICS, SCENES, TEXTURE_ATLAS } from "../lib/constants";
 import { setupAnimations } from "../lib/level-generation/createAnimations";
 
 export class Preloader extends Scene {
@@ -62,6 +56,12 @@ export class Preloader extends Scene {
     this.load.setPath("assets");
     this.load.multiatlas(TEXTURE_ATLAS, "assets.json");
     this.load.json(PHYSICS, "physics.json");
+
+    for (let i = 1; i <= MAX_LEVELS; i++) {
+      const levelKey = `level-${i}`;
+      const levelPath = `../levels/${levelKey}.json`; // Path relative to 'assets'
+      this.load.json(levelKey, levelPath);
+    }
   }
 
   create() {

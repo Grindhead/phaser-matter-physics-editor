@@ -1,5 +1,3 @@
-console.log("%%%%%%% EntityManager.ts FILE LOADED - VERSION Y %%%%%%%");
-
 import { Scene } from "phaser";
 import { TILE_WIDTH, TILE_HEIGHT } from "../../lib/constants"; // Ensure constants are imported
 import { EditorEntity } from "../ui/Inspector";
@@ -43,7 +41,14 @@ export class EntityManager {
     this.eventBus.initialize(this.scene);
 
     // Create an empty level data structure
-    this.levelData = LevelDataManager.createEmpty();
+    this.levelData = {
+      platforms: [],
+      enemies: [],
+      crates: [],
+      barrels: [],
+      player: undefined,
+      finishLine: null,
+    };
 
     // Initialize specialized components
     this.creator = new EntityCreator(this.scene);
@@ -469,6 +474,9 @@ export class EntityManager {
         this.levelData.crates = this.levelData.crates.filter(
           (c) => !this.isEntityMatchingData(entity, c)
         );
+        break;
+      case "player":
+        this.levelData.player = null;
         break;
     }
   }

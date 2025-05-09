@@ -33,6 +33,8 @@ export const BARREL_LAUNCH_SPEED = 15;
 export const TILE_WIDTH = 24;
 export const TILE_HEIGHT = 24;
 
+export const MAX_LEVELS = 1;
+
 export const GAME_STATE = {
   WAITING_TO_START: "waiting_to_start",
   PLAYING: "playing",

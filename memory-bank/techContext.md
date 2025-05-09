@@ -2,16 +2,20 @@
 
 ## Technologies Used
 
-- **Game Engine:** Phaser (Target platform)
-- **Physics Engine:** Matter.js (Integrated with Phaser)
-- **Development Environment:** Windows 10, PowerShell 7
+_(List the primary technologies, frameworks, and libraries.)_
+
+## Development Setup
+
+_(Describe the development environment and setup process.)_
+
+## Technical Constraints
+
+_(Outline any technical limitations or constraints.)_
 
 ## Dependencies
 
-- (To be defined as the editor is built)
-- **Potentially:** A UI library for the editor interface, if Phaser's built-in elements are insufficient.
+_(List key external dependencies.)_
 
 ## Tool Usage Patterns
 
-- Using PowerShell for batch file operations.
-- **Node.js/pnpm:** Will be used to manage dependencies and run scripts (including the separate editor script).
+_(Describe how specific tools are used in the development workflow.)_

@@ -32,6 +32,7 @@
     - Improved serialization/deserialization with separate interfaces to avoid circular references.
     - Created `SerializedPlatform`, `SerializedEnemy`, etc. interfaces for JSON storage.
     - Properly handles non-serializable properties like `scene` during save/load.
+    - Player data (position) is now correctly saved as part of the level JSON and handled during deletion.
   - **Code Cleanup:**
     - Fixed unused variable warnings in EditorScene.ts
     - Properly handled event parameters in wheel and pointer events

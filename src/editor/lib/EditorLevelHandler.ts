@@ -1,4 +1,4 @@
-import { LevelData, LevelDataManager } from "./LevelData";
+import { LevelDataManager } from "./LevelData";
 import { EntityManager } from "./EntityManager";
 import { EditorEventBus } from "./EditorEventBus";
 import { EditorEvents } from "./EditorEventTypes";
@@ -116,25 +116,5 @@ export class EditorLevelHandler {
       console.error("Failed to load level:", error);
       alert("Failed to load level");
     }
-  }
-
-  /**
-   * Validates level data structure
-   * @param data The level data to validate
-   * @returns True if valid, false otherwise
-   */
-  private validateLevelData(data: any): boolean {
-    // Basic structure validation
-    if (!data) return false;
-
-    // Check required arrays
-    if (!Array.isArray(data.platforms)) return false;
-    if (!Array.isArray(data.enemies)) return false;
-    if (!Array.isArray(data.barrels)) return false;
-    if (!Array.isArray(data.crates)) return false;
-
-    // More detailed validation could be added here
-
-    return true;
   }
 }

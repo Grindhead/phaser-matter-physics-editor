@@ -40,9 +40,7 @@ export function createAnimations<T extends string>(
       if (isSingleFrame) {
         anims.create({
           key,
-          frames: [
-            { key: atlasKey, frame: `${config.prefix}.png` }, // Append .png for single frame
-          ],
+          frames: [{ key: atlasKey, frame: `${config.prefix}.png` }],
           repeat: 0,
         });
       } else {

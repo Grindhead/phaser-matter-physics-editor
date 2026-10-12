@@ -50,7 +50,12 @@ export class CameraManager {
     });
   }
 
+  /**
+   * Releases this manager's hold on the camera. The camera itself is owned by
+   * the scene's camera system, which destroys it on scene shutdown, so it is
+   * not destroyed a second time here.
+   */
   destroy(): void {
-    this.camera.destroy();
+    this.camera.stopFollow();
   }
 }

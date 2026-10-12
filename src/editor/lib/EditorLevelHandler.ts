@@ -89,8 +89,17 @@ export class EditorLevelHandler {
           const json = e.target?.result as string;
           if (!json) throw new Error("Failed to read file");
 
-          // Use LevelDataManager.deserialize for robust parsing and structure enforcement
-          const levelData = LevelDataManager.deserialize(json);
+          // Validate the whole file before touching the current level. A
+          // rejected file leaves existing entities and unsaved edits intact.
+          const result = LevelDataManager.parse(json);
+          if (!result.ok) {
+            console.error("Rejected level file:", result.error);
+            alert(
+              `Failed to load level: ${result.error}\nYour current level has not been changed.`
+            );
+            return;
+          }
+          const levelData = result.data;
 
           console.log(
             "EditorLevelHandler: File processed, about to emit LEVEL_LOADED with:",
@@ -101,7 +110,7 @@ export class EditorLevelHandler {
 
           console.log("Level loaded successfully");
         } catch (error) {
-          console.error("Failed to parse level data:", error);
+          console.error("Failed to load level data:", error);
           alert("Failed to load level: Invalid level data format");
         }
       };

@@ -57,6 +57,7 @@ export class Game extends Scene {
   private restartKeys: Phaser.Input.Keyboard.Key[] = [];
   private originalCratePositions: { x: number; y: number; type: string }[] = [];
   private allCoinsInLevel: Coin[] = [];
+  private isShutDown = true;
 
   constructor() {
     super(SCENES.GAME);
@@ -73,6 +74,8 @@ export class Game extends Scene {
     this.physicsDebugActive = this.initialPhysicsDebugState;
     this.debugGraphics.setVisible(this.initialPhysicsDebugState);
 
+    // Remove first so a restart can never stack a second global handler
+    this.game.events.off("togglePhysicsDebug", this.togglePhysicsDebug, this);
     this.game.events.on("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
     this.scene.launch(SCENES.UI_SCENE);
@@ -177,6 +180,7 @@ export class Game extends Scene {
    * Toggles the Matter.js debug rendering graphics on or off.
    */
   private togglePhysicsDebug(): void {
+    if (!this.debugGraphics || !this.debugGraphics.scene) return;
     this.physicsDebugActive = !this.physicsDebugActive;
     this.matter.world.drawDebug = this.physicsDebugActive;
     this.debugGraphics.setVisible(this.physicsDebugActive);
@@ -611,9 +615,17 @@ export class Game extends Scene {
   }
 
   /**
-   * Called when the scene shuts down
+   * Called from Phaser.Scenes.Events.SHUTDOWN (stop/restart) or DESTROY.
+   * Phaser does not call a user-defined shutdown() itself, so init() registers
+   * this. It is idempotent: a second call in the same lifecycle is a no-op.
    */
   shutdown(): void {
+    if (this.isShutDown) return;
+    this.isShutDown = true;
+
+    this.events.off(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
+    this.events.off(Phaser.Scenes.Events.DESTROY, this.shutdown, this);
+
     console.log("Game scene shutting down...");
     this.game.events.off("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
@@ -631,6 +643,9 @@ export class Game extends Scene {
     this.restartKeys = [];
 
     if (this.debugGraphics) {
+      if (this.matter.world?.debugGraphic === this.debugGraphics) {
+        this.matter.world.drawDebug = false;
+      }
       this.debugGraphics.destroy();
     }
 
@@ -639,7 +654,12 @@ export class Game extends Scene {
       this.overlayButton = undefined;
     }
 
-    this.cameraManager!.destroy();
+    // CameraManager wraps the scene's main camera, which Phaser's own
+    // CameraManager destroys on SHUTDOWN; only stop following here.
+    if (this.cameraManager) {
+      this.cameraManager.destroy();
+      this.cameraManager = null;
+    }
 
     if (this.matter.world) {
       this.matter.world.off("collisionstart", this.handleCollisionStart);
@@ -660,6 +680,14 @@ export class Game extends Scene {
    * @param data - Any data passed from another scene
    */
   init(): void {
+    // Register cleanup once per start. Phaser emits SHUTDOWN on stop/restart
+    // (and DESTROY on removal) but never calls a scene's shutdown() method.
+    this.isShutDown = false;
+    this.events.off(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
+    this.events.off(Phaser.Scenes.Events.DESTROY, this.shutdown, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
+    this.events.once(Phaser.Scenes.Events.DESTROY, this.shutdown, this);
+
     this.restartTriggered = false;
     this.parallaxManager = new ParallaxManager(this);
     this.setupWorldBounds();

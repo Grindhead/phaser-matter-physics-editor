@@ -56,3 +56,12 @@ This will open the editor interface in your browser.
 - **Save Level:** Click the "Save" button in the Toolbar. You will be prompted to enter a filename (e.g., `level1.json`). The level data will be downloaded as a JSON file.
 - **Load Level:** Click the "Load" button in the Toolbar. Select a previously saved level JSON file.
 - **Clear Level:** Click the "Clear" button in the Toolbar to remove all entities from the canvas.
+
+
+## Dashboard task verification
+
+Invalid files could replace the current level, duplicate/removed event subscriptions lost commands, and inspector updates did not persist. Files now validate before load, commands use one owned emitter, orientation and positions persist, and gameplay cleanup runs on Phaser shutdown.
+
+Five behavior regressions, game/editor production builds, real Chromium/Firefox editor workflows and ten actual Phaser restarts passed. Baseline TypeScript comparison: 26 existing errors versus 25 after, no new diagnostics.
+
+Full typecheck remains blocked by existing missing/unused source declarations. Editor changes affect saved-level loading, placement, inspector and scene restart.

@@ -1,3 +1,4 @@
+import { EditorEventBus } from "../../lib/EditorEventBus";
 import { Scene } from "phaser";
 import { EntityButton } from "./types";
 import { EntityFactory } from "./EntityFactory";
@@ -351,12 +352,9 @@ export class PaletteButton {
 
       // Tell the editor to place the entity at the final position
       // by emitting an event that EditorScene can listen for
-      this.scene.events.emit("PLACE_ENTITY", {
-        type: this.entity.type,
-        x: finalX,
-        y: finalY,
-        config: configCopy,
-      });
+      const editorScene = this.scene.scene.get("EditorScene");
+      const world = editorScene.cameras.main.getWorldPoint(finalX, finalY);
+      EditorEventBus.getInstance().placeEntity(this.entity.type, world.x, world.y, configCopy);
     }
   }
 

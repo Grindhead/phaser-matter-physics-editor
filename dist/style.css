@@ -28,6 +28,11 @@ body {
   z-index: 9999;
 }
 
+#editor-container {
+  width: 100%;
+  height: 100vh;
+}
+
 /* More specific media queries with width/height conditions */
 @media screen and (orientation: portrait) {
   #orientation-overlay {

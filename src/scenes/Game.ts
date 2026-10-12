@@ -1,4 +1,4 @@
-import { Scene, Geom } from "phaser";
+import { Scene, Geom, Scenes } from "phaser";
 import {
   GAME_STATE,
   SCENES,
@@ -38,6 +38,7 @@ import { addLevel, getLevel } from "../lib/helpers/levelManager";
  * Main gameplay scene: responsible for setting up world entities, collisions, UI, and camera.
  */
 export class Game extends Scene {
+  private cleanupComplete = true;
   private player: Player;
   private overlayButton?: Phaser.GameObjects.Image;
   private restartTriggered = false;
@@ -614,6 +615,8 @@ export class Game extends Scene {
    * Called when the scene shuts down
    */
   shutdown(): void {
+    if (this.cleanupComplete) return;
+    this.cleanupComplete = true;
     console.log("Game scene shutting down...");
     this.game.events.off("togglePhysicsDebug", this.togglePhysicsDebug, this);
 
@@ -639,7 +642,7 @@ export class Game extends Scene {
       this.overlayButton = undefined;
     }
 
-    this.cameraManager!.destroy();
+    this.cameraManager?.destroy();
 
     if (this.matter.world) {
       this.matter.world.off("collisionstart", this.handleCollisionStart);
@@ -660,6 +663,11 @@ export class Game extends Scene {
    * @param data - Any data passed from another scene
    */
   init(): void {
+    this.cleanupComplete = false;
+    this.events.off(Scenes.Events.SHUTDOWN, this.shutdown, this);
+    this.events.off(Scenes.Events.DESTROY, this.shutdown, this);
+    this.events.once(Scenes.Events.SHUTDOWN, this.shutdown, this);
+    this.events.once(Scenes.Events.DESTROY, this.shutdown, this);
     this.restartTriggered = false;
     this.parallaxManager = new ParallaxManager(this);
     this.setupWorldBounds();

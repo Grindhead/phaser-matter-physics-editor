@@ -56,6 +56,17 @@ export class EntityUpdater {
       return;
     }
 
+    if (property === "x" || property === "y") {
+      if (typeof value !== "number" || !Number.isFinite(value)) return;
+      const oldValue = entity[property];
+      if (oldValue === value) return;
+      this.updateEntityPosition(entity, property === "x" ? value : entity.x, property === "y" ? value : entity.y);
+      this.eventBus.emit(EditorEvents.ENTITY_UPDATED, {entity, property, oldValue, newValue: value});
+      return;
+    }
+    if (property === "segmentCount" && (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > 1000)) return;
+    if (property === "isVertical" && typeof value !== "boolean") return;
+
     // --- Modify entity.data directly ---
     let oldValue: any = undefined;
     let propertyChanged = false;
@@ -201,9 +212,15 @@ export class EntityUpdater {
   ): void {
     if (!entity || !entity.gameObject) return;
 
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+
+    const previousPosition = {x: entity.x, y: entity.y};
+
     // Update entity position
     entity.x = x;
     entity.y = y;
+    entity.data.x = x;
+    entity.data.y = y;
 
     // Update the game object position based on its type
     const gameObject = entity.gameObject as any;
@@ -212,14 +229,14 @@ export class EntityUpdater {
     }
 
     // Update the entity in level data
-    this.updateEntityInLevelData(entity);
+    this.updateEntityInLevelData(entity, previousPosition);
   }
 
   /**
    * Updates the level data with the current entity state
    * @param entity The entity to update in the level data
    */
-  public updateEntityInLevelData(entity: EditorEntity): void {
+  public updateEntityInLevelData(entity: EditorEntity, previousPosition: Pick<EditorEntity, "x" | "y"> = entity): void {
     if (!entity || !this.levelData) return;
 
     // Different handling based on entity type
@@ -229,17 +246,17 @@ export class EntityUpdater {
         break;
       case "enemy-large":
       case "enemy-small":
-        this.updateEnemyInLevelData(entity);
+        this.updateEnemyInLevelData(entity, previousPosition);
         break;
       case "barrel":
-        this.updateBarrelInLevelData(entity);
+        this.updateBarrelInLevelData(entity, previousPosition);
         break;
       case "finish-line":
         this.updateFinishLineInLevelData(entity);
         break;
       case "crate-small":
       case "crate-big":
-        this.updateCrateInLevelData(entity);
+        this.updateCrateInLevelData(entity, previousPosition);
         break;
       case "player":
         // Player position is handled separately in level data
@@ -296,6 +313,7 @@ export class EntityUpdater {
       id: platformId,
       x: entity.x,
       y: entity.y,
+      segmentWidth: platformData.segmentWidth,
       segmentCount: platformData.segmentCount || 3,
       isVertical: platformData.isVertical || false,
     };
@@ -312,7 +330,7 @@ export class EntityUpdater {
   /**
    * Updates an enemy entity in the level data
    */
-  private updateEnemyInLevelData(entity: EditorEntity): void {
+  private updateEnemyInLevelData(entity: EditorEntity, previousPosition: Pick<EditorEntity, "x" | "y">): void {
     // Type guard for enemy data - Check type property
     if (
       !entity.data ||
@@ -329,7 +347,7 @@ export class EntityUpdater {
 
     // Find the enemy index in the level data array using position
     const enemyIndex = this.levelData.enemies.findIndex(
-      (e) => e.x === entity.x && e.y === entity.y // Match by original position stored in data if needed, or current entity pos?
+      (e) => e.x === previousPosition.x && e.y === previousPosition.y && e.type === enemyType // Match by original position stored in data if needed, or current entity pos?
       // Let's assume we update based on current entity position for now.
     );
 
@@ -352,7 +370,7 @@ export class EntityUpdater {
   /**
    * Updates a barrel entity in the level data
    */
-  private updateBarrelInLevelData(entity: EditorEntity): void {
+  private updateBarrelInLevelData(entity: EditorEntity, previousPosition: Pick<EditorEntity, "x" | "y">): void {
     // Type guard for barrel data
     if (
       !entity.data ||
@@ -368,7 +386,7 @@ export class EntityUpdater {
 
     // Find the barrel index in the level data array using position
     const barrelIndex = this.levelData.barrels.findIndex(
-      (b) => b.x === entity.x && b.y === entity.y
+      (b) => b.x === previousPosition.x && b.y === previousPosition.y
     );
 
     // Create the serialized data object
@@ -416,7 +434,7 @@ export class EntityUpdater {
   /**
    * Updates a crate entity in the level data
    */
-  private updateCrateInLevelData(entity: EditorEntity): void {
+  private updateCrateInLevelData(entity: EditorEntity, previousPosition: Pick<EditorEntity, "x" | "y">): void {
     // Type guard for crate data
     if (
       !entity.data ||
@@ -435,7 +453,7 @@ export class EntityUpdater {
 
     // Find the crate index in the level data array using position
     const crateIndex = this.levelData.crates.findIndex(
-      (c) => c.x === entity.x && c.y === entity.y && c.type === crateType
+      (c) => c.x === previousPosition.x && c.y === previousPosition.y && c.type === crateType
     );
 
     // Create the serialized data object

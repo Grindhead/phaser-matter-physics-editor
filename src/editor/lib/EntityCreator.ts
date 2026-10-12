@@ -33,12 +33,13 @@ export class EntityCreator {
     type: string,
     x: number,
     y: number,
-    config?: any
+    config?: any,
+    {snapToGrid = true}: {snapToGrid?: boolean} = {}
   ): EditorEntity | null {
     // Calculate snapped position for grid alignment
-    const snappedX = Math.floor(x / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
+    const snappedX = snapToGrid ? Math.floor(x / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2 : x;
     const snappedY =
-      Math.floor(y / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2;
+      snapToGrid ? Math.floor(y / TILE_HEIGHT) * TILE_HEIGHT + TILE_HEIGHT / 2 : y;
 
     // Create the appropriate entity based on type
     switch (type) {
@@ -97,6 +98,7 @@ export class EntityCreator {
         id,
         segmentCount,
         isVertical,
+        segmentWidth,
         x,
         y,
         scene: this.scene,

@@ -278,30 +278,9 @@ export class EntitySelector {
       this
     );
 
-    // Also listen for the prefixed version
-    this.eventBus.on(
-      `EB_${EditorEvents.ENTITY_REMOVED}`,
-      (removedEntity: EditorEntity) => {
-        // If the removed entity was selected, deselect it
-        if (this.selectedEntity && this.selectedEntity === removedEntity) {
-          this.selectEntity(null);
-        }
-      },
-      this
-    );
-
     // Deselect entity when a new entity is placed
     this.eventBus.on(
       EditorEvents.ENTITY_PLACED,
-      () => {
-        this.selectEntity(null);
-      },
-      this
-    );
-
-    // Also listen for the prefixed version
-    this.eventBus.on(
-      `EB_${EditorEvents.ENTITY_PLACED}`,
       () => {
         this.selectEntity(null);
       },
@@ -376,8 +355,6 @@ export class EntitySelector {
 
     // Remove event listeners
     this.eventBus.off(EditorEvents.ENTITY_REMOVED, undefined, this);
-    this.eventBus.off(`EB_${EditorEvents.ENTITY_REMOVED}`, undefined, this);
     this.eventBus.off(EditorEvents.ENTITY_PLACED, undefined, this);
-    this.eventBus.off(`EB_${EditorEvents.ENTITY_PLACED}`, undefined, this);
   }
 }

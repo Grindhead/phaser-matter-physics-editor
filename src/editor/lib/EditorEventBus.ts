@@ -1,4 +1,4 @@
-import { Scene } from "phaser";
+import { Events, Scenes, type Scene } from "phaser";
 import { EditorEvents } from "./EditorEventTypes";
 
 /**
@@ -6,10 +6,11 @@ import { EditorEvents } from "./EditorEventTypes";
  * This singleton allows components to register and emit events without direct coupling.
  */
 export class EditorEventBus {
-  private static instance: EditorEventBus;
+  private static instance: EditorEventBus | null = null;
   private scene: Scene | null = null;
+  private events = new Events.EventEmitter();
   // Track if we're currently emitting an event to prevent recursion
-  private emitting: boolean = false;
+  private activeEvents = new Set<string>();
 
   /**
    * Get the singleton instance of the EditorEventBus
@@ -26,7 +27,10 @@ export class EditorEventBus {
    * @param scene The Phaser scene to use for event emitting/listening
    */
   public initialize(scene: Scene): void {
+    this.scene?.events.off(Scenes.Events.SHUTDOWN, this.removeAllListeners, this);
     this.scene = scene;
+    this.activeEvents.clear();
+    scene.events.once(Scenes.Events.SHUTDOWN, this.removeAllListeners, this);
     console.log("EditorEventBus initialized with scene:", scene.scene.key);
   }
 
@@ -36,12 +40,8 @@ export class EditorEventBus {
    * @param callback The callback function to execute when the event is emitted
    * @param context The context to bind the callback to
    */
-  public on(event: string, callback: Function, context?: any): void {
-    if (!this.scene) {
-      console.error("EditorEventBus not initialized with a scene");
-      return;
-    }
-    this.scene.events.on(event, callback, context);
+  public on(event: string, callback: (...args: any[]) => void, context?: any): void {
+    this.events.on(event, callback, context);
   }
 
   /**
@@ -50,12 +50,8 @@ export class EditorEventBus {
    * @param callback The callback function to execute when the event is emitted
    * @param context The context to bind the callback to
    */
-  public once(event: string, callback: Function, context?: any): void {
-    if (!this.scene) {
-      console.error("EditorEventBus not initialized with a scene");
-      return;
-    }
-    this.scene.events.once(event, callback, context);
+  public once(event: string, callback: (...args: any[]) => void, context?: any): void {
+    this.events.once(event, callback, context);
   }
 
   /**
@@ -64,12 +60,8 @@ export class EditorEventBus {
    * @param callback The callback function to remove
    * @param context The context of the callback
    */
-  public off(event: string, callback?: Function, context?: any): void {
-    if (!this.scene) {
-      console.error("EditorEventBus not initialized with a scene");
-      return;
-    }
-    this.scene.events.off(event, callback, context);
+  public off(event: string, callback?: (...args: any[]) => void, context?: any): void {
+    this.events.off(event, callback, context);
   }
 
   /**
@@ -78,10 +70,6 @@ export class EditorEventBus {
    * @param args The parameters to pass to the event handlers
    */
   public emit(event: string | undefined, ...args: any[]): void {
-    if (!this.scene) {
-      console.error("EditorEventBus not initialized with a scene");
-      return;
-    }
 
     // Validate event name
     if (!event) {
@@ -89,26 +77,15 @@ export class EditorEventBus {
       return;
     }
 
-    // Prevent recursion by setting a flag
-    if (this.emitting) {
+    if (this.activeEvents.has(event)) {
       console.warn("Recursive event emission detected:", event);
       return;
     }
-
-    this.emitting = true;
-
+    this.activeEvents.add(event);
     try {
-      // Check if this event already has the EB_ prefix
-      if (!event.startsWith("EB_")) {
-        // First emit with the EB_ prefix for components using that prefix
-        const busEvent = `EB_${event}`;
-        this.scene.events.emit(busEvent, ...args);
-      }
-
-      // Then emit with the original name
-      this.scene.events.emit(event, ...args);
+      this.events.emit(event, ...args);
     } finally {
-      this.emitting = false;
+      this.activeEvents.delete(event);
     }
   }
 
@@ -116,11 +93,7 @@ export class EditorEventBus {
    * Removes all listeners for all events
    */
   public removeAllListeners(): void {
-    if (!this.scene) {
-      console.error("EditorEventBus not initialized with a scene");
-      return;
-    }
-    this.scene.events.removeAllListeners();
+    this.events.removeAllListeners();
   }
 
   /**
@@ -128,8 +101,9 @@ export class EditorEventBus {
    */
   public static destroy(): void {
     if (EditorEventBus.instance) {
-      EditorEventBus.instance.scene = null;
-      EditorEventBus.instance = null!;
+      EditorEventBus.instance.scene?.events.off(Scenes.Events.SHUTDOWN, EditorEventBus.instance.removeAllListeners, EditorEventBus.instance);
+      EditorEventBus.instance.removeAllListeners();
+      EditorEventBus.instance = null;
     }
   }
 

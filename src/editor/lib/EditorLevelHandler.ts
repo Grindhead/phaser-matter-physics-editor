@@ -86,8 +86,8 @@ export class EditorLevelHandler {
 
       reader.onload = (e) => {
         try {
-          const json = e.target?.result as string;
-          if (!json) throw new Error("Failed to read file");
+          const json = e.target?.result;
+          if (typeof json !== "string" || !json) throw new Error("Failed to read file");
 
           // Use LevelDataManager.deserialize for robust parsing and structure enforcement
           const levelData = LevelDataManager.deserialize(json);

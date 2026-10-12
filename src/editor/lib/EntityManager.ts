@@ -79,17 +79,7 @@ export class EntityManager {
       this
     );
     this.eventBus.on(
-      `EB_${EditorEvents.ENTITY_SELECT}`,
-      this.handleEntityTypeSelection,
-      this
-    );
-    this.eventBus.on(
       EditorEvents.ENTITY_SELECTED,
-      this.handleEntitySelected,
-      this
-    );
-    this.eventBus.on(
-      `EB_${EditorEvents.ENTITY_SELECTED}`,
       this.handleEntitySelected,
       this
     );
@@ -98,49 +88,19 @@ export class EntityManager {
       this.handleEntityDeselected,
       this
     );
-    this.eventBus.on(
-      `EB_${EditorEvents.ENTITY_DESELECTED}`,
-      this.handleEntityDeselected,
-      this
-    );
 
     // Entity manipulation events
     this.eventBus.on(EditorEvents.PLACE_ENTITY, this.handlePlaceEntity, this);
-    this.eventBus.on(
-      `EB_${EditorEvents.PLACE_ENTITY}`,
-      this.handlePlaceEntity,
-      this
-    );
     this.eventBus.on(
       EditorEvents.PROPERTY_CHANGE,
       this.handlePropertyChange,
       this
     );
-    this.eventBus.on(
-      `EB_${EditorEvents.PROPERTY_CHANGE}`,
-      this.handlePropertyChange,
-      this
-    );
     this.eventBus.on(EditorEvents.REMOVE_ENTITY, this.handleRemoveEntity, this);
-    this.eventBus.on(
-      `EB_${EditorEvents.REMOVE_ENTITY}`,
-      this.handleRemoveEntity,
-      this
-    );
 
     // Level management events
     this.eventBus.on(EditorEvents.LEVEL_LOADED, this.handleLevelLoaded, this);
-    this.eventBus.on(
-      `EB_${EditorEvents.LEVEL_LOADED}`,
-      this.handleLevelLoaded,
-      this
-    );
     this.eventBus.on(EditorEvents.LEVEL_CLEARED, this.handleLevelCleared, this);
-    this.eventBus.on(
-      `EB_${EditorEvents.LEVEL_CLEARED}`,
-      this.handleLevelCleared,
-      this
-    );
   }
 
   /**
@@ -573,6 +533,8 @@ export class EntityManager {
       );
     }
 
+    const createLoadedEntity = (type: string, x: number, y: number, config?: Parameters<EntityCreator["createEntity"]>[3]) => this.creator.createEntity(type, x, y, config, {snapToGrid: false});
+
     // Create platforms
     console.log(
       "POPULATE: Checking this.levelData.platforms. Value:",
@@ -604,11 +566,13 @@ export class EntityManager {
     }
 
     platforms.forEach((platform) => {
-      const entity = this.creator.createEntity(
+      const entity = createLoadedEntity(
         "platform",
         platform.x,
         platform.y,
         {
+          id: platform.id,
+          segmentWidth: platform.segmentWidth,
           segmentCount: platform.segmentCount,
           isVertical: platform.isVertical,
         }
@@ -626,7 +590,7 @@ export class EntityManager {
       const entityType = enemy.type?.includes("large")
         ? "enemy-large"
         : "enemy-small";
-      const entity = this.creator.createEntity(entityType, enemy.x, enemy.y);
+      const entity = createLoadedEntity(entityType, enemy.x, enemy.y);
 
       if (entity) this.entities.push(entity);
     });
@@ -636,7 +600,7 @@ export class EntityManager {
       ? this.levelData.barrels
       : [];
     barrels.forEach((barrel) => {
-      const entity = this.creator.createEntity("barrel", barrel.x, barrel.y);
+      const entity = createLoadedEntity("barrel", barrel.x, barrel.y);
 
       if (entity) this.entities.push(entity);
     });
@@ -647,7 +611,7 @@ export class EntityManager {
       : [];
     crates.forEach((crate) => {
       const entityType = `crate-${crate.type || "small"}`;
-      const entity = this.creator.createEntity(entityType, crate.x, crate.y);
+      const entity = createLoadedEntity(entityType, crate.x, crate.y);
 
       if (entity) this.entities.push(entity);
     });
@@ -658,12 +622,17 @@ export class EntityManager {
       typeof this.levelData.finishLine === "object"
     ) {
       const finishLine = this.levelData.finishLine;
-      const entity = this.creator.createEntity(
+      const entity = createLoadedEntity(
         "finish-line",
         finishLine.x,
         finishLine.y
       );
 
+      if (entity) this.entities.push(entity);
+    }
+
+    if (this.levelData.player) {
+      const entity = createLoadedEntity("player", this.levelData.player.x, this.levelData.player.y);
       if (entity) this.entities.push(entity);
     }
 
@@ -829,17 +798,7 @@ export class EntityManager {
       this
     );
     this.eventBus.off(
-      `EB_${EditorEvents.ENTITY_SELECT}`,
-      this.handleEntityTypeSelection,
-      this
-    );
-    this.eventBus.off(
       EditorEvents.ENTITY_SELECTED,
-      this.handleEntitySelected,
-      this
-    );
-    this.eventBus.off(
-      `EB_${EditorEvents.ENTITY_SELECTED}`,
       this.handleEntitySelected,
       this
     );
@@ -848,24 +807,9 @@ export class EntityManager {
       this.handleEntityDeselected,
       this
     );
-    this.eventBus.off(
-      `EB_${EditorEvents.ENTITY_DESELECTED}`,
-      this.handleEntityDeselected,
-      this
-    );
     this.eventBus.off(EditorEvents.PLACE_ENTITY, this.handlePlaceEntity, this);
     this.eventBus.off(
-      `EB_${EditorEvents.PLACE_ENTITY}`,
-      this.handlePlaceEntity,
-      this
-    );
-    this.eventBus.off(
       EditorEvents.PROPERTY_CHANGE,
-      this.handlePropertyChange,
-      this
-    );
-    this.eventBus.off(
-      `EB_${EditorEvents.PROPERTY_CHANGE}`,
       this.handlePropertyChange,
       this
     );
@@ -874,24 +818,9 @@ export class EntityManager {
       this.handleRemoveEntity,
       this
     );
-    this.eventBus.off(
-      `EB_${EditorEvents.REMOVE_ENTITY}`,
-      this.handleRemoveEntity,
-      this
-    );
     this.eventBus.off(EditorEvents.LEVEL_LOADED, this.handleLevelLoaded, this);
     this.eventBus.off(
-      `EB_${EditorEvents.LEVEL_LOADED}`,
-      this.handleLevelLoaded,
-      this
-    );
-    this.eventBus.off(
       EditorEvents.LEVEL_CLEARED,
-      this.handleLevelCleared,
-      this
-    );
-    this.eventBus.off(
-      `EB_${EditorEvents.LEVEL_CLEARED}`,
       this.handleLevelCleared,
       this
     );

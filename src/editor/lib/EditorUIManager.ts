@@ -1,3 +1,5 @@
+import { EditorEventBus } from "./EditorEventBus";
+import { EditorEvents } from "./EditorEventTypes";
 import { Scene, Events } from "phaser";
 import { Palette } from "../ui/palette";
 import { Inspector, EditorEntity } from "../ui/Inspector";
@@ -29,6 +31,10 @@ export class EditorUIManager {
     });
 
     this.createUI();
+    const eventBus = EditorEventBus.getInstance();
+    eventBus.on(EditorEvents.ENTITY_SELECTED, this.handleRegistrySelectedEntity, this);
+    eventBus.on(EditorEvents.ENTITY_DESELECTED, this.handleEntityDeselected, this);
+    eventBus.on(EditorEvents.ENTITY_UPDATED, this.handleEntityUpdated, this);
 
     // Listen for window resize
     this.scene.scale.on("resize", this.handleResize, this);
@@ -64,6 +70,10 @@ export class EditorUIManager {
     // Clean up when scene shuts down
     this.scene.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
       console.log("EditorUIManager: Cleaning up on scene shutdown");
+      eventBus.off(EditorEvents.ENTITY_SELECTED, this.handleRegistrySelectedEntity, this);
+      eventBus.off(EditorEvents.ENTITY_DESELECTED, this.handleEntityDeselected, this);
+      eventBus.off(EditorEvents.ENTITY_UPDATED, this.handleEntityUpdated, this);
+      this.scene.scale.off("resize", this.handleResize, this);
       if (this.platformTool) {
         this.platformTool.cleanup();
       }
@@ -103,7 +113,7 @@ export class EditorUIManager {
     // Create inspector for entity properties
     this.inspector = new Inspector(
       this.scene,
-      { x: this.scene.scale.width - 210, y: 10, width: 200 },
+      { x: this.scene.scale.width - 330, y: 10, width: 320 },
       (entity: EditorEntity, property: string, value: any) => {
         this.eventEmitter.emit(
           "PROPERTY_CHANGE_REQUEST",
@@ -166,7 +176,7 @@ export class EditorUIManager {
    */
   public handleResize(gameSize: Phaser.Structs.Size): void {
     if (this.inspector) {
-      this.inspector.updatePositionForResize(gameSize.width - 210, 10);
+      this.inspector.updatePositionForResize(gameSize.width - 330, 10);
     }
 
     if (this.toolbar) {
@@ -320,6 +330,14 @@ export class EditorUIManager {
         }
       });
     }
+  }
+
+  private handleEntityDeselected(): void {
+    this.handleRegistrySelectedEntity(null);
+  }
+
+  private handleEntityUpdated({entity}: {entity: EditorEntity}): void {
+    if (this.selectedEntity === entity) this.inspector?.selectEntity(entity);
   }
 
   private handleRegistrySelectedEntity(entity: EditorEntity | null): void {

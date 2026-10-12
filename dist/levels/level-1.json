@@ -1,0 +1,22 @@
+{
+  "platforms": [
+    {
+      "id": "platform-1746808965044",
+      "x": 588,
+      "y": 420,
+      "segmentCount": 10,
+      "isVertical": false
+    }
+  ],
+  "enemies": [],
+  "barrels": [],
+  "crates": [],
+  "finishLine": {
+    "x": 732,
+    "y": 348
+  },
+  "player": {
+    "x": 492,
+    "y": 372
+  }
+}

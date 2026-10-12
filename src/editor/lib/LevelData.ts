@@ -1,9 +1,9 @@
-import { BarrelInterface } from "../../entities/Barrel/Barrel";
-import { CrateInterface } from "../../entities/Crate/Crate";
-import { EnemyInterface } from "../../entities/Enemies/EnemyBase";
-import { FinishLineInterface } from "../../entities/Finish/Finish";
-import { PlatformInterface } from "../../entities/Platforms/Platform";
-import { PlayerInterface } from "../../entities/Player/Player";
+import type { BarrelInterface } from "../../entities/Barrel/Barrel";
+import type { CrateInterface } from "../../entities/Crate/Crate";
+import type { EnemyInterface } from "../../entities/Enemies/EnemyBase";
+import type { FinishLineInterface } from "../../entities/Finish/Finish";
+import type { PlatformInterface } from "../../entities/Platforms/Platform";
+import type { PlayerInterface } from "../../entities/Player/Player";
 
 // Serialized types without circular references like 'scene'
 
@@ -41,6 +41,7 @@ export class LevelDataManager {
         id: p.id,
         x: p.x,
         y: p.y,
+        segmentWidth: p.segmentWidth,
         segmentCount: p.segmentCount,
         isVertical: p.isVertical,
       })),
@@ -79,21 +80,20 @@ export class LevelDataManager {
    * Deserialize JSON string to level data
    */
   static deserialize(jsonString: string): LevelData {
-    try {
-      const data = JSON.parse(jsonString) as LevelData;
-
-      return {
-        platforms: data.platforms || [],
-        enemies: data.enemies || [],
-        barrels: data.barrels || [],
-        crates: data.crates || [],
-        finishLine: data.finishLine || null,
-        player: data.player || null, // Add player to deserialized data
-      } as unknown as LevelData; // Type assertion since scene will be added later
-    } catch (error) {
-      console.error("Error deserializing level data:", error);
-      return this.createEmpty();
-    }
+    const data: unknown = JSON.parse(jsonString);
+    if (!isObject(data)) throw new Error("Level must be a JSON object");
+    const array = (value: unknown, field: string): unknown[] => {
+      if (!Array.isArray(value)) throw new Error(`${field} must be an array`);
+      return value;
+    };
+    return {
+      platforms: array(data.platforms, "platforms").map(parsePlatform),
+      enemies: array(data.enemies, "enemies").map(parseEnemy),
+      barrels: array(data.barrels, "barrels").map(parsePosition),
+      crates: array(data.crates, "crates").map(parseCrate),
+      finishLine: data.finishLine === null ? null : parsePosition(data.finishLine),
+      player: data.player === null || data.player === undefined ? null : parsePosition(data.player),
+    };
   }
 
   /**
@@ -129,7 +129,8 @@ export class LevelDataManager {
 
       reader.onload = (event) => {
         try {
-          const jsonString = event.target?.result as string;
+          const jsonString = event.target?.result;
+          if (typeof jsonString !== "string") throw new Error("Failed to read level text");
           const levelData = this.deserialize(jsonString);
           resolve(levelData);
         } catch (error) {
@@ -144,4 +145,32 @@ export class LevelDataManager {
       reader.readAsText(file);
     });
   }
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function parsePosition(value: unknown): PlayerInterface {
+  if (!isObject(value) || typeof value.x !== "number" || !Number.isFinite(value.x) || typeof value.y !== "number" || !Number.isFinite(value.y)) throw new Error("Entity positions must be finite numbers");
+  return {x: value.x, y: value.y};
+}
+function parsePlatform(value: unknown): PlatformInterface {
+  const position = parsePosition(value);
+  if (!isObject(value) || typeof value.id !== "string" || !value.id || typeof value.segmentCount !== "number" || !Number.isInteger(value.segmentCount) || value.segmentCount < 1 || value.segmentCount > 1000 || typeof value.isVertical !== "boolean") throw new Error("Invalid platform properties or segment count");
+  const platform: PlatformInterface = {...position, id: value.id, segmentCount: value.segmentCount, isVertical: value.isVertical};
+  if (value.segmentWidth !== undefined) {
+    if (typeof value.segmentWidth !== "number" || !Number.isFinite(value.segmentWidth) || value.segmentWidth <= 0) throw new Error("Invalid platform segment width");
+    platform.segmentWidth = value.segmentWidth;
+  }
+  return platform;
+}
+function parseEnemy(value: unknown): EnemyInterface {
+  const position = parsePosition(value);
+  if (!isObject(value) || (value.type !== "enemy-large" && value.type !== "enemy-small")) throw new Error("Invalid enemy type");
+  return {...position, type: value.type};
+}
+function parseCrate(value: unknown): CrateInterface {
+  const position = parsePosition(value);
+  if (!isObject(value) || (value.type !== "small" && value.type !== "big")) throw new Error("Invalid crate type");
+  return {...position, type: value.type};
 }

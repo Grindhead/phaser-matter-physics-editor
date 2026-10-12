@@ -56,6 +56,25 @@ export class EntityUpdater {
       return;
     }
 
+    // Coordinates are canonical on the entity itself (entity.x/y), not only in
+    // entity.data, so route them through the same path dragging uses.
+    if (property === "x" || property === "y") {
+      this.updateEntityCoordinate(entity, property, value);
+      return;
+    }
+
+    // The inspector historically sent "orientation"; the platform model uses
+    // "isVertical". Map at the boundary so either name works.
+    if (entity.type === "platform" && property === "orientation") {
+      property = "isVertical";
+    }
+    if (property === "isVertical" && typeof value !== "boolean") {
+      console.warn(
+        `[EntityUpdater] Rejected isVertical=${String(value)}: expected boolean.`
+      );
+      return;
+    }
+
     // --- Modify entity.data directly ---
     let oldValue: any = undefined;
     let propertyChanged = false;
@@ -147,6 +166,38 @@ export class EntityUpdater {
   }
 
   /**
+   * Applies an inspector X or Y edit through updateEntityPosition so the
+   * entity, its game object and the level data stay in agreement.
+   */
+  private updateEntityCoordinate(
+    entity: EditorEntity,
+    axis: "x" | "y",
+    value: unknown
+  ): void {
+    const numeric = typeof value === "string" ? Number(value) : value;
+    if (typeof numeric !== "number" || !Number.isFinite(numeric)) {
+      console.warn(
+        `[EntityUpdater] Rejected ${axis}=${String(value)}: expected a finite number.`
+      );
+      return;
+    }
+
+    const oldValue = entity[axis];
+    if (oldValue === numeric) return;
+
+    const x = axis === "x" ? numeric : entity.x;
+    const y = axis === "y" ? numeric : entity.y;
+    this.updateEntityPosition(entity, x, y);
+
+    this.eventBus.emit(EditorEvents.ENTITY_UPDATED, {
+      entity,
+      property: axis,
+      oldValue,
+      newValue: numeric,
+    });
+  }
+
+  /**
    * Updates a platform entity based on its current properties
    * @param entity The platform entity to update
    */
@@ -171,6 +222,12 @@ export class EntityUpdater {
     // Destroy the old platform
     platform.destroy();
 
+    // Platform textures are cached by id; drop the stale one so the new
+    // geometry (e.g. a changed orientation or segment count) is rebuilt.
+    if (this.scene.textures.exists(platformData.id)) {
+      this.scene.textures.remove(platformData.id);
+    }
+
     // Create a new platform with updated properties using the correct constructor signature
     const newPlatform = new Platform(
       this.scene,
@@ -182,8 +239,13 @@ export class EntityUpdater {
       platformData.segmentWidth // Assuming segmentWidth is also in PlatformInterface/data
     );
 
+    newPlatform.setData("isEditor", true);
+
     // Update the entity reference
     entity.gameObject = newPlatform;
+
+    // Hand the new game object to the display scene like a fresh placement
+    this.scene.events.emit("ADD_ENTITY_TO_DISPLAY", newPlatform, entity.type);
     // Optionally update entity.data if needed, though it might be redundant if it reflects the newPlatform
     // entity.data = { ...platformData, x: entity.x, y: entity.y };
   }
@@ -200,10 +262,24 @@ export class EntityUpdater {
     y: number
   ): void {
     if (!entity || !entity.gameObject) return;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      console.warn(
+        `[EntityUpdater] Rejected position (${x}, ${y}): expected finite numbers.`
+      );
+      return;
+    }
 
-    // Update entity position
+    // Remember where the entity was so its level-data record (matched by
+    // position for most types) is updated in place rather than duplicated.
+    const previous = { x: entity.x, y: entity.y };
+
+    // Update entity position (entity.x/y is canonical; keep data in sync)
     entity.x = x;
     entity.y = y;
+    if (entity.data) {
+      (entity.data as { x: number; y: number }).x = x;
+      (entity.data as { x: number; y: number }).y = y;
+    }
 
     // Update the game object position based on its type
     const gameObject = entity.gameObject as any;
@@ -212,15 +288,21 @@ export class EntityUpdater {
     }
 
     // Update the entity in level data
-    this.updateEntityInLevelData(entity);
+    this.updateEntityInLevelData(entity, previous);
   }
 
   /**
    * Updates the level data with the current entity state
    * @param entity The entity to update in the level data
    */
-  public updateEntityInLevelData(entity: EditorEntity): void {
+  public updateEntityInLevelData(
+    entity: EditorEntity,
+    previous?: { x: number; y: number }
+  ): void {
     if (!entity || !this.levelData) return;
+
+    // Records without ids are matched by the position they were stored at
+    const match = previous ?? { x: entity.x, y: entity.y };
 
     // Different handling based on entity type
     switch (entity.type) {
@@ -229,17 +311,17 @@ export class EntityUpdater {
         break;
       case "enemy-large":
       case "enemy-small":
-        this.updateEnemyInLevelData(entity);
+        this.updateEnemyInLevelData(entity, match);
         break;
       case "barrel":
-        this.updateBarrelInLevelData(entity);
+        this.updateBarrelInLevelData(entity, match);
         break;
       case "finish-line":
         this.updateFinishLineInLevelData(entity);
         break;
       case "crate-small":
       case "crate-big":
-        this.updateCrateInLevelData(entity);
+        this.updateCrateInLevelData(entity, match);
         break;
       case "player":
         // Player position is handled separately in level data
@@ -312,7 +394,10 @@ export class EntityUpdater {
   /**
    * Updates an enemy entity in the level data
    */
-  private updateEnemyInLevelData(entity: EditorEntity): void {
+  private updateEnemyInLevelData(
+    entity: EditorEntity,
+    match: { x: number; y: number }
+  ): void {
     // Type guard for enemy data - Check type property
     if (
       !entity.data ||
@@ -329,8 +414,7 @@ export class EntityUpdater {
 
     // Find the enemy index in the level data array using position
     const enemyIndex = this.levelData.enemies.findIndex(
-      (e) => e.x === entity.x && e.y === entity.y // Match by original position stored in data if needed, or current entity pos?
-      // Let's assume we update based on current entity position for now.
+      (e) => e.x === match.x && e.y === match.y
     );
 
     // Create the serialized data object
@@ -352,7 +436,10 @@ export class EntityUpdater {
   /**
    * Updates a barrel entity in the level data
    */
-  private updateBarrelInLevelData(entity: EditorEntity): void {
+  private updateBarrelInLevelData(
+    entity: EditorEntity,
+    match: { x: number; y: number }
+  ): void {
     // Type guard for barrel data
     if (
       !entity.data ||
@@ -368,7 +455,7 @@ export class EntityUpdater {
 
     // Find the barrel index in the level data array using position
     const barrelIndex = this.levelData.barrels.findIndex(
-      (b) => b.x === entity.x && b.y === entity.y
+      (b) => b.x === match.x && b.y === match.y
     );
 
     // Create the serialized data object
@@ -416,7 +503,10 @@ export class EntityUpdater {
   /**
    * Updates a crate entity in the level data
    */
-  private updateCrateInLevelData(entity: EditorEntity): void {
+  private updateCrateInLevelData(
+    entity: EditorEntity,
+    match: { x: number; y: number }
+  ): void {
     // Type guard for crate data
     if (
       !entity.data ||
@@ -435,7 +525,7 @@ export class EntityUpdater {
 
     // Find the crate index in the level data array using position
     const crateIndex = this.levelData.crates.findIndex(
-      (c) => c.x === entity.x && c.y === entity.y && c.type === crateType
+      (c) => c.x === match.x && c.y === match.y && c.type === crateType
     );
 
     // Create the serialized data object

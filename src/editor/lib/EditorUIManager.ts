@@ -61,6 +61,19 @@ export class EditorUIManager {
       }
     );
 
+    // Keep the inspector in sync with the editor selection. The registry is
+    // shared across scenes; EntityManager publishes "selectedEntity" there.
+    this.scene.registry.events.on(
+      "setdata",
+      this.handleRegistrySetData,
+      this
+    );
+    this.scene.registry.events.on(
+      "changedata-selectedEntity",
+      this.handleRegistrySelectedEntityChange,
+      this
+    );
+
     // Clean up when scene shuts down
     this.scene.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
       console.log("EditorUIManager: Cleaning up on scene shutdown");
@@ -73,6 +86,16 @@ export class EditorUIManager {
       }
       // Also potentially cleanup inspector/palette/toolbar listeners if needed
       this.scene.registry.events.off("changedata-isPlacementModeActive"); // Cleanup listener
+      this.scene.registry.events.off(
+        "setdata",
+        this.handleRegistrySetData,
+        this
+      );
+      this.scene.registry.events.off(
+        "changedata-selectedEntity",
+        this.handleRegistrySelectedEntityChange,
+        this
+      );
     });
   }
 
@@ -320,6 +343,45 @@ export class EditorUIManager {
         }
       });
     }
+  }
+
+  private handleRegistrySetData(
+    _parent: unknown,
+    key: string,
+    value: EditorEntity | null
+  ): void {
+    if (key === "selectedEntity") {
+      this.syncInspectorSelection(value);
+    }
+  }
+
+  private handleRegistrySelectedEntityChange(
+    _parent: unknown,
+    value: EditorEntity | null
+  ): void {
+    this.syncInspectorSelection(value);
+  }
+
+  /**
+   * Shows the selected entity in the inspector. When the same entity is
+   * re-published (after a property update) the inspector is rebuilt on the
+   * next tick so the control that triggered the edit is not destroyed while
+   * its own input handler is still running.
+   */
+  private syncInspectorSelection(entity: EditorEntity | null): void {
+    const isRefresh = entity !== null && entity === this.selectedEntity;
+    this.selectedEntity = entity;
+
+    if (!isRefresh) {
+      this.inspector?.selectEntity(entity);
+      return;
+    }
+
+    this.scene.time.delayedCall(0, () => {
+      if (this.selectedEntity === entity) {
+        this.inspector?.selectEntity(entity);
+      }
+    });
   }
 
   private handleRegistrySelectedEntity(entity: EditorEntity | null): void {

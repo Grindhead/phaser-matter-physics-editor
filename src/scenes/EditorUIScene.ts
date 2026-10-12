@@ -27,8 +27,13 @@ export class EditorUIScene extends Phaser.Scene {
       }
     );
 
-    // Note: PROPERTY_CHANGE_REQUEST is handled directly by Inspector, no need to relay from here if not used.
-    // If EditorScene needs it, a listener can be added.
+    // Relay inspector edits to EditorScene, which forwards them to the event bus
+    this.events.on(
+      "PROPERTY_CHANGE_REQUEST",
+      (entity: EditorEntity, property: string, value: unknown) => {
+        editorScene.events.emit("UI_PROPERTY_CHANGE", entity, property, value);
+      }
+    );
 
     this.events.on("SAVE_REQUEST", () => {
       editorScene.events.emit("UI_SAVE");

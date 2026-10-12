@@ -8,8 +8,11 @@ import { EditorEvents } from "./EditorEventTypes";
 export class EditorEventBus {
   private static instance: EditorEventBus;
   private scene: Scene | null = null;
-  // Track if we're currently emitting an event to prevent recursion
-  private emitting: boolean = false;
+  // Names of the events currently being dispatched (innermost last).
+  // Used to detect true cycles (an event re-emitting itself, directly or via
+  // other events) while still allowing legitimate chains such as
+  // PLACE_ENTITY -> ENTITY_PLACED -> ENTITY_DESELECTED.
+  private dispatchStack: string[] = [];
 
   /**
    * Get the singleton instance of the EditorEventBus
@@ -89,26 +92,24 @@ export class EditorEventBus {
       return;
     }
 
-    // Prevent recursion by setting a flag
-    if (this.emitting) {
-      console.warn("Recursive event emission detected:", event);
+    // Only a re-entrant emission of an event that is already being dispatched
+    // is a cycle. Different events emitted from inside a handler are delivered.
+    if (this.dispatchStack.includes(event)) {
+      console.warn(
+        `EditorEventBus: cycle detected, dropping "${event}" (chain: ${[
+          ...this.dispatchStack,
+          event,
+        ].join(" -> ")})`
+      );
       return;
     }
 
-    this.emitting = true;
-
+    this.dispatchStack.push(event);
     try {
-      // Check if this event already has the EB_ prefix
-      if (!event.startsWith("EB_")) {
-        // First emit with the EB_ prefix for components using that prefix
-        const busEvent = `EB_${event}`;
-        this.scene.events.emit(busEvent, ...args);
-      }
-
-      // Then emit with the original name
+      // Each event is delivered exactly once, under its canonical name.
       this.scene.events.emit(event, ...args);
     } finally {
-      this.emitting = false;
+      this.dispatchStack.pop();
     }
   }
 

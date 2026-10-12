@@ -325,7 +325,7 @@ export class Inspector {
         if (this.selectedEntity && this.selectedEntity.type === "platform") {
           this.onPropertyChangeCallback(
             this.selectedEntity,
-            "orientation",
+            "isVertical",
             false
           );
         }
@@ -343,7 +343,7 @@ export class Inspector {
         if (this.selectedEntity && this.selectedEntity.type === "platform") {
           this.onPropertyChangeCallback(
             this.selectedEntity,
-            "orientation",
+            "isVertical",
             true
           );
         }

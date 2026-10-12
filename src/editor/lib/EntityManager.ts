@@ -1,7 +1,7 @@
 import { Scene } from "phaser";
 import { TILE_WIDTH, TILE_HEIGHT } from "../../lib/constants"; // Ensure constants are imported
 import { EditorEntity } from "../ui/Inspector";
-import { LevelData, LevelDataManager } from "./LevelData";
+import { LevelData, LevelDataManager, validateLevel } from "./LevelData";
 import { EditorEventBus } from "./EditorEventBus";
 import { EditorEvents } from "./EditorEventTypes";
 import { EntityCreator } from "./EntityCreator";
@@ -72,14 +72,9 @@ export class EntityManager {
    * Sets up event listeners to coordinate between components
    */
   private setupEventListeners(): void {
-    // Entity selection events - use both non-prefixed and prefixed events
+    // Entity selection events (each event has one canonical name)
     this.eventBus.on(
       EditorEvents.ENTITY_SELECT,
-      this.handleEntityTypeSelection,
-      this
-    );
-    this.eventBus.on(
-      `EB_${EditorEvents.ENTITY_SELECT}`,
       this.handleEntityTypeSelection,
       this
     );
@@ -89,17 +84,7 @@ export class EntityManager {
       this
     );
     this.eventBus.on(
-      `EB_${EditorEvents.ENTITY_SELECTED}`,
-      this.handleEntitySelected,
-      this
-    );
-    this.eventBus.on(
       EditorEvents.ENTITY_DESELECTED,
-      this.handleEntityDeselected,
-      this
-    );
-    this.eventBus.on(
-      `EB_${EditorEvents.ENTITY_DESELECTED}`,
       this.handleEntityDeselected,
       this
     );
@@ -107,40 +92,20 @@ export class EntityManager {
     // Entity manipulation events
     this.eventBus.on(EditorEvents.PLACE_ENTITY, this.handlePlaceEntity, this);
     this.eventBus.on(
-      `EB_${EditorEvents.PLACE_ENTITY}`,
-      this.handlePlaceEntity,
-      this
-    );
-    this.eventBus.on(
       EditorEvents.PROPERTY_CHANGE,
-      this.handlePropertyChange,
-      this
-    );
-    this.eventBus.on(
-      `EB_${EditorEvents.PROPERTY_CHANGE}`,
       this.handlePropertyChange,
       this
     );
     this.eventBus.on(EditorEvents.REMOVE_ENTITY, this.handleRemoveEntity, this);
     this.eventBus.on(
-      `EB_${EditorEvents.REMOVE_ENTITY}`,
-      this.handleRemoveEntity,
+      EditorEvents.ENTITY_UPDATED,
+      this.handleEntityUpdated,
       this
     );
 
     // Level management events
     this.eventBus.on(EditorEvents.LEVEL_LOADED, this.handleLevelLoaded, this);
-    this.eventBus.on(
-      `EB_${EditorEvents.LEVEL_LOADED}`,
-      this.handleLevelLoaded,
-      this
-    );
     this.eventBus.on(EditorEvents.LEVEL_CLEARED, this.handleLevelCleared, this);
-    this.eventBus.on(
-      `EB_${EditorEvents.LEVEL_CLEARED}`,
-      this.handleLevelCleared,
-      this
-    );
   }
 
   /**
@@ -407,6 +372,18 @@ export class EntityManager {
   }
 
   /**
+   * Re-publishes the selection after an update so the inspector re-renders
+   * with the new values (and the selection highlight follows the entity).
+   */
+  private handleEntityUpdated(payload: { entity: EditorEntity }): void {
+    const entity = payload?.entity;
+    if (entity && entity === this.selector.getSelectedEntity()) {
+      this.selector.refreshSelection();
+      this.scene.registry.set("selectedEntity", entity);
+    }
+  }
+
+  /**
    * Handles entity removal
    * @param entity The entity to remove
    */
@@ -498,20 +475,22 @@ export class EntityManager {
   private handleLevelLoaded(levelData: LevelData): void {
     console.log("EntityManager: Level loaded event received.", levelData);
 
-    // Protective check: If levelData is null or undefined, treat as a clear/empty level.
-    if (!levelData) {
-      console.warn(
-        "EntityManager: handleLevelLoaded received null or undefined levelData. Clearing entities and using empty level."
+    // Validate before mutating anything: an invalid payload must not clear
+    // the current design. An empty level must arrive as an explicit, valid
+    // LevelData object (e.g. from LevelDataManager.parse("{}")).
+    let validated: LevelData;
+    try {
+      validated = validateLevel(levelData);
+    } catch (error) {
+      console.error(
+        "EntityManager: Ignoring LEVEL_LOADED with invalid level data; current level kept.",
+        error
       );
-      this.clearEntities();
-      this.levelData = LevelDataManager.createEmpty(); // Ensure a valid empty state
-      this.updater.setLevelData(this.levelData);
-      this.populateEntitiesFromLevelData(); // This should now be safe with empty data
       return;
     }
 
     this.clearEntities(); // Clears existing entities
-    this.levelData = levelData; // Assigns the new level data
+    this.levelData = validated; // Assigns the new level data
     this.updater.setLevelData(this.levelData); // Update for the updater component
     this.populateEntitiesFromLevelData(); // Populate entities from the new data
   }
@@ -609,6 +588,9 @@ export class EntityManager {
         platform.x,
         platform.y,
         {
+          // Keep the saved id: ids key platform records and textures, and
+          // generated ids can collide when many platforms load at once.
+          id: platform.id,
           segmentCount: platform.segmentCount,
           isVertical: platform.isVertical,
         }
@@ -666,6 +648,26 @@ export class EntityManager {
 
       if (entity) this.entities.push(entity);
     }
+
+    // Create the player start if present
+    if (this.levelData.player && typeof this.levelData.player === "object") {
+      const entity = this.creator.createEntity(
+        "player",
+        this.levelData.player.x,
+        this.levelData.player.y
+      );
+
+      if (entity) this.entities.push(entity);
+    }
+
+    // Rebuild level data from the created entities so every record matches
+    // the canonical (grid-snapped) entity positions and platform ids.
+    // Otherwise later edits cannot find the record and duplicate it.
+    this.levelData = LevelDataManager.createEmpty();
+    this.updater.setLevelData(this.levelData);
+    this.entities.forEach((entity) =>
+      this.updater.updateEntityInLevelData(entity)
+    );
 
     // Update selector with entities
     this.selector.setEntities(this.entities);
@@ -829,17 +831,7 @@ export class EntityManager {
       this
     );
     this.eventBus.off(
-      `EB_${EditorEvents.ENTITY_SELECT}`,
-      this.handleEntityTypeSelection,
-      this
-    );
-    this.eventBus.off(
       EditorEvents.ENTITY_SELECTED,
-      this.handleEntitySelected,
-      this
-    );
-    this.eventBus.off(
-      `EB_${EditorEvents.ENTITY_SELECTED}`,
       this.handleEntitySelected,
       this
     );
@@ -848,24 +840,9 @@ export class EntityManager {
       this.handleEntityDeselected,
       this
     );
-    this.eventBus.off(
-      `EB_${EditorEvents.ENTITY_DESELECTED}`,
-      this.handleEntityDeselected,
-      this
-    );
     this.eventBus.off(EditorEvents.PLACE_ENTITY, this.handlePlaceEntity, this);
     this.eventBus.off(
-      `EB_${EditorEvents.PLACE_ENTITY}`,
-      this.handlePlaceEntity,
-      this
-    );
-    this.eventBus.off(
       EditorEvents.PROPERTY_CHANGE,
-      this.handlePropertyChange,
-      this
-    );
-    this.eventBus.off(
-      `EB_${EditorEvents.PROPERTY_CHANGE}`,
       this.handlePropertyChange,
       this
     );
@@ -875,23 +852,13 @@ export class EntityManager {
       this
     );
     this.eventBus.off(
-      `EB_${EditorEvents.REMOVE_ENTITY}`,
-      this.handleRemoveEntity,
+      EditorEvents.ENTITY_UPDATED,
+      this.handleEntityUpdated,
       this
     );
     this.eventBus.off(EditorEvents.LEVEL_LOADED, this.handleLevelLoaded, this);
     this.eventBus.off(
-      `EB_${EditorEvents.LEVEL_LOADED}`,
-      this.handleLevelLoaded,
-      this
-    );
-    this.eventBus.off(
       EditorEvents.LEVEL_CLEARED,
-      this.handleLevelCleared,
-      this
-    );
-    this.eventBus.off(
-      `EB_${EditorEvents.LEVEL_CLEARED}`,
       this.handleLevelCleared,
       this
     );
